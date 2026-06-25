@@ -110,3 +110,43 @@ if (indicatorCurrent) {
     });
   });
 }
+
+
+
+// ── FLOATING TOC SIDEBAR ──
+const tocSidebar = document.getElementById('tocSidebar');
+const tocLinks = document.querySelectorAll('.toc-link');
+
+if (tocSidebar) {
+  window.addEventListener('scroll', () => {
+
+    // Show sidebar after scrolling past hero
+    if (window.scrollY > 500) {
+      tocSidebar.classList.add('visible');
+    } else {
+      tocSidebar.classList.remove('visible');
+    }
+
+    // Highlight active section
+    let current = 'overview';
+    sectionIds.forEach(id => {
+      const section = document.getElementById(id);
+      if (section) {
+        const top = section.getBoundingClientRect().top;
+        if (top <= 160) {
+          current = id;
+        }
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+
+  });
+}
+
+
