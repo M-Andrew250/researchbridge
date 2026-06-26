@@ -678,7 +678,12 @@
   transition: opacity 0.3s, transform 0.3s, background 0.2s;
   pointer-events: none;
   text-decoration: none;
+  /* ADD THESE TWO */
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
+
 
 .sticky-enrol.visible {
   opacity: 1;
@@ -1671,14 +1676,27 @@
     right: 1rem;
   }
 
-  .whatsapp-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
-    bottom: 1.5rem;
-    right: 1rem;
-  }
-
+ .whatsapp-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+  z-index: 999;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  /* ADD THESE TWO */
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 }
 
 @media (max-width: 480px) {
@@ -1701,7 +1719,18 @@
 }
 
 
+/* Hide Both Buttons on Mobile Scroll */
+@media (max-width: 768px) {
+  .sticky-enrol.scrolling,
+  .whatsapp-btn.scrolling {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
 
+  .whatsapp-btn {
+    transition: opacity 0.3s, transform 0.2s;
+  }
+}
 
 /* ── HAMBURGER BUTTON ── */
 .nav-hamburger {

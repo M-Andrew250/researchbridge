@@ -32,7 +32,7 @@ if (progressBar) {
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const progress = (scrollTop / docHeight) * 100;
     progressBar.style.width = progress + '%';
-  });
+  }, { passive: true });
 }
 
 
@@ -45,7 +45,7 @@ if (stickyEnrol) {
     } else {
       stickyEnrol.classList.remove('visible');
     }
-  });
+  }, { passive: true });
 }
 
 
@@ -108,7 +108,7 @@ if (indicatorCurrent) {
         link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
     });
-  });
+  }, { passive: true });
 }
 
 
@@ -146,7 +146,7 @@ if (tocSidebar) {
       }
     });
 
-  });
+  }, { passive: true });
 }
 
 
@@ -205,4 +205,39 @@ if (navHamburger && navLinks) {
       navLinks.classList.remove('open');
     });
   });
+}
+
+
+
+// ── PAUSE VIDEO ON SCROLL FOR PERFORMANCE ──
+if (heroVideo) {
+  let scrollTimer = null;
+
+  window.addEventListener('scroll', () => {
+    if (!heroVideo.paused) {
+      heroVideo.pause();
+    }
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      heroVideo.play().catch(() => {});
+    }, 150);
+  }, { passive: true });
+}
+
+
+
+// ── HIDE FIXED BUTTONS WHILE SCROLLING ON MOBILE ──
+if (window.innerWidth <= 768) {
+  const fixedButtons = document.querySelectorAll(
+    '.whatsapp-btn, .sticky-enrol'
+  );
+  let scrollEndTimer = null;
+
+  window.addEventListener('scroll', () => {
+    fixedButtons.forEach(btn => btn.classList.add('scrolling'));
+    clearTimeout(scrollEndTimer);
+    scrollEndTimer = setTimeout(() => {
+      fixedButtons.forEach(btn => btn.classList.remove('scrolling'));
+    }, 200);
+  }, { passive: true });
 }
