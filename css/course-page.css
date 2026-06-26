@@ -1,9 +1,55 @@
 /* ── COURSE HERO ── */
+/* ── COURSE HERO ── */
 .course-hero {
-  background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+  position: relative;
   padding: 80px 5%;
   text-align: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
 }
+
+/* VIDEO BACKGROUND */
+.course-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.course-hero-video.loaded {
+  opacity: 1;
+}
+
+/* DARK OVERLAY */
+.course-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 31, 68, 0.92) 0%,
+    rgba(13, 45, 94, 0.88) 50%,
+    rgba(22, 58, 117, 0.85) 100%
+  );
+  z-index: 1;
+}
+
+/* CONTENT SITS ABOVE VIDEO AND OVERLAY */
+.course-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+
+
+
+
 
 .course-hero-content {
   max-width: 750px;
@@ -1373,4 +1419,7 @@
   background: rgba(255, 255, 255, 0.2);
   transform: rotate(90deg);
 }
+
+
+
 

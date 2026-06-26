@@ -150,3 +150,20 @@ if (tocSidebar) {
 }
 
 
+
+// ── HERO VIDEO FADE IN ──
+const heroVideo = document.getElementById('heroVideo');
+if (heroVideo) {
+  heroVideo.addEventListener('canplay', () => {
+    heroVideo.classList.add('loaded');
+  });
+
+  // Fallback — show video after 2s even if canplay is slow
+  setTimeout(() => {
+    if (heroVideo) {
+      heroVideo.classList.add('loaded');
+    }
+  }, 2000);
+}
+
+
