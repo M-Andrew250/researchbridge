@@ -167,3 +167,42 @@ if (heroVideo) {
 }
 
 
+
+
+// ── SUMMARY BANNER MOBILE TOGGLE ──
+if (window.innerWidth <= 768) {
+  document.querySelectorAll('.summary-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const isOpen = item.classList.contains('mobile-open');
+      // Close all
+      document.querySelectorAll('.summary-item').forEach(i => {
+        i.classList.remove('mobile-open');
+      });
+      // Open clicked if it was closed
+      if (!isOpen) {
+        item.classList.add('mobile-open');
+      }
+    });
+  });
+}
+
+
+
+// ── HAMBURGER MENU ──
+const navHamburger = document.getElementById('navHamburger');
+const navLinks = document.getElementById('navLinks');
+
+if (navHamburger && navLinks) {
+  navHamburger.addEventListener('click', () => {
+    navHamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+
+  // Close menu when a link is clicked
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navHamburger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+}
