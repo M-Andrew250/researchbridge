@@ -61,54 +61,58 @@ document.querySelectorAll('.faq-question').forEach(question => {
 
 
 // ── SCROLLSPY SECTION INDICATOR ──
-const indicatorCurrent = document.getElementById('indicatorCurrent');
-const indicatorLinks = document.querySelectorAll('.indicator-nav a');
+// ── SCROLLSPY SECTION INDICATOR — DESKTOP ONLY ──
+if (window.innerWidth > 768) {
+  const indicatorCurrent = document.getElementById('indicatorCurrent');
+  const indicatorLinks = document.querySelectorAll('.indicator-nav a');
 
-const sectionIds = [
-  'overview', 'instructor', 'outcomes', 'applications',
-  'outline', 'video', 'testimonials', 'faq', 'pricing', 'enrol'
-];
+  const sectionIds = [
+    'overview', 'instructor', 'outcomes', 'applications',
+    'outline', 'video', 'testimonials', 'faq', 'pricing', 'enrol'
+  ];
 
-const sectionNames = {
-  overview:      'Overview',
-  instructor:    'Instructor',
-  outcomes:      'Learning Outcomes',
-  applications:  'Real Life Applications',
-  outline:       'Course Outline',
-  video:         'Video Tutorial',
-  testimonials:  'Testimonials',
-  faq:           'FAQ',
-  pricing:       'Pricing',
-  enrol:         'Enrol Now'
-};
+  const sectionNames = {
+    overview:      'Overview',
+    instructor:    'Instructor',
+    outcomes:      'Learning Outcomes',
+    applications:  'Real Life Applications',
+    outline:       'Course Outline',
+    video:         'Video Tutorial',
+    testimonials:  'Testimonials',
+    faq:           'FAQ',
+    pricing:       'Pricing',
+    enrol:         'Enrol Now'
+  };
 
-if (indicatorCurrent) {
-  window.addEventListener('scroll', () => {
-    let current = 'overview';
+  if (indicatorCurrent) {
+    window.addEventListener('scroll', () => {
+      let current = 'overview';
 
-    sectionIds.forEach(id => {
-      const section = document.getElementById(id);
-      if (section) {
-        const top = section.getBoundingClientRect().top;
-        if (top <= 140) {
-          current = id;
+      sectionIds.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) {
+          const top = section.getBoundingClientRect().top;
+          if (top <= 140) {
+            current = id;
+          }
         }
-      }
-    });
+      });
 
-    // Update label text
-    indicatorCurrent.textContent = sectionNames[current];
+      indicatorCurrent.textContent = sectionNames[current];
 
-    // Update active nav link
-    indicatorLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === '#' + current) {
-        link.classList.add('active');
-        // Scroll the active link into view within the nav bar
-        link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    });
-  }, { passive: true });
+      indicatorLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+          link.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      });
+    }, { passive: true });
+  }
 }
 
 

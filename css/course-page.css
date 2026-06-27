@@ -1821,3 +1821,20 @@
 }
 
 
+@media (max-width: 768px) {
+
+  /* Make summary banner scroll normally */
+  .summary-banner {
+    position: relative !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  /* Make section indicator scroll normally */
+  .section-indicator {
+    position: relative !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+}
