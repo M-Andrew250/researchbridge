@@ -1676,6 +1676,13 @@
     right: 1rem;
   }
 
+
+  @media (max-width: 768px) {
+  .sticky-enrol {
+    display: none !important;
+  }
+}
+
  .whatsapp-btn {
   position: fixed;
   bottom: 2rem;
