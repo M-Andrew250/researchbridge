@@ -139,6 +139,11 @@ section {
   padding: 80px 5%;
 }
 
+
+
+
+
+
 .hero-content {
   max-width: 640px;
 }
@@ -796,3 +801,45 @@ footer {
   box-shadow: 0 6px 24px rgba(37, 211, 102, 0.5);
 }
 
+
+
+
+/* ── LOGO WITH IMAGE ── */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 48px;
+  width: 48px;
+  object-fit: contain;
+  border-radius: 50%;
+  /* White background so the circular
+     logo looks clean on dark navbar */
+  background: var(--white);
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.logo-text span {
+  color: var(--sky);
+}
+
+/* Hide text on very small screens
+   and just show the logo image */
+@media (max-width: 360px) {
+  .logo-text {
+    display: none;
+  }
+}
