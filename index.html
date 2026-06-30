@@ -9,6 +9,11 @@
 </head>
 <body>
 
+
+
+
+
+
 <!--NAVIGATION TABS SECTION-->
 <!-- NAVBAR -->
     <nav id="navbar">
@@ -25,10 +30,80 @@
 
         <ul class="nav-links" id="navLinks">
             <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#courses">Courses</a></li>
+
+            <!-- SERVICES DROPDOWN -->
+            <li class="nav-dropdown-item">
+                <a href="#services" class="nav-dropdown-trigger">
+                Services <span class="dropdown-arrow">›</span>
+                </a>
+                <div class="nav-dropdown">
+                    <a href="pages/thesis-editing.html">
+                        <span>✏️</span> Thesis Editing &amp; Proofreading
+                    </a>
+                    <a href="pages/data-analysis.html">
+                        <span>📊</span> Data Collection &amp; Analysis
+                    </a>
+                    <a href="pages/research-design.html">
+                        <span>🔬</span> Research Project Design
+                    </a>
+                    <a href="pages/literature-review.html">
+                        <span>📚</span> Literature Review Support
+                    </a>
+                    <a href="pages/capacity-building.html">
+                        <span>🎓</span> Capacity Building &amp; Training
+                    </a>
+                </div>
+            </li>
+
+            <!-- COURSES DROPDOWN -->
+            <li class="nav-dropdown-item">
+                <a href="#courses" class="nav-dropdown-trigger">
+                Courses <span class="dropdown-arrow">›</span>
+                </a>
+                <div class="nav-dropdown">
+                    <a href="pages/courses/excel.html">
+                        <span>📊</span> Excel for Data &amp; Analysis
+                    </a>
+                    <a href="pages/courses/python.html">
+                        <span>🐍</span> Python for Data Science
+                    </a>
+                    <a href="pages/courses/stata.html">
+                        <span>📉</span> Stata for Econometrics
+                    </a>
+                    <a href="pages/courses/spss.html">
+                        <span>🔬</span> SPSS for Statistical Analysis
+                    </a>
+                    <a href="pages/courses/r.html">
+                        <span>📐</span> R for Statistical Computing
+                    </a>
+                    <a href="pages/courses/nvivo.html">
+                        <span>🗃️</span> NVivo for Qualitative Research
+                    </a>
+                    <a href="pages/courses/powerbi.html">
+                        <span>🌐</span> Power BI for Data Visualization
+                    </a>
+                    <a href="pages/courses/kobo.html">
+                        <span>📋</span> KoBoToolbox for Data Collection
+                    </a>
+                </div>
+            </li>
+
             <li><a href="#contact" class="nav-cta">Contact Us</a></li>
         </ul>
+
+          <!-- AUTH BUTTONS -->
+        <div class="nav-auth" id="navAuth">
+            <!-- Logged out state -->
+            <div class="auth-logged-out" id="authLoggedOut">
+                <a href="pages/login.html" class="auth-btn-login">Log In</a>
+                <a href="pages/signup.html" class="auth-btn-signup">Sign Up</a>
+            </div>
+            <!-- Logged in state -->
+            <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+                <span class="auth-welcome" id="authWelcome">Hi, User</span>
+                <button class="auth-btn-logout" id="authLogout">Log Out</button>
+            </div>
+        </div>
     </nav>
 
 
@@ -67,9 +142,24 @@
             </div>
 
         </div>
+
+
     </section>
 
-
+                        <!-- ANNOUNCEMENT BAR -->
+    <div class="announcement-bar" id="announcementBar">
+        <div class="announcement-content">
+            <span class="announcement-badge">🆕 New</span>
+            <p>
+                <strong>Python for Data Science</strong> — Next cohort
+                starts <strong>15 July 2025</strong>. Limited seats available!
+                <a href="pages/enrol.html" class="announcement-link">
+                    Enrol Now →
+                </a>
+            </p>
+        </div>
+        <button class="announcement-close" id="announcementClose">✕</button>
+    </div>
         <!-- ABOUT -->
     <section id="about" class="reveal">
 

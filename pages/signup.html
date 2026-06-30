@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up | ResearchBridge Consulting</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" type="image/png" href="../images/logo.png" />
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      background: linear-gradient(
+        135deg,
+        var(--navy) 0%,
+        #0d2d5e 60%,
+        #163a75 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 1rem 2rem;
+    }
+
+    .auth-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      text-decoration: none;
+    }
+
+    .auth-logo img {
+      height: 48px;
+      width: 48px;
+      object-fit: contain;
+    }
+
+    .auth-logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .auth-logo-text span {
+      color: var(--royal);
+    }
+
+    .auth-card h2 {
+      text-align: center;
+      color: var(--navy);
+      font-size: 1.4rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .auth-card .auth-subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .auth-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .auth-form label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .auth-form input {
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      width: 100%;
+    }
+
+    .auth-form input:focus {
+      border-color: var(--royal);
+      background: var(--white);
+    }
+
+    .auth-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      color: #dc2626;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .auth-error.visible {
+      display: block;
+    }
+
+    .auth-submit {
+      background: var(--royal);
+      color: var(--white);
+      border: none;
+      padding: 0.9rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .auth-submit:hover {
+      background: var(--navy);
+      transform: translateY(-1px);
+    }
+
+    .auth-switch {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 1.2rem;
+    }
+
+    .auth-switch a {
+      color: var(--royal);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 0.5rem 0;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .auth-divider span {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* SUCCESS */
+    .auth-success {
+      display: none;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .auth-success.visible {
+      display: block;
+    }
+
+    .auth-success-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .auth-success h3 {
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-success p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Password strength */
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 0.4rem;
+      overflow: hidden;
+    }
+
+    .password-strength-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    .strength-weak { width: 33%; background: #ef4444; }
+    .strength-medium { width: 66%; background: #f59e0b; }
+    .strength-strong { width: 100%; background: #22c55e; }
+
+    .password-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="../index.html" class="logo">
+      <img src="../images/logo.png"
+           alt="ResearchBridge Consulting"
+           class="logo-img" />
+      <span class="logo-text">Research<span>Bridge</span></span>
+    </a>
+    <div class="nav-auth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+        <span class="auth-welcome" id="authWelcome">Hi, User</span>
+        <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIGN UP PAGE -->
+  <div class="auth-page">
+    <div class="auth-card">
+
+      <a href="../index.html" class="auth-logo">
+        <img src="../images/logo.png" alt="ResearchBridge" />
+        <span class="auth-logo-text">
+          Research<span>Bridge</span>
+        </span>
+      </a>
+
+      <!-- FORM -->
+      <div id="signupFormWrap">
+        <h2>Create Your Account</h2>
+        <p class="auth-subtitle">
+          Join ResearchBridge to enrol in courses and
+          track your learning journey.
+        </p>
+
+        <div class="auth-form" id="signupForm">
+
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="signupName"
+                   placeholder="Your full name" />
+          </div>
+
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="signupEmail"
+                   placeholder="you@email.com" />
+          </div>
+
+          <div class="form-group">
+            <label>Phone / WhatsApp</label>
+            <input type="tel" id="signupPhone"
+                   placeholder="+250 700 000 000" />
+          </div>
+
+          <div class="auth-divider">
+            <span>Set your password</span>
+          </div>
+
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="signupPassword"
+                   placeholder="At least 6 characters" />
+            <div class="password-strength">
+              <div class="password-strength-bar"
+                   id="strengthBar"></div>
+            </div>
+            <span class="password-hint" id="strengthHint">
+              Enter a password
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Confirm Password *</label>
+            <input type="password" id="signupConfirm"
+                   placeholder="Repeat your password" />
+          </div>
+
+          <div class="auth-error" id="signupError"></div>
+
+          <button class="auth-submit" id="signupSubmit">
+            Create Account →
+          </button>
+
+          <p class="auth-switch">
+            Already have an account?
+            <a href="login.html">Log In</a>
+          </p>
+
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="auth-success" id="signupSuccess">
+        <div class="auth-success-icon">🎉</div>
+        <h3>Account Created!</h3>
+        <p>Welcome to ResearchBridge,
+        <strong id="signupSuccessName"></strong>!
+        Your account has been created successfully.
+        You can now log in to access your dashboard.</p>
+        <a href="login.html" class="auth-submit"
+           style="display:block; text-align:center;
+                  text-decoration:none; padding:0.9rem;">
+          Log In Now →
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // ── PASSWORD STRENGTH ──
+    const passwordInput = document.getElementById('signupPassword');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthHint = document.getElementById('strengthHint');
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      strengthBar.className = 'password-strength-bar';
+
+      if (val.length === 0) {
+        strengthBar.style.width = '0%';
+        strengthHint.textContent = 'Enter a password';
+      } else if (val.length < 4) {
+        strengthBar.classList.add('strength-weak');
+        strengthHint.textContent = 'Too short';
+        strengthHint.style.color = '#ef4444';
+      } else if (val.length < 8 ||
+                 !/[0-9]/.test(val) && !/[^a-zA-Z]/.test(val)) {
+        strengthBar.classList.add('strength-medium');
+        strengthHint.textContent = 'Medium — add numbers or symbols';
+        strengthHint.style.color = '#f59e0b';
+      } else {
+        strengthBar.classList.add('strength-strong');
+        strengthHint.textContent = 'Strong password ✓';
+        strengthHint.style.color = '#22c55e';
+      }
+    });
+
+    // ── SIGN UP LOGIC ──
+    const signupSubmit = document.getElementById('signupSubmit');
+    const signupError = document.getElementById('signupError');
+    const signupFormWrap = document.getElementById('signupFormWrap');
+    const signupSuccess = document.getElementById('signupSuccess');
+
+    signupSubmit.addEventListener('click', () => {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const phone = document.getElementById('signupPhone').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+
+      // Validate
+      if (!name || !email || !password || !confirm) {
+        signupError.textContent = 'Please fill in all required fields.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      if (!email.includes('@') || !email.includes('.')) {
+        signupError.textContent = 'Please enter a valid email address.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      if (password.length < 6) {
+        signupError.textContent = 'Password must be at least 6 characters.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      if (password !== confirm) {
+        signupError.textContent = 'Passwords do not match.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      // Check if email already exists
+      const users = JSON.parse(
+        localStorage.getItem('rbcUsers') || '[]'
+      );
+
+      const exists = users.find(u => u.email === email);
+      if (exists) {
+        signupError.textContent =
+          'An account with this email already exists. Please log in.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      signupError.classList.remove('visible');
+
+      // Save new user
+      const newUser = {
+        id: Date.now(),
+        name,
+        email,
+        phone,
+        password,
+        createdAt: new Date().toLocaleString()
+      };
+
+      users.push(newUser);
+      localStorage.setItem('rbcUsers', JSON.stringify(users));
+
+      // Show success
+      document.getElementById('signupSuccessName').textContent =
+        name.split(' ')[0];
+      signupFormWrap.style.display = 'none';
+      signupSuccess.classList.add('visible');
+    });
+  </script>
+
+</body>
+</html>

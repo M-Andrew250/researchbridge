@@ -245,3 +245,81 @@ if (window.innerWidth <= 768) {
     }, 200);
   }, { passive: true });
 }
+
+
+
+// ── ANNOUNCEMENT BAR DISMISS ──
+const announcementBar = document.getElementById('announcementBar');
+const announcementClose = document.getElementById('announcementClose');
+
+if (announcementClose && announcementBar) {
+  // Check if already dismissed
+  if (localStorage.getItem('announcementDismissed') === 'true') {
+    announcementBar.classList.add('hidden');
+  }
+
+  announcementClose.addEventListener('click', () => {
+    announcementBar.classList.add('hidden');
+    localStorage.setItem('announcementDismissed', 'true');
+  });
+}
+
+
+
+// ── NAV DROPDOWN MOBILE TOGGLE ──
+if (window.innerWidth <= 768) {
+  document.querySelectorAll('.nav-dropdown-item').forEach(item => {
+    const trigger = item.querySelector('.nav-dropdown-trigger');
+    if (trigger) {
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isOpen = item.classList.contains('mobile-open');
+        // Close all dropdowns
+        document.querySelectorAll('.nav-dropdown-item').forEach(i => {
+          i.classList.remove('mobile-open');
+        });
+        // Open clicked if it was closed
+        if (!isOpen) {
+          item.classList.add('mobile-open');
+        }
+      });
+    }
+  });
+}
+
+
+
+// ── AUTH STATE CHECK ──
+// Runs on every page to update navbar
+function updateAuthState() {
+  const loggedIn = localStorage.getItem('rbcLoggedIn');
+  const userName = localStorage.getItem('rbcUserName');
+
+  const authLoggedOut = document.getElementById('authLoggedOut');
+  const authLoggedIn = document.getElementById('authLoggedIn');
+  const authWelcome = document.getElementById('authWelcome');
+  const authLogout = document.getElementById('authLogout');
+
+  if (!authLoggedOut || !authLoggedIn) return;
+
+  if (loggedIn === 'true' && userName) {
+    authLoggedOut.style.display = 'none';
+    authLoggedIn.style.display = 'flex';
+    authWelcome.textContent = 'Hi, ' + userName.split(' ')[0];
+  } else {
+    authLoggedOut.style.display = 'flex';
+    authLoggedIn.style.display = 'none';
+  }
+
+  // Logout
+  if (authLogout) {
+    authLogout.addEventListener('click', () => {
+      localStorage.removeItem('rbcLoggedIn');
+      localStorage.removeItem('rbcUserName');
+      localStorage.removeItem('rbcUserEmail');
+      window.location.reload();
+    });
+  }
+}
+
+updateAuthState();
