@@ -73,6 +73,20 @@
 
       <li><a href="../index.html#contact" class="nav-cta">Contact Us</a></li>
     </ul>
+
+    
+    <div class="nav-auth" id="navAuth">
+      <!-- Logged out state -->
+      <div class="auth-logged-out" id="authLoggedOut">
+          <a href="../pages/login.html" class="auth-btn-login">Log In</a>
+          <a href="../pages/signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <!-- Logged in state -->
+      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+          <span class="auth-welcome" id="authWelcome">Hi, User</span>
+          <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      </div>
+    </div>
   </nav>
 
   <!-- HERO BANNER -->
