@@ -1022,7 +1022,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
   min-height: 48px;
   transition: background 0.3s;
 }
@@ -1840,3 +1839,100 @@
 }
 
 
+
+
+/* ── SEARCH BAR IN SECTION INDICATOR ── */
+.indicator-search {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.indicator-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--navy);
+  border: 1.5px solid var(--royal);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  width: 200px;
+  transition: width 0.3s, border-color 0.2s;
+}
+
+.indicator-search-bar:focus-within {
+  border-color: var(--sky);
+  width: 250px;
+}
+
+.indicator-search .nav-search-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.indicator-search-input {
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.82rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  caret-color: var(--sky) !important;
+}
+
+.indicator-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.45) !important;
+  opacity: 1 !important;
+}
+
+.indicator-search .nav-search-clear {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.1rem 0.2rem;
+  flex-shrink: 0;
+  display: none;
+  transition: color 0.2s;
+}
+
+.indicator-search .nav-search-clear.visible {
+  display: block;
+}
+
+.indicator-search .nav-search-clear:hover {
+  color: var(--white);
+}
+
+/* Results dropdown */
+.indicator-search .nav-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  width: 320px;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(10, 31, 68, 0.15);
+  border: 1.5px solid var(--border);
+  z-index: 300;
+  display: none;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.indicator-search .nav-search-results.visible {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .indicator-search {
+    display: none;
+  }
+}

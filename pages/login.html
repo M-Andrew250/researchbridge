@@ -243,7 +243,7 @@
           <div class="form-group">
             <label>Email Address *</label>
             <input type="email" id="loginEmail"
-                   placeholder="you@email.com" />
+                   placeholder="e.g. jean.uwimana@gmail.com" />
           </div>
 
           <div class="form-group">
@@ -263,7 +263,7 @@
 
           <p class="auth-switch">
             Don't have an account?
-            <a href="signup.html">Sign Up</a>
+            <a href="signup.html" id="signupCrossLink">Sign Up</a>
           </p>
 
         </div>
@@ -273,7 +273,7 @@
       <div class="auth-success" id="loginSuccess">
         <div class="auth-success-icon">👋</div>
         <h3>Welcome Back!</h3>
-        <p>You are now logged in. Redirecting you to
+        <p id="loginSuccessRedirectText">You are now logged in. Redirecting you to
         the homepage...</p>
       </div>
 
@@ -288,12 +288,25 @@
     const loginFormWrap = document.getElementById('loginFormWrap');
     const loginSuccess = document.getElementById('loginSuccess');
 
+    // Where to send the user after a successful login. Set via
+    // ?redirect=<url> by pages that need the visitor to log in first
+    // (e.g. the homepage's guest promo widget). Falls back to the
+    // homepage. Also carried forward to the Sign Up link, so someone
+    // without an account doesn't lose their destination.
+    const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+    if (redirectTo) {
+      document.getElementById('signupCrossLink').href =
+        `signup.html?redirect=${encodeURIComponent(redirectTo)}`;
+      document.getElementById('loginSuccessRedirectText').textContent =
+        'You are now logged in. Taking you back to where you left off…';
+    }
+
     // Allow Enter key to submit
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') loginSubmit.click();
     });
 
-    loginSubmit.addEventListener('click', () => {
+    loginSubmit.addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
 
@@ -304,35 +317,30 @@
         return;
       }
 
-      // Check against stored users
-      const users = JSON.parse(
-        localStorage.getItem('rbcUsers') || '[]'
-      );
+      loginSubmit.disabled = true;
+      loginSubmit.textContent = 'Logging in…';
 
-      const user = users.find(
-        u => u.email === email && u.password === password
-      );
+      const supabase = await window.rbcSupabaseReady;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (!user) {
-        loginError.textContent =
-          'Incorrect email or password. Please try again.';
+      if (error) {
+        loginError.textContent = error.message.toLowerCase().includes('email not confirmed')
+          ? 'Please confirm your email address before logging in — check your inbox for a confirmation link.'
+          : 'Incorrect email or password. Please try again.';
         loginError.classList.add('visible');
+        loginSubmit.disabled = false;
+        loginSubmit.textContent = 'Log In →';
         return;
       }
 
       loginError.classList.remove('visible');
-
-      // Store logged in state
-      localStorage.setItem('rbcLoggedIn', 'true');
-      localStorage.setItem('rbcUserName', user.name);
-      localStorage.setItem('rbcUserEmail', user.email);
 
       // Show success then redirect
       loginFormWrap.style.display = 'none';
       loginSuccess.classList.add('visible');
 
       setTimeout(() => {
-        window.location.href = '../index.html';
+        window.location.href = redirectTo || '../index.html';
       }, 1500);
     });
   </script>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Learning | ResearchBridge Consulting</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" type="image/png" href="../images/logo.png" />
+  <style>
+
+    .learn-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+      padding: 40px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .learn-hero-text h1 {
+      color: var(--white);
+      font-size: 1.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .learn-hero-text p {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      margin: 0;
+    }
+
+    /* PROGRESS RING */
+    .progress-ring-wrap {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.15);
+      stroke-width: 8;
+    }
+
+    .progress-ring-bar {
+      fill: none;
+      stroke: #22c55e;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .progress-ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1.05rem;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .learn-body {
+      background: var(--light-bg);
+      padding: 40px 5% 80px;
+      min-height: 60vh;
+    }
+
+    .learn-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* SIDEBAR */
+    .learn-sidebar {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      position: sticky;
+      top: 90px;
+    }
+
+    .learn-module-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.8rem 0.6rem 0.4rem;
+    }
+
+    .learn-lesson-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .learn-lesson-item:hover {
+      background: var(--light-bg);
+    }
+
+    .learn-lesson-item.active {
+      background: var(--light-bg);
+      color: var(--royal);
+      font-weight: 600;
+    }
+
+    .learn-lesson-icon {
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+
+    .learn-lesson-check {
+      margin-left: auto;
+      color: #22c55e;
+      flex-shrink: 0;
+    }
+
+    /* MAIN CONTENT */
+    .learn-main {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      min-height: 400px;
+    }
+
+    .learn-main-placeholder {
+      text-align: center;
+      color: var(--muted);
+      padding: 4rem 1rem;
+    }
+
+    .learn-lesson-type-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--royal);
+      background: var(--light-bg);
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      margin-bottom: 0.8rem;
+    }
+
+    .learn-video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .learn-video-embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .learn-document-body {
+      color: var(--text);
+      line-height: 1.75;
+      white-space: pre-wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    /* QUIZ */
+    .quiz-question {
+      margin-bottom: 1.8rem;
+    }
+
+    .quiz-question-text {
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.8rem;
+    }
+
+    .quiz-option {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--sky);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--royal);
+      background: var(--light-bg);
+    }
+
+    .quiz-option.correct {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.08);
+    }
+
+    .quiz-option.incorrect {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .quiz-result {
+      margin-top: 1.5rem;
+      padding: 1.2rem;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .quiz-result.pass {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+    }
+
+    .quiz-result.fail {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+    }
+
+    .learn-locked {
+      display: none;
+      text-align: center;
+      padding: 80px 5%;
+    }
+
+    .learn-locked.visible {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .learn-inner {
+        grid-template-columns: 1fr;
+      }
+      .learn-sidebar {
+        position: static;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="../index.html" class="logo">
+      <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
+      <span class="logo-text">Research<span>Bridge</span></span>
+    </a>
+    <div class="nav-auth" id="navAuth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+        <a href="dashboard.html" class="auth-welcome" id="authWelcome">Hi, User</a>
+        <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- NOT LOGGED IN / NOT FOUND -->
+  <div class="learn-locked" id="learnLocked">
+    <div style="font-size:4rem; margin-bottom:1rem;">🔒</div>
+    <h2 id="learnLockedTitle">Please Log In</h2>
+    <p style="color:var(--muted); margin-bottom:2rem;" id="learnLockedText">
+      You need to be logged in to access your course.
+    </p>
+    <a href="login.html" class="btn-primary">Log In</a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="learnContent" style="display:none;">
+
+    <div class="learn-hero">
+      <div class="learn-hero-text">
+        <h1 id="learnCourseName">Loading…</h1>
+        <p id="learnCourseMeta">—</p>
+      </div>
+      <div class="progress-ring-wrap">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle class="progress-ring-track" cx="48" cy="48" r="42"></circle>
+          <circle class="progress-ring-bar" id="progressRingBar" cx="48" cy="48" r="42"></circle>
+        </svg>
+        <div class="progress-ring-label" id="progressRingLabel">0%</div>
+      </div>
+    </div>
+
+    <div class="learn-body">
+      <div class="learn-inner">
+
+        <!-- SIDEBAR -->
+        <div class="learn-sidebar" id="learnSidebar">
+          <p style="text-align:center; color:var(--muted); font-size:0.85rem; padding:1rem;">Loading curriculum…</p>
+        </div>
+
+        <!-- MAIN LESSON VIEWER -->
+        <div class="learn-main" id="learnMain">
+          <div class="learn-main-placeholder">
+            <div style="font-size:3rem; margin-bottom:1rem;">👈</div>
+            <p>Select a lesson from the left to get started.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">
+          <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
+          <span class="logo-text">Research<span>Bridge</span></span>
+        </a>
+        <p>Empowering individuals and institutions through research excellence and data skills training.</p>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Quick Links</p>
+        <ul>
+          <li><a href="../index.html#about">About</a></li>
+          <li><a href="../index.html#services">Services</a></li>
+          <li><a href="../index.html#courses">Courses</a></li>
+          <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Contact</p>
+        <ul>
+          <li><a href="mailto:info@researchbridgeconsulting.com">Email Us</a></li>
+          <li><a href="tel:+250789452479">WhatsApp Us</a></li>
+          <li><span>Kigali, Rwanda</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 ResearchBridge Consulting. All rights reserved.</p>
+      <a href="#">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const courseCatalog = {
+      excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
+      python:  { emoji: '🐍', name: 'Python for Data Science' },
+      stata:   { emoji: '📉', name: 'Stata for Econometrics' },
+      spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
+      r:       { emoji: '📐', name: 'R for Statistical Computing' },
+      nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
+      powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
+      kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+    };
+
+    const lessonTypeIcon = { document: '📄', video: '🎥', exercise: '📝', exam: '🎓' };
+
+    // ── PROGRESS RING ──
+    const RING_RADIUS = 42;
+    const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+    const ringBar = document.getElementById('progressRingBar');
+    ringBar.style.strokeDasharray = `${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`;
+
+    function setProgressRing(percent) {
+      const offset = RING_CIRCUMFERENCE * (1 - percent / 100);
+      ringBar.style.strokeDashoffset = offset;
+      document.getElementById('progressRingLabel').textContent = `${percent}%`;
+    }
+
+    (async () => {
+      const learnLocked = document.getElementById('learnLocked');
+      const learnContent = document.getElementById('learnContent');
+
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        learnLocked.classList.add('visible');
+        return;
+      }
+
+      const enrolmentId = new URLSearchParams(window.location.search).get('enrolment');
+      if (!enrolmentId) {
+        document.getElementById('learnLockedTitle').textContent = 'Course Not Found';
+        document.getElementById('learnLockedText').textContent = 'No enrolment was specified.';
+        learnLocked.classList.add('visible');
+        return;
+      }
+
+      const authHeader = { Authorization: `Bearer ${session.access_token}` };
+      const apiBase = `${window.rbcApiBaseUrl}/api/enrolments/${enrolmentId}`;
+
+      const curriculumRes = await fetch(`${apiBase}/curriculum`, { headers: authHeader });
+      if (!curriculumRes.ok) {
+        document.getElementById('learnLockedTitle').textContent = 'Course Not Found';
+        document.getElementById('learnLockedText').textContent =
+          'This enrolment could not be found, or is not an online enrolment.';
+        learnLocked.classList.add('visible');
+        return;
+      }
+
+      const curriculum = await curriculumRes.json();
+      const course = courseCatalog[curriculum.courseSlug] || { emoji: '📚', name: curriculum.courseSlug };
+
+      document.getElementById('learnCourseName').textContent = `${course.emoji} ${course.name}`;
+      document.getElementById('learnCourseMeta').textContent =
+        `${curriculum.completedLessons} of ${curriculum.totalLessons} lessons complete`;
+      setProgressRing(curriculum.overallPercent);
+
+      // ── RENDER SIDEBAR ──
+      const sidebar = document.getElementById('learnSidebar');
+      if (curriculum.modules.length === 0) {
+        sidebar.innerHTML = `<p style="text-align:center; color:var(--muted); font-size:0.85rem; padding:1rem;">
+          Course content for this module is coming soon.</p>`;
+      } else {
+        sidebar.innerHTML = curriculum.modules.map(m => `
+          <div class="learn-module-title">${m.title}</div>
+          ${m.lessons.map(l => `
+            <div class="learn-lesson-item" data-lesson-id="${l.id}">
+              <span class="learn-lesson-icon">${lessonTypeIcon[l.type] || '📄'}</span>
+              <span>${l.title}</span>
+              ${l.completed ? '<span class="learn-lesson-check">✓</span>' : ''}
+            </div>
+          `).join('')}
+        `).join('');
+      }
+
+      // ── LESSON LOADING ──
+      async function loadLesson(lessonId, itemEl) {
+        document.querySelectorAll('.learn-lesson-item').forEach(el => el.classList.remove('active'));
+        if (itemEl) itemEl.classList.add('active');
+
+        const main = document.getElementById('learnMain');
+        main.innerHTML = `<p style="text-align:center; color:var(--muted); padding:3rem;">Loading…</p>`;
+
+        const res = await fetch(`${apiBase}/lessons/${lessonId}`, { headers: authHeader });
+        if (!res.ok) {
+          main.innerHTML = `<p style="text-align:center; color:var(--muted); padding:3rem;">Could not load this lesson.</p>`;
+          return;
+        }
+        const lesson = await res.json();
+        renderLesson(lesson);
+      }
+
+      function refreshCurriculumSidebarAndRing() {
+        fetch(`${apiBase}/curriculum`, { headers: authHeader })
+          .then(r => r.json())
+          .then(c => {
+            setProgressRing(c.overallPercent);
+            document.getElementById('learnCourseMeta').textContent =
+              `${c.completedLessons} of ${c.totalLessons} lessons complete`;
+            c.modules.forEach(m => m.lessons.forEach(l => {
+              const item = document.querySelector(`.learn-lesson-item[data-lesson-id="${l.id}"]`);
+              if (item && l.completed && !item.querySelector('.learn-lesson-check')) {
+                item.insertAdjacentHTML('beforeend', '<span class="learn-lesson-check">✓</span>');
+              }
+            }));
+          });
+      }
+
+      function renderLesson(lesson) {
+        const main = document.getElementById('learnMain');
+        const typeLabel = { document: 'Reading', video: 'Video', exercise: 'Exercise', exam: 'Exam' }[lesson.type];
+
+        let html = `<span class="learn-lesson-type-badge">${typeLabel}</span><h2 style="margin-bottom:1.2rem;">${lesson.title}</h2>`;
+
+        if (lesson.type === 'video' && lesson.contentUrl) {
+          html += `<div class="learn-video-embed"><iframe src="${lesson.contentUrl}" allowfullscreen></iframe></div>`;
+        }
+        if (lesson.contentBody) {
+          html += `<div class="learn-document-body">${lesson.contentBody}</div>`;
+        }
+        if (lesson.type === 'document' && lesson.contentUrl) {
+          html += `<p style="margin-bottom:1.5rem;"><a href="${lesson.contentUrl}" target="_blank" class="btn-outline" style="border-color:var(--royal); color:var(--royal);">Open Document →</a></p>`;
+        }
+
+        if (lesson.type === 'document' || lesson.type === 'video') {
+          html += lesson.completed
+            ? `<p style="color:#16a34a; font-weight:600;">✓ Marked complete</p>`
+            : `<button class="btn-primary" id="markCompleteBtn" style="border:none; cursor:pointer;">Mark as Complete</button>`;
+        }
+
+        if (lesson.type === 'exercise' || lesson.type === 'exam') {
+          html += renderQuiz(lesson);
+        }
+
+        main.innerHTML = html;
+
+        const markBtn = document.getElementById('markCompleteBtn');
+        if (markBtn) {
+          markBtn.addEventListener('click', async () => {
+            markBtn.disabled = true;
+            markBtn.textContent = 'Saving…';
+            await fetch(`${apiBase}/lessons/${lesson.id}/complete`, { method: 'POST', headers: authHeader });
+            refreshCurriculumSidebarAndRing();
+            loadLesson(lesson.id, document.querySelector(`.learn-lesson-item[data-lesson-id="${lesson.id}"]`));
+          });
+        }
+
+        wireQuiz(lesson);
+      }
+
+      function renderQuiz(lesson) {
+        let html = `<div id="quizForm">`;
+        lesson.questions.forEach((q, i) => {
+          html += `<div class="quiz-question" data-question-id="${q.id}">
+            <div class="quiz-question-text">${i + 1}. ${q.questionText}</div>
+            ${q.options.map(o => `
+              <div class="quiz-option" data-option-id="${o.id}">${o.optionText}</div>
+            `).join('')}
+          </div>`;
+        });
+        html += `<button class="btn-primary" id="submitQuizBtn" style="border:none; cursor:pointer;">Submit ${lesson.type === 'exam' ? 'Exam' : 'Exercise'} →</button>`;
+        html += `<div id="quizResult"></div></div>`;
+
+        if (lesson.quizScore !== null) {
+          html += `<p style="margin-top:1rem; color:var(--muted); font-size:0.85rem;">
+            Your last attempt: ${lesson.quizScore}% ${lesson.quizPassed ? '(Passed ✓)' : '(Not yet passed)'}
+          </p>`;
+        }
+        return html;
+      }
+
+      function wireQuiz(lesson) {
+        if (lesson.type !== 'exercise' && lesson.type !== 'exam') return;
+
+        document.querySelectorAll('.quiz-question').forEach(qEl => {
+          qEl.querySelectorAll('.quiz-option').forEach(optEl => {
+            optEl.addEventListener('click', () => {
+              qEl.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+              optEl.classList.add('selected');
+            });
+          });
+        });
+
+        document.getElementById('submitQuizBtn').addEventListener('click', async () => {
+          const answers = [...document.querySelectorAll('.quiz-question')].map(qEl => {
+            const selected = qEl.querySelector('.quiz-option.selected');
+            return { questionId: qEl.dataset.questionId, optionId: selected?.dataset.optionId ?? null };
+          });
+
+          const res = await fetch(`${apiBase}/lessons/${lesson.id}/submit-quiz`, {
+            method: 'POST',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers }),
+          });
+          const result = await res.json();
+          if (!res.ok) {
+            document.getElementById('quizResult').textContent = result.error || 'Could not submit.';
+            return;
+          }
+
+          result.feedback.forEach(f => {
+            const qEl = document.querySelector(`.quiz-question[data-question-id="${f.questionId}"]`);
+            const selected = qEl.querySelector('.quiz-option.selected');
+            const correctOpt = qEl.querySelector(`.quiz-option[data-option-id="${f.correctOptionId}"]`);
+            if (selected) selected.classList.add(f.correct ? 'correct' : 'incorrect');
+            if (correctOpt) correctOpt.classList.add('correct');
+            qEl.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
+          });
+
+          document.getElementById('submitQuizBtn').style.display = 'none';
+          document.getElementById('quizResult').innerHTML = `
+            <div class="quiz-result ${result.passed ? 'pass' : 'fail'}">
+              You scored ${result.score}% — ${result.passed ? 'Passed ✓' : `Needs ${result.passThreshold}% to pass`}
+            </div>`;
+
+          refreshCurriculumSidebarAndRing();
+        });
+      }
+
+      document.querySelectorAll('.learn-lesson-item').forEach(item => {
+        item.addEventListener('click', () => loadLesson(item.dataset.lessonId, item));
+      });
+
+      learnContent.style.display = 'block';
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enrolment Details | ResearchBridge Consulting</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" type="image/png" href="../images/logo.png" />
+  <style>
+
+    .detail-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+      padding: 60px 5% 40px;
+    }
+
+    .detail-hero-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .detail-breadcrumb a {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+
+    .detail-breadcrumb span {
+      color: rgba(255,255,255,0.3);
+      margin: 0 0.4rem;
+    }
+
+    .detail-hero h1 {
+      color: var(--white);
+      font-size: 1.6rem;
+      margin-top: 0.6rem;
+    }
+
+    .detail-body {
+      background: var(--light-bg);
+      padding: 40px 5% 80px;
+      min-height: 60vh;
+    }
+
+    .detail-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* TABS */
+    .detail-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1.5px solid var(--border);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .detail-tab {
+      background: none;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -1.5px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .detail-tab:hover {
+      color: var(--royal);
+    }
+
+    .detail-tab.active {
+      color: var(--royal);
+      border-color: var(--royal);
+    }
+
+    .detail-tab-panel {
+      display: none;
+    }
+
+    .detail-tab-panel.active {
+      display: block;
+    }
+
+    /* CARDS */
+    .detail-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .detail-card h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 0.5rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-row-label {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .detail-row-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .detail-cta {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    /* STUB PANELS */
+    .detail-stub {
+      background: var(--white);
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 3rem;
+      text-align: center;
+    }
+
+    .detail-stub-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .detail-stub h3 {
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .detail-stub p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .detail-locked {
+      display: none;
+      text-align: center;
+      padding: 80px 5%;
+    }
+
+    .detail-locked.visible {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .detail-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="../index.html" class="logo">
+      <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
+      <span class="logo-text">Research<span>Bridge</span></span>
+    </a>
+    <div class="nav-auth" id="navAuth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+        <a href="dashboard.html" class="auth-welcome" id="authWelcome">Hi, User</a>
+        <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- NOT LOGGED IN -->
+  <div class="detail-locked" id="detailLocked">
+    <div style="font-size:4rem; margin-bottom:1rem;">🔒</div>
+    <h2>Please Log In</h2>
+    <p style="color:var(--muted); margin-bottom:2rem;">You need to be logged in to view this enrolment.</p>
+    <a href="login.html" class="btn-primary">Log In</a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="detailContent" style="display:none;">
+
+    <div class="detail-hero">
+      <div class="detail-hero-inner">
+        <div class="detail-breadcrumb">
+          <a href="dashboard.html">Dashboard</a>
+          <span>›</span>
+          <span style="color:var(--sky);">Enrolment Details</span>
+        </div>
+        <h1 id="detailCourseName">Loading…</h1>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-inner">
+
+        <div class="detail-tabs">
+          <button class="detail-tab active" data-tab="enrolment">Enrollment Details</button>
+          <button class="detail-tab" data-tab="payment">Payment Details</button>
+          <button class="detail-tab" data-tab="participation">Participation Confirmation</button>
+        </div>
+
+        <!-- ENROLLMENT DETAILS -->
+        <div class="detail-tab-panel active" id="panel-enrolment">
+
+          <div class="detail-card">
+            <h3>Your Profile</h3>
+            <div class="detail-row">
+              <span class="detail-row-label">Full Name</span>
+              <span class="detail-row-value" id="detailName">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Email</span>
+              <span class="detail-row-value" id="detailEmail">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Phone</span>
+              <span class="detail-row-value" id="detailPhone">—</span>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <h3>Course &amp; Workshop</h3>
+            <div class="detail-row">
+              <span class="detail-row-label">Course</span>
+              <span class="detail-row-value" id="detailCourse">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Status</span>
+              <span class="detail-row-value" id="detailStatus">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Venue</span>
+              <span class="detail-row-value" id="detailVenue">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">When</span>
+              <span class="detail-row-value" id="detailWhen">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Trainer</span>
+              <span class="detail-row-value" id="detailTrainer">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-row-label">Participation Fee</span>
+              <span class="detail-row-value" id="detailFee">—</span>
+            </div>
+          </div>
+
+          <div class="detail-cta">
+            <button class="btn-primary" id="proceedToPayment" style="border:none; cursor:pointer;">
+              Proceed to Payment →
+            </button>
+          </div>
+        </div>
+
+        <!-- PAYMENT DETAILS (stub) -->
+        <div class="detail-tab-panel" id="panel-payment">
+          <div class="detail-stub">
+            <div class="detail-stub-icon">💳</div>
+            <h3>Payment Details Coming Soon</h3>
+            <p>Online payment options for this workshop will appear here shortly. In the meantime, our team will contact you with payment instructions.</p>
+          </div>
+        </div>
+
+        <!-- PARTICIPATION CONFIRMATION (stub) -->
+        <div class="detail-tab-panel" id="panel-participation">
+          <div class="detail-stub">
+            <div class="detail-stub-icon">✅</div>
+            <h3>Participation Confirmation Coming Soon</h3>
+            <p>Once your payment is received, your confirmed seat details will appear here.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">
+          <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
+          <span class="logo-text">Research<span>Bridge</span></span>
+        </a>
+        <p>Empowering individuals and institutions through research excellence and data skills training.</p>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Quick Links</p>
+        <ul>
+          <li><a href="../index.html#about">About</a></li>
+          <li><a href="../index.html#services">Services</a></li>
+          <li><a href="../index.html#courses">Courses</a></li>
+          <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Contact</p>
+        <ul>
+          <li><a href="mailto:info@researchbridgeconsulting.com">Email Us</a></li>
+          <li><a href="tel:+250789452479">WhatsApp Us</a></li>
+          <li><span>Kigali, Rwanda</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 ResearchBridge Consulting. All rights reserved.</p>
+      <a href="#">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // ── TABS ──
+    document.querySelectorAll('.detail-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    document.getElementById('proceedToPayment').addEventListener('click', () => {
+      document.querySelector('.detail-tab[data-tab="payment"]').click();
+    });
+
+    // ── LOAD ENROLMENT ──
+    const courseCatalog = {
+      excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
+      python:  { emoji: '🐍', name: 'Python for Data Science' },
+      stata:   { emoji: '📉', name: 'Stata for Econometrics' },
+      spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
+      r:       { emoji: '📐', name: 'R for Statistical Computing' },
+      nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
+      powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
+      kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+    };
+    const statusLabel = {
+      pending: '⏳ Pending Confirmation',
+      confirmed: '✅ Confirmed',
+      cancelled: '✕ Cancelled',
+    };
+
+    (async () => {
+      const detailLocked = document.getElementById('detailLocked');
+      const detailContent = document.getElementById('detailContent');
+
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        detailLocked.classList.add('visible');
+        return;
+      }
+
+      const enrolmentId = new URLSearchParams(window.location.search).get('id');
+      if (!enrolmentId) {
+        document.getElementById('detailCourseName').textContent = 'Enrolment not found';
+        detailContent.style.display = 'block';
+        return;
+      }
+
+      const res = await fetch(`${window.rbcApiBaseUrl}/api/enrolments/${enrolmentId}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!res.ok) {
+        document.getElementById('detailCourseName').textContent = 'Enrolment not found';
+        detailContent.style.display = 'block';
+        return;
+      }
+
+      const e = await res.json();
+      const course = courseCatalog[e.course_slug] || { emoji: '📚', name: e.course_slug };
+
+      document.getElementById('detailCourseName').textContent = `${course.emoji} ${course.name}`;
+      document.getElementById('detailName').textContent = `${e.first_name} ${e.last_name}`;
+      document.getElementById('detailEmail').textContent = e.email;
+      document.getElementById('detailPhone').textContent = e.phone;
+      document.getElementById('detailCourse').textContent = course.name;
+      document.getElementById('detailStatus').textContent = statusLabel[e.status] || statusLabel.pending;
+
+      if (e.workshop) {
+        document.getElementById('detailVenue').textContent = e.workshop.venue;
+        document.getElementById('detailWhen').textContent = new Date(e.workshop.start_date)
+          .toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('detailTrainer').textContent = e.workshop.trainer_name;
+        document.getElementById('detailFee').textContent = e.workshop.fee;
+      } else {
+        document.getElementById('detailVenue').textContent = 'To be confirmed';
+        document.getElementById('detailWhen').textContent = 'To be confirmed';
+        document.getElementById('detailTrainer').textContent = 'To be confirmed';
+        document.getElementById('detailFee').textContent = 'To be confirmed';
+      }
+
+      detailContent.style.display = 'block';
+    })();
+  </script>
+
+</body>
+</html>

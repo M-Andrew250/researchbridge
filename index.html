@@ -21,12 +21,28 @@
             <img src="images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
             <span class="logo-text">Research<span>Bridge</span></span>
         </a>
-
+<!-- 
         <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
             <span></span>
             <span></span>
             <span></span>
-        </button>
+        </button> -->
+                            <!-- SEARCH TRIGGER -->
+       <!-- SEARCH BAR -->
+        <div class="nav-search-wrap">
+            <div class="nav-search-bar" id="navSearchBar">
+                <span class="nav-search-icon">🔍</span>
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="nav-search-input"
+                    placeholder="Search courses & services..."
+                    autocomplete="off"
+                />
+                <button class="nav-search-clear" id="searchClear">✕</button>
+            </div>
+            <div class="nav-search-results" id="searchResults"></div>
+        </div>
 
         <ul class="nav-links" id="navLinks">
             <li><a href="#about">About</a></li>
@@ -91,6 +107,8 @@
             <li><a href="#contact" class="nav-cta">Contact Us</a></li>
         </ul>
 
+
+
           <!-- AUTH BUTTONS -->
         <div class="nav-auth" id="navAuth">
             <!-- Logged out state -->
@@ -100,11 +118,19 @@
             </div>
             <!-- Logged in state -->
             <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
-                <span class="auth-welcome" id="authWelcome">Hi, User</span>
+                <a href="pages/dashboard.html" class="auth-welcome" id="authWelcome">
+                    Hi, User
+                </a>
                 <button class="auth-btn-logout" id="authLogout">Log Out</button>
             </div>
+            
+            <!-- <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+                <span class="auth-welcome" id="authWelcome">Hi, User</span>
+                <button class="auth-btn-logout" id="authLogout">Log Out</button>
+            </div> -->
         </div>
     </nav>
+
 
 
 
@@ -144,6 +170,34 @@
         </div>
 
 
+    </section>
+
+    <!-- GUEST TRAINING PROMO -->
+    <section id="trainingPromo" class="reveal">
+        <p class="section-label" style="text-align:center;">Get Started</p>
+        <h2 style="text-align:center; margin-bottom:2.5rem;">Choose How You'd Like to Learn</h2>
+        <div class="promo-grid">
+
+            <div class="promo-card" id="inPersonPromoCard">
+                <div class="promo-card-icon">🏛️</div>
+                <h3>Next In-Person Training</h3>
+                <div id="inPersonPromoBody">
+                    <p style="color:var(--muted); font-size:0.9rem;">Loading upcoming training dates…</p>
+                </div>
+            </div>
+
+            <div class="promo-card">
+                <div class="promo-card-icon">💻</div>
+                <h3>Self-Paced Online Learning</h3>
+                <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Learn on your own schedule with our full course library —
+                    videos, readings, and interactive exercises, with your
+                    progress tracked every step of the way.
+                </p>
+                <a href="#" id="onlinePromoCta" class="btn-primary">Enrol in Online Learning →</a>
+            </div>
+
+        </div>
     </section>
 
                         <!-- ANNOUNCEMENT BAR -->
@@ -357,22 +411,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>First Name</label>
-                    <input type="text" placeholder="Your first name" />
+                    <input type="text" id="contactFirstName" placeholder="Your first name" />
                 </div>
                 <div class="form-group">
                     <label>Last Name</label>
-                    <input type="text" placeholder="Your last name" />
+                    <input type="text" id="contactLastName" placeholder="Your last name" />
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Email Address</label>
-                <input type="email" placeholder="you@email.com" />
+                <input type="email" id="contactEmail" placeholder="you@email.com" />
             </div>
 
             <div class="form-group">
                 <label>I am a…</label>
-                <select>
+                <select id="contactCategory">
                     <option value="">Select your category</option>
                     <option>Undergraduate / Bachelor's Student</option>
                     <option>Postgraduate / Master's Student</option>
@@ -385,7 +439,7 @@
 
             <div class="form-group">
                 <label>Service of Interest</label>
-                <select>
+                <select id="contactService">
                     <option value="">What can we help you with?</option>
                     <option>Thesis Editing &amp; Proofreading</option>
                     <option>Data Collection &amp; Analysis</option>
@@ -398,10 +452,12 @@
 
             <div class="form-group">
                 <label>Message</label>
-                <textarea placeholder="Tell us more about your needs…"></textarea>
+                <textarea id="contactMessage" placeholder="Tell us more about your needs…"></textarea>
             </div>
 
-            <button class="btn-submit">Send Message →</button>
+            <p id="contactStatus" style="display:none; font-size:0.85rem;"></p>
+
+            <button class="btn-submit" id="contactSubmit">Send Message →</button>
 
             </div>
 
@@ -455,20 +511,172 @@
 
         </div>
 
-        <div class="footer-bottom">
-            <p>&copy; 2025 ResearchBridge Consulting. All rights reserved.</p>
-            <a href="#hero">Back to top ↑</a>
-        </div>
+        <!-- BACK TO TOP BUTTON -->
+        <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        ↑
+        </button>
 
     </footer>
 
     <!-- WHATSAPP BUTTON -->
-<a href="https://wa.me/250789452479" 
-   class="whatsapp-btn" 
-   target="_blank" 
-   title="Chat with us on WhatsApp">
-  🗨️
-</a>
-<script src="js/main.js"></script>
+    <a href="https://wa.me/250789452479" 
+    class="whatsapp-btn" 
+    target="_blank" 
+    title="Chat with us on WhatsApp">
+    🗨️
+    </a>
+    <script src="js/main.js"></script>
+    <script>
+      // ── CONTACT FORM ──
+      const contactSubmit = document.getElementById('contactSubmit');
+      const contactStatus = document.getElementById('contactStatus');
+
+      contactSubmit.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const firstName = document.getElementById('contactFirstName').value.trim();
+        const lastName = document.getElementById('contactLastName').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const category = document.getElementById('contactCategory').value;
+        const serviceInterest = document.getElementById('contactService').value;
+        const message = document.getElementById('contactMessage').value.trim();
+
+        const showStatus = (text, color) => {
+          contactStatus.textContent = text;
+          contactStatus.style.color = color;
+          contactStatus.style.display = 'block';
+        };
+
+        if (!firstName || !lastName || !email || !message) {
+          showStatus('Please fill in your name, email, and message.', '#ff8080');
+          return;
+        }
+
+        contactSubmit.disabled = true;
+        contactSubmit.textContent = 'Sending…';
+
+        try {
+          const res = await fetch(`${window.rbcApiBaseUrl}/api/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firstName, lastName, email, category, serviceInterest, message }),
+          });
+
+          if (!res.ok) {
+            const { error } = await res.json().catch(() => ({}));
+            throw new Error(error || 'Something went wrong.');
+          }
+
+          showStatus('Message sent — we will get back to you within 24 hours.', '#4ade80');
+          document.getElementById('contactFirstName').value = '';
+          document.getElementById('contactLastName').value = '';
+          document.getElementById('contactEmail').value = '';
+          document.getElementById('contactCategory').value = '';
+          document.getElementById('contactService').value = '';
+          document.getElementById('contactMessage').value = '';
+        } catch (err) {
+          showStatus(err.message || 'Could not reach the server. Please try again.', '#ff8080');
+        } finally {
+          contactSubmit.disabled = false;
+          contactSubmit.textContent = 'Send Message →';
+        }
+      });
+    </script>
+    <script>
+      // ── GUEST TRAINING PROMO ──
+      (async () => {
+        const supabase = await window.rbcSupabaseReady;
+        const { data: { session } } = await supabase.auth.getSession();
+
+        // If already logged in, both CTAs skip the login/signup
+        // detour and go straight to the destination.
+        function goTo(directPath, loginRedirectPath) {
+          if (session) {
+            window.location.href = directPath;
+          } else {
+            window.location.href = `pages/login.html?redirect=${encodeURIComponent(loginRedirectPath)}`;
+          }
+        }
+
+        const courseCatalog = {
+          excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
+          python:  { emoji: '🐍', name: 'Python for Data Science' },
+          stata:   { emoji: '📉', name: 'Stata for Econometrics' },
+          spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
+          r:       { emoji: '📐', name: 'R for Statistical Computing' },
+          nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
+          powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
+          kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+        };
+
+        const inPersonBody = document.getElementById('inPersonPromoBody');
+        try {
+          const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops/next`);
+          const workshop = res.ok ? await res.json() : null;
+
+          if (!workshop) {
+            inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">
+              No in-person trainings are scheduled right now — check back soon,
+              or explore our self-paced online courses.</p>`;
+          } else {
+            const course = courseCatalog[workshop.course_slug] || { emoji: '📚', name: workshop.course_slug };
+            const dateLabel = new Date(workshop.start_date).toLocaleDateString(undefined, {
+              year: 'numeric', month: 'long', day: 'numeric',
+            });
+
+            inPersonBody.innerHTML = `
+              <div class="promo-workshop-detail">
+                <span class="promo-workshop-detail-label">Course</span>
+                <span class="promo-workshop-detail-value">${course.emoji} ${course.name}</span>
+              </div>
+              <div class="promo-workshop-detail">
+                <span class="promo-workshop-detail-label">Date</span>
+                <span class="promo-workshop-detail-value">${dateLabel}</span>
+              </div>
+              <div class="promo-workshop-detail">
+                <span class="promo-workshop-detail-label">Venue</span>
+                <span class="promo-workshop-detail-value">${workshop.venue}</span>
+              </div>
+              <a href="#" id="applyTrainingCta" class="btn-primary">Apply for Training →</a>
+            `;
+
+            const enrolQuery = `course=${workshop.course_slug}&mode=In-Person&workshop=${workshop.id}`;
+            document.getElementById('applyTrainingCta').addEventListener('click', (e) => {
+              e.preventDefault();
+              goTo(`pages/enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
+            });
+          }
+        } catch (err) {
+          inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">Could not load upcoming training dates.</p>`;
+        }
+
+        document.getElementById('onlinePromoCta').addEventListener('click', (e) => {
+          e.preventDefault();
+          goTo('#courses', '../index.html#courses');
+        });
+      })();
+    </script>
+
+<!-- COOKIE CONSENT BANNER -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+            <strong>We use cookies</strong>
+            <p>We use cookies to improve your experience on our
+            site, remember your preferences, and analyse site
+            traffic. By clicking Accept you consent to our use
+            of cookies.</p>
+            </div>
+        </div>
+        <div class="cookie-actions">
+            <button class="cookie-btn-decline" id="cookieDecline">
+            Decline
+            </button>
+            <button class="cookie-btn-accept" id="cookieAccept">
+            Accept All
+            </button>
+        </div>
+    </div>
 </body>
 </html>

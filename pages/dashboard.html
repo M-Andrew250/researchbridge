@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Dashboard | ResearchBridge Consulting</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" type="image/png" href="../images/logo.png" />
+  <style>
+
+    .dashboard-hero {
+      background: linear-gradient(
+        135deg,
+        var(--navy) 0%,
+        #0d2d5e 60%,
+        #163a75 100%
+      );
+      padding: 60px 5% 40px;
+    }
+
+    .dashboard-hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .dashboard-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--royal), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+    }
+
+    .dashboard-hero-text h1 {
+      color: var(--white);
+      font-size: 1.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .dashboard-hero-text p {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.88rem;
+      margin: 0;
+    }
+
+    .dashboard-body {
+      background: var(--light-bg);
+      padding: 40px 5% 80px;
+      min-height: 60vh;
+    }
+
+    .dashboard-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* SIDEBAR */
+    .dashboard-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .dashboard-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .dashboard-card h3 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .profile-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .profile-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .profile-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .profile-value {
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .dashboard-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: background 0.2s, color 0.2s;
+      margin-bottom: 0.2rem;
+    }
+
+    .dashboard-nav-link:hover {
+      background: var(--light-bg);
+      color: var(--royal);
+    }
+
+    .dashboard-nav-link.active {
+      background: var(--light-bg);
+      color: var(--royal);
+      font-weight: 600;
+    }
+
+    .dashboard-nav-link span {
+      font-size: 1.1rem;
+    }
+
+    /* MAIN CONTENT */
+    .dashboard-main {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .dashboard-section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* STATS ROW */
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .dashboard-stat {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .dashboard-stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--royal);
+    }
+
+    .dashboard-stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ENROLLED COURSES */
+    .enrolled-empty {
+      background: var(--white);
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 3rem;
+      text-align: center;
+    }
+
+    .enrolled-empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .enrolled-empty h3 {
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .enrolled-empty p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .enrolled-courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .enrolled-course-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .enrolled-course-card:hover {
+      border-color: var(--sky);
+      transform: translateY(-2px);
+    }
+
+    .enrolled-course-icon {
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .enrolled-course-name {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .enrolled-course-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
+    }
+
+    .enrolled-course-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      background: rgba(59, 158, 232, 0.1);
+      color: var(--royal);
+    }
+
+    /* RECENT ACTIVITY */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+    }
+
+    .activity-item:first-child {
+      border-radius: 12px 12px 0 0;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--light-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .activity-text strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--navy);
+      margin-bottom: 0.2rem;
+    }
+
+    .activity-text span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* NOT LOGGED IN */
+    .dashboard-locked {
+      display: none;
+      text-align: center;
+      padding: 80px 5%;
+    }
+
+    .dashboard-locked.visible {
+      display: block;
+    }
+
+    .locked-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-locked h2 {
+      color: var(--navy);
+      margin-bottom: 0.8rem;
+    }
+
+    .dashboard-locked p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .dashboard-locked-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-stats {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="../index.html" class="logo">
+      <img src="../images/logo.png"
+           alt="ResearchBridge Consulting"
+           class="logo-img" />
+      <span class="logo-text">Research<span>Bridge</span></span>
+    </a>
+    <button class="nav-hamburger" id="navHamburger">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="../index.html#about">About</a></li>
+      <li class="nav-dropdown-item">
+        <a href="../index.html#services" class="nav-dropdown-trigger">
+          Services <span class="dropdown-arrow">›</span>
+        </a>
+        <div class="nav-dropdown">
+          <a href="thesis-editing.html">
+            <span>✏️</span> Thesis Editing &amp; Proofreading
+          </a>
+          <a href="data-analysis.html">
+            <span>📊</span> Data Collection &amp; Analysis
+          </a>
+          <a href="research-design.html">
+            <span>🔬</span> Research Project Design
+          </a>
+          <a href="literature-review.html">
+            <span>📚</span> Literature Review Support
+          </a>
+          <a href="capacity-building.html">
+            <span>🎓</span> Capacity Building &amp; Training
+          </a>
+        </div>
+      </li>
+      <li class="nav-dropdown-item">
+        <a href="../index.html#courses" class="nav-dropdown-trigger">
+          Courses <span class="dropdown-arrow">›</span>
+        </a>
+        <div class="nav-dropdown">
+          <a href="courses/excel.html">
+            <span>📊</span> Excel for Data &amp; Analysis
+          </a>
+          <a href="courses/python.html">
+            <span>🐍</span> Python for Data Science
+          </a>
+          <a href="courses/stata.html">
+            <span>📉</span> Stata for Econometrics
+          </a>
+          <a href="courses/spss.html">
+            <span>🔬</span> SPSS for Statistical Analysis
+          </a>
+          <a href="courses/r.html">
+            <span>📐</span> R for Statistical Computing
+          </a>
+          <a href="courses/nvivo.html">
+            <span>🗃️</span> NVivo for Qualitative Research
+          </a>
+          <a href="courses/powerbi.html">
+            <span>🌐</span> Power BI for Data Visualization
+          </a>
+          <a href="courses/kobo.html">
+            <span>📋</span> KoBoToolbox for Data Collection
+          </a>
+        </div>
+      </li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+    <div class="nav-auth" id="navAuth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
+        <a href="dashboard.html" class="auth-welcome"
+           id="authWelcome">Hi, User</a>
+        <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- NOT LOGGED IN STATE -->
+  <div class="dashboard-locked" id="dashboardLocked">
+    <div class="locked-icon">🔒</div>
+    <h2>Please Log In</h2>
+    <p>You need to be logged in to access your dashboard.</p>
+    <div class="dashboard-locked-buttons">
+      <a href="login.html" class="btn-primary">Log In</a>
+      <a href="signup.html" class="btn-outline"
+         style="border-color: var(--royal); color: var(--royal);">
+        Create Account
+      </a>
+    </div>
+  </div>
+
+  <!-- DASHBOARD HERO -->
+  <div id="dashboardContent" style="display:none;">
+
+    <div class="dashboard-hero">
+      <div class="dashboard-hero-inner">
+        <div class="dashboard-avatar" id="dashboardAvatar">👤</div>
+        <div class="dashboard-hero-text">
+          <h1 id="dashboardName">Welcome back!</h1>
+          <p id="dashboardEmail">Loading your profile...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD BODY -->
+    <div class="dashboard-body">
+      <div class="dashboard-inner">
+
+        <!-- SIDEBAR -->
+        <div class="dashboard-sidebar">
+
+          <!-- PROFILE CARD -->
+          <div class="dashboard-card">
+            <h3>My Profile</h3>
+            <div class="profile-item">
+              <span class="profile-label">Full Name</span>
+              <span class="profile-value" id="profileName">—</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-label">Email</span>
+              <span class="profile-value" id="profileEmail">—</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-label">Member Since</span>
+              <span class="profile-value" id="profileJoined">—</span>
+            </div>
+          </div>
+
+          <!-- QUICK LINKS -->
+          <div class="dashboard-card">
+            <h3>Quick Links</h3>
+            <a href="../index.html#courses"
+               class="dashboard-nav-link active">
+              <span>📚</span> Browse Courses
+            </a>
+            <a href="../index.html#services"
+               class="dashboard-nav-link">
+              <span>🔬</span> Our Services
+            </a>
+            <a href="../index.html#contact"
+               class="dashboard-nav-link">
+              <span>📧</span> Contact Us
+            </a>
+            <a href="enrol.html"
+               class="dashboard-nav-link">
+              <span>✍️</span> Enrol in a Course
+            </a>
+          </div>
+
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="dashboard-main">
+
+          <!-- STATS -->
+          <div>
+            <div class="dashboard-section-title">
+              📊 My Overview
+            </div>
+            <div class="dashboard-stats">
+              <div class="dashboard-stat">
+                <div class="dashboard-stat-num"
+                     id="statEnrolments">0</div>
+                <div class="dashboard-stat-label">
+                  Enrolments
+                </div>
+              </div>
+              <div class="dashboard-stat">
+                <div class="dashboard-stat-num"
+                     id="statCourses">0</div>
+                <div class="dashboard-stat-label">
+                  Courses
+                </div>
+              </div>
+              <div class="dashboard-stat">
+                <div class="dashboard-stat-num">🎓</div>
+                <div class="dashboard-stat-label">
+                  Certificates
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENROLLED COURSES -->
+          <div>
+            <div class="dashboard-section-title">
+              📋 My Enrolments
+            </div>
+            <div id="enrolledCoursesWrap"></div>
+          </div>
+
+          <!-- RECENT ACTIVITY -->
+          <div>
+            <div class="dashboard-section-title">
+              🕐 Recent Activity
+            </div>
+            <div class="activity-list" id="activityList"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">
+          <img src="../images/logo.png"
+               alt="ResearchBridge Consulting"
+               class="logo-img" />
+          <span class="logo-text">Research<span>Bridge</span></span>
+        </a>
+        <p>Empowering individuals and institutions through
+        research excellence and data skills training.</p>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Quick Links</p>
+        <ul>
+          <li><a href="../index.html#about">About</a></li>
+          <li><a href="../index.html#services">Services</a></li>
+          <li><a href="../index.html#courses">Courses</a></li>
+          <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <p class="footer-heading">Contact</p>
+        <ul>
+          <li><a href="mailto:info@researchbridgeconsulting.com">
+            Email Us</a></li>
+          <li><a href="tel:+250700000000">WhatsApp Us</a></li>
+          <li><span>Kigali, Rwanda</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 ResearchBridge Consulting.
+      All rights reserved.</p>
+      <a href="#">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // ── DASHBOARD LOGIC ──
+    const dashboardLocked = document.getElementById('dashboardLocked');
+    const dashboardContent = document.getElementById('dashboardContent');
+
+    (async () => {
+    const supabase = await window.rbcSupabaseReady;
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      // Not logged in
+      dashboardLocked.classList.add('visible');
+    } else {
+      // Logged in — show dashboard
+      const userName = session.user.user_metadata?.full_name || session.user.email;
+      const userEmail = session.user.email;
+
+      dashboardContent.style.display = 'block';
+
+      // Set hero
+      document.getElementById('dashboardName').textContent =
+        'Welcome back, ' + userName.split(' ')[0] + '!';
+      document.getElementById('dashboardEmail').textContent =
+        userEmail;
+
+      // Set avatar initials
+      const initials = userName.split(' ')
+        .map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('dashboardAvatar').textContent =
+        initials;
+
+      // Set profile
+      document.getElementById('profileName').textContent = userName;
+      document.getElementById('profileEmail').textContent = userEmail;
+
+      // Member since — Supabase Auth tracks this on the session
+      // user itself, no separate lookup needed.
+      document.getElementById('profileJoined').textContent =
+        new Date(session.user.created_at).toLocaleDateString();
+
+      // Real enrolments from the Express API, scoped to this user
+      // by the requireAuth middleware (no need to filter by email).
+      const enrolmentsRes = await fetch(`${window.rbcApiBaseUrl}/api/enrolments/me`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const allEnrolments = enrolmentsRes.ok ? await enrolmentsRes.json() : [];
+      // Cancelled applications are removed from the dashboard entirely
+      // (not just hidden on the card) — out of stats, cards, and activity.
+      const myEnrolments = allEnrolments.filter(e => e.status !== 'cancelled');
+
+      const courseCatalog = {
+        excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
+        python:  { emoji: '🐍', name: 'Python for Data Science' },
+        stata:   { emoji: '📉', name: 'Stata for Econometrics' },
+        spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
+        r:       { emoji: '📐', name: 'R for Statistical Computing' },
+        nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
+        powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
+        kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+      };
+      const courseLabel = (slug) => courseCatalog[slug]?.name || slug;
+      const courseIcon = (slug) => courseCatalog[slug]?.emoji || '📚';
+      const statusLabel = {
+        pending: '⏳ Pending Confirmation',
+        confirmed: '✅ Confirmed',
+        cancelled: '✕ Cancelled',
+      };
+
+      // Update stats
+      document.getElementById('statEnrolments').textContent =
+        myEnrolments.length;
+      const uniqueCourses = [...new Set(
+        myEnrolments.map(e => e.course_slug)
+      )];
+      document.getElementById('statCourses').textContent =
+        uniqueCourses.length;
+
+      // Show enrolled courses
+      const enrolledWrap =
+        document.getElementById('enrolledCoursesWrap');
+
+      if (myEnrolments.length === 0) {
+        enrolledWrap.innerHTML = `
+          <div class="enrolled-empty">
+            <div class="enrolled-empty-icon">📭</div>
+            <h3>No enrolments yet</h3>
+            <p>You haven't enrolled in any courses yet.
+            Browse our courses and get started!</p>
+            <a href="../index.html#courses" class="btn-primary">
+              Browse Courses
+            </a>
+          </div>`;
+      } else {
+        const cards = myEnrolments.map(e => {
+          const progressHtml = e.mode === 'Online' && e.progressPercent !== null ? `
+            <div style="margin-top:0.7rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin-bottom:0.3rem;">
+                <span>Learning progress</span>
+                <span>${e.progressPercent}%</span>
+              </div>
+              <div style="height:6px; background:var(--light-bg); border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:${e.progressPercent}%; background:${e.progressPercent >= 100 ? '#22c55e' : 'var(--sky)'}; border-radius:4px;"></div>
+              </div>
+            </div>
+          ` : '';
+
+          const inner = `
+            <div class="enrolled-course-icon">
+              ${courseIcon(e.course_slug)}
+            </div>
+            <div class="enrolled-course-name">${courseLabel(e.course_slug)}</div>
+            <div class="enrolled-course-meta">
+              ${e.mode} · ${e.category}
+            </div>
+            <span class="enrolled-course-status">
+              ${statusLabel[e.status] || statusLabel.pending}
+            </span>
+            ${progressHtml}
+          `;
+          // In-person enrolments always open the detail view (venue,
+          // date, trainer, fee, payment/participation tabs) regardless
+          // of status. Online enrolments only open the learning
+          // platform once an admin has marked them Confirmed — until
+          // then the card is informational only, matching the same
+          // rule enforced server-side in verifyOnlineEnrolment.js.
+          if (e.mode === 'In-Person') {
+            return `<a href="enrolment-detail.html?id=${e.id}" class="enrolled-course-card" style="text-decoration:none; display:block; cursor:pointer;">${inner}</a>`;
+          }
+          if (e.status === 'confirmed') {
+            return `<a href="learn.html?enrolment=${e.id}" class="enrolled-course-card" style="text-decoration:none; display:block; cursor:pointer;">${inner}</a>`;
+          }
+          return `<div class="enrolled-course-card" style="opacity:0.75;">
+            ${inner}
+            <p style="font-size:0.75rem; color:var(--muted); margin-top:0.6rem;">
+              The learning platform unlocks once this enrolment is confirmed.
+            </p>
+          </div>`;
+        }).join('');
+
+        enrolledWrap.innerHTML =
+          `<div class="enrolled-courses-grid">${cards}</div>`;
+      }
+
+      // Recent activity
+      const activityList =
+        document.getElementById('activityList');
+
+      const activities = [
+        {
+          icon: '👤',
+          text: 'Account created',
+          time: new Date(session.user.created_at).toLocaleDateString()
+        },
+        ...myEnrolments.map(e => ({
+          icon: courseIcon(e.course_slug),
+          text: `Enrolled in ${courseLabel(e.course_slug)}`,
+          time: new Date(e.created_at).toLocaleDateString()
+        }))
+      ].reverse();
+
+      if (activities.length === 0) {
+        activityList.innerHTML =
+          '<div class="dashboard-card" style="text-align:center;' +
+          'color:var(--muted); font-size:0.88rem; padding:2rem;">' +
+          'No activity yet.</div>';
+      } else {
+        activityList.innerHTML = activities.map(a => `
+          <div class="activity-item">
+            <div class="activity-icon">${a.icon}</div>
+            <div class="activity-text">
+              <strong>${a.text}</strong>
+              <span>${a.time}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    })();
+  </script>
+
+</body>
+</html>

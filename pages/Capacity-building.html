@@ -16,6 +16,11 @@
       <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
       <span class="logo-text">Research<span>Bridge</span></span>
     </a>
+
+    <button class="nav-search-btn" id="navSearchBtn"
+          aria-label="Search">
+  🔍
+    </button>
     <ul class="nav-links" id="navLinks">
       <li><a href="../index.html#about">About</a></li>
 
@@ -82,11 +87,14 @@
       </div>
       <!-- Logged in state -->
       <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
-          <span class="auth-welcome" id="authWelcome">Hi, User</span>
+          <a href="dashboard.html" class="auth-welcome" id="authWelcome">
+              Hi, User
+          </a>
           <button class="auth-btn-logout" id="authLogout">Log Out</button>
       </div>
     </div>
   </nav>
+
 
 
 

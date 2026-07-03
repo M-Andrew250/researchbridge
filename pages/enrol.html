@@ -228,8 +228,8 @@
 
       <!-- FORM STATE -->
       <div class="enrol-form-wrap" id="enrolFormWrap">
-        <div class="enrol-course-badge">
-          🐍 Python for Data Science — Cohort Starting 15 July 2025
+        <div class="enrol-course-badge" id="enrolCourseBadge">
+          📚 General Enrolment
         </div>
         <h2>Complete Your Enrolment</h2>
         <p>Please fill in all fields below. We will send you
@@ -242,31 +242,31 @@
             <div class="form-group">
               <label>First Name *</label>
               <input type="text" id="firstName"
-                     placeholder="Your first name" required />
+                     placeholder="e.g. Jean" required />
             </div>
             <div class="form-group">
               <label>Last Name *</label>
               <input type="text" id="lastName"
-                     placeholder="Your last name" required />
+                     placeholder="e.g. Uwimana" required />
             </div>
           </div>
 
           <div class="form-group">
             <label>Email Address *</label>
             <input type="email" id="email"
-                   placeholder="you@email.com" required />
+                   placeholder="e.g. jean.uwimana@gmail.com" required />
           </div>
 
           <div class="form-group">
-            <label>Phone / WhatsApp *</label>
+            <label>Phone / WhatsApp * — start with your country code</label>
             <input type="tel" id="phone"
-                   placeholder="+250 700 000 000" required />
+                   placeholder="e.g. +250 788 123 456" required />
           </div>
 
           <div class="form-group">
             <label>Organisation / Institution</label>
             <input type="text" id="organisation"
-                   placeholder="Where do you work or study?" />
+                   placeholder="e.g. University of Rwanda" />
           </div>
 
           <div class="form-group">
@@ -283,10 +283,19 @@
             <label>Preferred Mode *</label>
             <select id="mode" required>
               <option value="">Select mode</option>
-              <option>Online — Live Sessions</option>
-              <option>Online — Self-paced</option>
-              <option>In-Person — Kigali</option>
+              <option>Online</option>
+              <option>In-Person</option>
             </select>
+          </div>
+
+          <div class="form-group" id="workshopGroup" style="display:none;">
+            <label>Workshop Date *</label>
+            <select id="workshop">
+              <option value="">Select a date</option>
+            </select>
+            <p id="workshopHint" style="font-size:0.8rem; color:var(--muted); display:none;">
+              No upcoming in-person workshops for this course yet — please check back soon or choose Online.
+            </p>
           </div>
 
           <div class="form-group">
@@ -323,10 +332,13 @@
         <div class="success-icon">🎉</div>
         <h2>Enrolment Submitted!</h2>
         <p>Thank you <strong id="successName"></strong>!
-        Your enrolment for <strong>Python for Data Science</strong>
+        Your enrolment for <strong id="successCourseName">your selected course</strong>
         has been received. Our team will contact you at
         <strong id="successEmail"></strong> within 24 hours
         with confirmation and payment details.</p>
+        <p id="successRedirectNote" style="display:none; color:var(--muted); font-size:0.85rem;">
+          Taking you to your dashboard…
+        </p>
         <a href="../index.html#courses" class="btn-primary">
           Explore More Courses
         </a>
@@ -376,13 +388,97 @@
 
   <script src="../js/main.js"></script>
   <script>
+    // ── COURSE CATALOG ──
+    // Maps the ?course= URL slug (matching each course page's filename)
+    // to the display name/emoji shown on this enrolment page.
+    const courseCatalog = {
+      excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
+      python:  { emoji: '🐍', name: 'Python for Data Science' },
+      stata:   { emoji: '📉', name: 'Stata for Econometrics' },
+      spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
+      r:       { emoji: '📐', name: 'R for Statistical Computing' },
+      nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
+      powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
+      kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+    };
+
+    const courseSlug = new URLSearchParams(window.location.search).get('course');
+    const selectedCourse = courseCatalog[courseSlug] || null;
+    const courseName = selectedCourse ? selectedCourse.name : 'Our Courses';
+
+    document.getElementById('enrolCourseBadge').textContent = selectedCourse
+      ? `${selectedCourse.emoji} ${selectedCourse.name}`
+      : '📚 General Enrolment';
+    document.getElementById('successCourseName').textContent = courseName;
+
+    if (selectedCourse) {
+      document.title = `Enrol — ${selectedCourse.name} | ResearchBridge Consulting`;
+    }
+
+    // ── WORKSHOP DATE PICKER ──
+    // Shown only when "In-Person" is selected; lists the real
+    // upcoming workshops for this course from the workshops table.
+    const modeSelect = document.getElementById('mode');
+    const workshopGroup = document.getElementById('workshopGroup');
+    const workshopSelect = document.getElementById('workshop');
+    const workshopHint = document.getElementById('workshopHint');
+
+    async function loadWorkshopsForCourse(preselectWorkshopId) {
+      workshopGroup.style.display = 'block';
+      workshopSelect.innerHTML = '<option value="">Loading dates…</option>';
+      workshopHint.style.display = 'none';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${courseSlug || ''}`);
+        const workshops = res.ok ? await res.json() : [];
+
+        if (workshops.length === 0) {
+          workshopSelect.innerHTML = '<option value="">No dates available</option>';
+          workshopHint.style.display = 'block';
+          return;
+        }
+
+        workshopSelect.innerHTML = '<option value="">Select a date</option>' +
+          workshops.map(w => {
+            const dateLabel = new Date(w.start_date).toLocaleDateString(undefined, {
+              year: 'numeric', month: 'long', day: 'numeric',
+            });
+            return `<option value="${w.id}">${dateLabel} — ${w.venue}</option>`;
+          }).join('');
+
+        if (preselectWorkshopId && workshopSelect.querySelector(`option[value="${preselectWorkshopId}"]`)) {
+          workshopSelect.value = preselectWorkshopId;
+        }
+      } catch (err) {
+        workshopSelect.innerHTML = '<option value="">Could not load dates</option>';
+      }
+    }
+
+    modeSelect.addEventListener('change', () => {
+      if (modeSelect.value !== 'In-Person') {
+        workshopGroup.style.display = 'none';
+        return;
+      }
+      loadWorkshopsForCourse();
+    });
+
+    // Pre-fill from URL params — lets a link (e.g. the homepage's
+    // "Apply for Training" CTA) drop the visitor straight into a
+    // ready-to-submit In-Person form for a specific workshop.
+    const presetMode = new URLSearchParams(window.location.search).get('mode');
+    const presetWorkshopId = new URLSearchParams(window.location.search).get('workshop');
+    if (presetMode === 'In-Person') {
+      modeSelect.value = 'In-Person';
+      loadWorkshopsForCourse(presetWorkshopId);
+    }
+
     // ── ENROLMENT FORM LOGIC ──
     const enrolSubmit = document.getElementById('enrolSubmit');
     const enrolFormWrap = document.getElementById('enrolFormWrap');
     const enrolSuccess = document.getElementById('enrolSuccess');
     const enrolError = document.getElementById('enrolError');
 
-    enrolSubmit.addEventListener('click', () => {
+    enrolSubmit.addEventListener('click', async () => {
       // Get values
       const firstName = document.getElementById('firstName').value.trim();
       const lastName = document.getElementById('lastName').value.trim();
@@ -393,39 +489,66 @@
       const level = document.getElementById('level').value;
       const organisation = document.getElementById('organisation').value.trim();
       const comments = document.getElementById('comments').value.trim();
+      const workshopId = mode === 'In-Person' ? workshopSelect.value : null;
 
       // Validate required fields
       if (!firstName || !lastName || !email ||
           !phone || !category || !mode || !level) {
+        enrolError.textContent = 'Please fill in all required fields.';
+        enrolError.style.display = 'block';
+        return;
+      }
+
+      if (mode === 'In-Person' && !workshopId) {
+        enrolError.textContent = 'Please select a workshop date.';
         enrolError.style.display = 'block';
         return;
       }
 
       enrolError.style.display = 'none';
+      enrolSubmit.disabled = true;
+      enrolSubmit.textContent = 'Submitting…';
 
-      // Build enrolment object
-      const enrolment = {
-        id: Date.now(),
-        course: 'Python for Data Science',
-        cohort: '15 July 2025',
-        firstName,
-        lastName,
-        email,
-        phone,
-        organisation,
-        category,
-        mode,
-        level,
-        comments,
-        submittedAt: new Date().toLocaleString()
-      };
+      // If the visitor is logged in, link the enrolment to their
+      // profile by sending their session token; guests submit with
+      // no Authorization header at all.
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Store in localStorage
-      const existing = JSON.parse(
-        localStorage.getItem('enrolments') || '[]'
-      );
-      existing.push(enrolment);
-      localStorage.setItem('enrolments', JSON.stringify(existing));
+      let response;
+      try {
+        response = await fetch(`${window.rbcApiBaseUrl}/api/enrolments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({
+            courseSlug: courseSlug || 'general',
+            firstName, lastName, email, phone,
+            organisation, category, mode, level, comments, workshopId,
+          }),
+        });
+      } catch (err) {
+        enrolError.textContent = 'Could not reach the server. Please check your connection and try again.';
+        enrolError.style.display = 'block';
+        enrolSubmit.disabled = false;
+        enrolSubmit.textContent = 'Submit Enrolment →';
+        return;
+      }
+
+      if (!response.ok) {
+        const { error, existingEnrolmentId } = await response.json().catch(() => ({}));
+        if (existingEnrolmentId) {
+          enrolError.innerHTML = `${error} <a href="enrolment-detail.html?id=${existingEnrolmentId}" style="color:inherit; text-decoration:underline; font-weight:600;">Click here to go to your course dashboard.</a>`;
+        } else {
+          enrolError.textContent = error || 'Something went wrong. Please try again.';
+        }
+        enrolError.style.display = 'block';
+        enrolSubmit.disabled = false;
+        enrolSubmit.textContent = 'Submit Enrolment →';
+        return;
+      }
 
       // Show success state
       document.getElementById('successName').textContent =
@@ -437,6 +560,17 @@
 
       // Scroll to top of card
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Logged-in users get taken straight to their dashboard, where
+      // the new enrolment now appears. Guests stay on this success
+      // screen — redirecting them to a dashboard that just says
+      // "please log in" wouldn't be useful.
+      if (session) {
+        document.getElementById('successRedirectNote').style.display = 'block';
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1800);
+      }
     });
   </script>
 
