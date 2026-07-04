@@ -52,6 +52,18 @@ been the reliable path; the Supabase CLI's `db push` had issues in
 this project's setup). If you're setting up a fresh Supabase project,
 run every migration in `supabase/migrations/` in filename order.
 
+### Running the tests
+```
+cd server
+npm test
+```
+This spawns its own copy of the server (a different port than your
+dev server, so it's safe to run alongside it) and runs real requests
+against your Supabase project, using throwaway test data it cleans up
+afterward. Needs `server/.env` filled in first. See
+[docs/ARCHITECTURE.md §5.5](docs/ARCHITECTURE.md#55-testing-servertest)
+for what's covered.
+
 ## Admin tasks
 
 There's no admin UI yet — day-to-day admin work happens directly in

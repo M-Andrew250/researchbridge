@@ -4,6 +4,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import { getEnrolmentProgress } from '../lib/enrolmentProgress.js';
 import { sendWelcomeEmail, sendMotivationalEmail } from '../lib/email.js';
 import { courseNames } from '../lib/courseNames.js';
+import { sendServerError } from '../lib/errors.js';
 
 export const notificationsRouter = Router();
 
@@ -19,7 +20,7 @@ notificationsRouter.post('/welcome', requireAuth, async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'notifications.welcome');
   }
 
   if (profile.welcome_email_sent_at) {
@@ -55,7 +56,7 @@ notificationsRouter.post('/check-progress', requireAuth, async (req, res) => {
     .eq('status', 'confirmed');
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'notifications.check-progress');
   }
 
   const notified = [];

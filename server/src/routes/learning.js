@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabase } from '../config/supabaseClient.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { verifyOnlineEnrolment } from '../middleware/verifyOnlineEnrolment.js';
+import { sendServerError } from '../lib/errors.js';
 
 export const learningRouter = Router();
 
@@ -36,7 +37,7 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
     .order('order_index', { referencedTable: 'lessons', ascending: true });
 
   if (modulesError) {
-    return res.status(500).json({ error: modulesError.message });
+    return sendServerError(res, modulesError, 'learning.curriculum.modules');
   }
 
   const { data: progressRows, error: progressError } = await supabase
@@ -46,7 +47,7 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
     .eq('enrolment_id', req.enrolment.id);
 
   if (progressError) {
-    return res.status(500).json({ error: progressError.message });
+    return sendServerError(res, progressError, 'learning.curriculum.progress');
   }
 
   const progressByLesson = Object.fromEntries(progressRows.map(p => [p.lesson_id, p]));
@@ -76,12 +77,26 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
     ? 0
     : Math.round((completedLessons / totalLessons) * 100);
 
+  // Surface the last lesson this user had open, so the frontend can
+  // offer to resume there instead of dropping them at a blank state.
+  let lastLesson = null;
+  if (req.enrolment.last_lesson_id) {
+    for (const m of modulesOut) {
+      const match = m.lessons.find(l => l.id === req.enrolment.last_lesson_id);
+      if (match) {
+        lastLesson = { id: match.id, title: match.title, moduleTitle: m.title };
+        break;
+      }
+    }
+  }
+
   res.json({
     courseSlug: req.enrolment.course_slug,
     modules: modulesOut,
     overallPercent,
     totalLessons,
     completedLessons,
+    lastLesson,
   });
 });
 
@@ -100,9 +115,18 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
     return res.status(404).json({ error: 'Lesson not found.' });
   }
 
+  // Remember this as "where they were" for the resume-prompt on next visit.
+  const { error: lastLessonError } = await supabase
+    .from('enrolments')
+    .update({ last_lesson_id: lesson.id, last_viewed_at: new Date().toISOString() })
+    .eq('id', req.enrolment.id);
+  if (lastLessonError) {
+    console.error('[learning.lastLesson]', lastLessonError.message);
+  }
+
   const { data: progress } = await supabase
     .from('lesson_progress')
-    .select('completed, quiz_score, quiz_passed')
+    .select('completed, quiz_score, quiz_passed, last_position_seconds')
     .eq('user_id', req.user.id)
     .eq('enrolment_id', req.enrolment.id)
     .eq('lesson_id', lesson.id)
@@ -117,6 +141,7 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
     completed: !!progress?.completed,
     quizScore: progress?.quiz_score ?? null,
     quizPassed: progress?.quiz_passed ?? null,
+    videoPosition: progress?.last_position_seconds ?? 0,
   };
 
   if (lesson.type === 'exercise' || lesson.type === 'exam') {
@@ -128,7 +153,7 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
       .order('order_index', { referencedTable: 'quiz_options', ascending: true });
 
     if (qError) {
-      return res.status(500).json({ error: qError.message });
+      return sendServerError(res, qError, 'learning.lesson.questions');
     }
 
     out.questions = questions.map(q => ({
@@ -140,6 +165,42 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
   }
 
   res.json(out);
+});
+
+// POST /api/enrolments/:enrolmentId/lessons/:lessonId/video-position
+// body: { position: number } — how many seconds into the video the
+// user has watched. Saved periodically by the player so it can resume
+// from here next time, distinct from /complete which marks it done.
+learningRouter.post('/:enrolmentId/lessons/:lessonId/video-position', requireAuth, verifyOnlineEnrolment, async (req, res) => {
+  const position = Number(req.body.position);
+  if (!Number.isFinite(position) || position < 0) {
+    return res.status(400).json({ error: 'position must be a non-negative number.' });
+  }
+
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('id, type')
+    .eq('id', req.params.lessonId)
+    .single();
+
+  if (!lesson || lesson.type !== 'video') {
+    return res.status(400).json({ error: 'Only video lessons track playback position.' });
+  }
+
+  const { error } = await supabase
+    .from('lesson_progress')
+    .upsert({
+      user_id: req.user.id,
+      enrolment_id: req.enrolment.id,
+      lesson_id: lesson.id,
+      last_position_seconds: position,
+    }, { onConflict: 'user_id,enrolment_id,lesson_id' });
+
+  if (error) {
+    return sendServerError(res, error, 'learning.videoPosition');
+  }
+
+  res.status(204).end();
 });
 
 // POST /api/enrolments/:enrolmentId/lessons/:lessonId/complete
@@ -168,7 +229,7 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/complete', requireAuth, ver
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'learning.completeLesson');
   }
 
   res.json(data);
@@ -197,7 +258,7 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
     .eq('lesson_id', lesson.id);
 
   if (qError) {
-    return res.status(500).json({ error: qError.message });
+    return sendServerError(res, qError, 'learning.submitQuiz.questions');
   }
   if (questions.length === 0) {
     return res.status(400).json({ error: 'This quiz has no questions yet.' });
@@ -230,7 +291,7 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'learning.submitQuiz.save');
   }
 
   res.json({ score, passed, passThreshold: lesson.pass_threshold, feedback, progress: data });

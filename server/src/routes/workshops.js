@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../config/supabaseClient.js';
+import { sendServerError } from '../lib/errors.js';
 
 export const workshopsRouter = Router();
 
@@ -17,7 +18,7 @@ workshopsRouter.get('/next', async (req, res) => {
     .maybeSingle();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'workshops.next');
   }
 
   res.json(data);
@@ -40,7 +41,7 @@ workshopsRouter.get('/', async (req, res) => {
     .order('start_date', { ascending: true });
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'workshops.list');
   }
 
   res.json(data);

@@ -77,7 +77,6 @@ researchbridge/
 │   ├── thesis-editing.html, data-analysis.html,
 │   │   research-design.html, Capacity-building.html
 │   │                             Service pages
-│   ├── impact-evaluation.html    ⚠️ Empty stub — not built yet
 │   └── courses/
 │       └── excel.html, python.html, stata.html, spss.html,
 │           R.html, nvivo.html, powerbi.html, kobo.html
@@ -133,7 +132,9 @@ This one file does a lot of shared work:
 All 8 course pages (`pages/courses/*.html`) follow an identical
 structure: hero (with an "Enrol Now" CTA), sticky section nav,
 overview, instructor, outcomes, applications, video, testimonials,
-outline, FAQ, pricing, related courses, footer. If you're editing one
+outline, FAQ, related courses, footer. (There's no pricing section —
+it was removed rather than shipped with placeholder "$XX" numbers;
+add one back once real prices exist.) If you're editing one
 course page's structure, the same edit almost always needs to be
 mirrored across all 8 — they were built from a shared template, not a
 shared component (no build step, remember).
@@ -235,6 +236,33 @@ logged in), or **required** (`requireAuth` middleware — rejects with
 - **`courseNames.js`** — slug → display name lookup, used for email
   content (the frontend has its own copy of this map for rendering;
   see the note in §9).
+
+### 5.5 Testing (`server/test/`)
+Integration tests using Node's built-in test runner (`node:test` —
+no extra dependency). Run with `npm test` from `server/`.
+
+They're genuine integration tests, not mocked unit tests: `npm test`
+spawns the actual Express app as a child process (on port 4099, so it
+doesn't collide with a dev server on 4000) and hits it with real HTTP
+requests against your real Supabase project. Each test creates its
+own throwaway users/enrolments/content with unique emails and deletes
+them afterward — they never touch real data, but they do require
+`server/.env` to point at a working Supabase project.
+
+Rate limiting (§9 in the code, not this doc — see
+`middleware/rateLimiters.js`) is skipped when `NODE_ENV=test`, which
+the test file sets automatically on the spawned server. Without this,
+the test suite's own rapid sequential requests would trip the same
+limits meant to catch a spamming bot.
+
+Current coverage: phone-duplicate checking, enrolment validation
+(missing fields, invalid enum values), the one-active-online-course
+rule, duplicate in-person application blocking, the confirmed-status
+gate on the learning platform, quiz grading correctness, answer-leak
+prevention, and cross-user access isolation. Not covered yet: contact
+messages, workshops endpoints, email sending itself (the `email.js`
+send calls are not asserted against — Resend delivery was verified
+manually, see the "Email system" section below).
 
 ---
 
@@ -386,6 +414,10 @@ you add a 9th course, all five need updating.
 - **Payment integration.** `enrolment-detail.html`'s "Payment Details"
   tab is a placeholder.
 - **Participation confirmation** tab — also a placeholder.
-- **`pages/impact-evaluation.html`** — an empty file, referenced
-  nowhere, likely a stub from before this system was built.
+- **Real course pricing.** Removed the placeholder "$XX" pricing
+  section from all 8 course pages rather than ship fake numbers —
+  add it back once real prices exist.
+- **Exhaustive test coverage.** `server/test/` covers the highest-risk
+  business logic (see §5.5) but isn't exhaustive — e.g. contact
+  messages and the workshops endpoints have no tests yet.
 - **Resend domain verification** — see §9.

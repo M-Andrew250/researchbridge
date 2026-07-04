@@ -27,6 +27,13 @@ window.rbcSupabaseReady = new Promise((resolve, reject) => {
   document.head.appendChild(script);
 });
 
+// ── FOOTER COPYRIGHT YEAR ──
+// Every footer's "&copy; <year>" uses <span id="copyrightYear">
+// instead of a hardcoded year, so it never goes stale again.
+document.querySelectorAll('#copyrightYear').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
+
 
 // ── SCROLL REVEAL ──
 

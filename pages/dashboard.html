@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow" />
   <title>My Dashboard | ResearchBridge Consulting</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
@@ -231,6 +232,117 @@
     .enrolled-course-card:hover {
       border-color: var(--sky);
       transform: translateY(-2px);
+    }
+
+    .stop-enrolment-btn {
+      display: block;
+      margin-top: 0.8rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border);
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+
+    .stop-enrolment-btn:hover {
+      color: #dc2626;
+    }
+
+    /* STOP ENROLMENT MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 31, 68, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-box h3 {
+      color: var(--navy);
+      margin-bottom: 0.6rem;
+    }
+
+    .modal-box p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-box textarea {
+      width: 100%;
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-box textarea:focus {
+      outline: none;
+      border-color: var(--royal);
+      background: var(--white);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+    }
+
+    .modal-btn-cancel {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .modal-btn-confirm {
+      background: #dc2626;
+      border: none;
+      color: var(--white);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-btn-confirm:hover {
+      background: #b91c1c;
     }
 
     .enrolled-course-icon {
@@ -577,6 +689,19 @@
 
   </div>
 
+  <!-- STOP ENROLMENT MODAL -->
+  <div class="modal-overlay" id="stopEnrolmentModal">
+    <div class="modal-box">
+      <h3>Stop Enrollment?</h3>
+      <p id="stopEnrolmentText">Are you sure you want to stop this enrollment? This cannot be undone.</p>
+      <textarea id="stopEnrolmentReason" placeholder="Let us know why you're stopping (optional)"></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn-cancel" id="stopEnrolmentCancelBtn">Cancel</button>
+        <button class="modal-btn-confirm" id="stopEnrolmentConfirmBtn">Yes, Stop Enrollment</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div class="footer-top">
@@ -610,7 +735,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 ResearchBridge Consulting.
+      <p>&copy; <span id="copyrightYear">2025</span> ResearchBridge Consulting.
       All rights reserved.</p>
       <a href="#">Back to top ↑</a>
     </div>
@@ -735,6 +860,10 @@
               ${statusLabel[e.status] || statusLabel.pending}
             </span>
             ${progressHtml}
+            <button type="button" class="stop-enrolment-btn"
+                    data-id="${e.id}" data-course="${courseLabel(e.course_slug)}">
+              Stop Enrollment
+            </button>
           `;
           // In-person enrolments always open the detail view (venue,
           // date, trainer, fee, payment/participation tabs) regardless
@@ -758,6 +887,60 @@
 
         enrolledWrap.innerHTML =
           `<div class="enrolled-courses-grid">${cards}</div>`;
+
+        // ── STOP ENROLMENT ──
+        const stopModal = document.getElementById('stopEnrolmentModal');
+        const stopText = document.getElementById('stopEnrolmentText');
+        const stopReason = document.getElementById('stopEnrolmentReason');
+        const stopCancelBtn = document.getElementById('stopEnrolmentCancelBtn');
+        const stopConfirmBtn = document.getElementById('stopEnrolmentConfirmBtn');
+        let enrolmentIdToStop = null;
+
+        function closeStopModal() {
+          stopModal.classList.remove('visible');
+          stopReason.value = '';
+          enrolmentIdToStop = null;
+        }
+
+        document.querySelectorAll('.stop-enrolment-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            // Cards are <a> tags for confirmed/in-person enrolments —
+            // stop the click from also triggering navigation.
+            e.preventDefault();
+            e.stopPropagation();
+            enrolmentIdToStop = btn.dataset.id;
+            stopText.textContent =
+              `Are you sure you want to stop your enrollment in ${btn.dataset.course}? This cannot be undone.`;
+            stopModal.classList.add('visible');
+          });
+        });
+
+        stopCancelBtn.addEventListener('click', closeStopModal);
+        stopModal.addEventListener('click', (e) => {
+          if (e.target === stopModal) closeStopModal();
+        });
+
+        stopConfirmBtn.addEventListener('click', async () => {
+          if (!enrolmentIdToStop) return;
+          stopConfirmBtn.disabled = true;
+          stopConfirmBtn.textContent = 'Stopping…';
+
+          try {
+            await fetch(`${window.rbcApiBaseUrl}/api/enrolments/${enrolmentIdToStop}/cancel`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ reason: stopReason.value }),
+            });
+          } catch (err) {
+            // fall through — reload either way so the dashboard
+            // reflects real server state, not an optimistic guess
+          }
+
+          window.location.reload();
+        });
       }
 
       // Recent activity

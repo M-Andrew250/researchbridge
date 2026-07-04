@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /pages/login.html
+Disallow: /pages/signup.html
+Disallow: /pages/forgot-password.html
+Disallow: /pages/reset-password.html
+Disallow: /pages/dashboard.html
+Disallow: /pages/enrol.html
+Disallow: /pages/enrolment-detail.html
+Disallow: /pages/learn.html
+
+# Update this to the real domain once deployed (see docs/ARCHITECTURE.md §10).
+Sitemap: https://researchbridgeconsulting.com/sitemap.xml

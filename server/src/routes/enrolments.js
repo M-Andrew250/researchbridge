@@ -5,6 +5,8 @@ import { optionalAuth } from '../middleware/optionalAuth.js';
 import { getEnrolmentProgress } from '../lib/enrolmentProgress.js';
 import { courseNames } from '../lib/courseNames.js';
 import { sendEnrolmentConfirmationEmail } from '../lib/email.js';
+import { sendServerError } from '../lib/errors.js';
+import { strictLimiter } from '../middleware/rateLimiters.js';
 
 export const enrolmentsRouter = Router();
 
@@ -21,7 +23,7 @@ const ENROLMENT_SELECT = '*, workshop:workshops(*)';
 // (pages/enrol.html). If a valid session is present, the enrolment
 // is linked to that profile via user_id. In-person enrolments must
 // reference a real, upcoming workshop for that course.
-enrolmentsRouter.post('/', optionalAuth, async (req, res) => {
+enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
   const {
     courseSlug, firstName, lastName, email, phone,
     organisation, category, mode, level, comments, workshopId,
@@ -54,10 +56,11 @@ enrolmentsRouter.post('/', optionalAuth, async (req, res) => {
       .from('enrolments')
       .select('id, course_slug')
       .eq('user_id', req.user.id)
-      .eq('mode', 'Online');
+      .eq('mode', 'Online')
+      .neq('status', 'cancelled');
 
     if (existingError) {
-      return res.status(500).json({ error: existingError.message });
+      return sendServerError(res, existingError, 'enrolments.create.checkOnline');
     }
 
     for (const e of existingOnline) {
@@ -86,7 +89,7 @@ enrolmentsRouter.post('/', optionalAuth, async (req, res) => {
         .maybeSingle();
 
       if (existingAppError) {
-        return res.status(500).json({ error: existingAppError.message });
+        return sendServerError(res, existingAppError, 'enrolments.create.checkInPerson');
       }
       if (existingApplication) {
         return res.status(409).json({
@@ -134,7 +137,7 @@ enrolmentsRouter.post('/', optionalAuth, async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'enrolments.create.insert');
   }
 
   // Don't let an email hiccup block the response — the enrolment
@@ -163,7 +166,7 @@ enrolmentsRouter.get('/me', requireAuth, async (req, res) => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'enrolments.me');
   }
 
   const withProgress = await Promise.all(data.map(async (e) => {
@@ -188,6 +191,47 @@ enrolmentsRouter.get('/:id', requireAuth, async (req, res) => {
 
   if (error) {
     return res.status(404).json({ error: 'Enrolment not found.' });
+  }
+
+  res.json(data);
+});
+
+// POST /api/enrolments/:id/cancel — a user voluntarily stopping their
+// own enrolment from the dashboard (distinct from an admin cancelling
+// one via the Table Editor). body: { reason?: string }. Once
+// cancelled, dashboard.html's own filtering removes the card, and
+// stats/activity recompute from the remaining enrolments — there's
+// nothing else to "sync" since nothing else reads this row's status.
+enrolmentsRouter.post('/:id/cancel', requireAuth, async (req, res) => {
+  const { reason } = req.body;
+
+  const { data: enrolment, error: fetchError } = await supabase
+    .from('enrolments')
+    .select('id, status')
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id)
+    .single();
+
+  if (fetchError || !enrolment) {
+    return res.status(404).json({ error: 'Enrolment not found.' });
+  }
+  if (enrolment.status === 'cancelled') {
+    return res.status(400).json({ error: 'This enrolment is already cancelled.' });
+  }
+
+  const { data, error } = await supabase
+    .from('enrolments')
+    .update({
+      status: 'cancelled',
+      cancellation_reason: reason?.trim() || null,
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'enrolments.cancel');
   }
 
   res.json(data);

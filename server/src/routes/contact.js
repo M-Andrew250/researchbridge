@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { supabase } from '../config/supabaseClient.js';
+import { sendServerError } from '../lib/errors.js';
+import { strictLimiter } from '../middleware/rateLimiters.js';
 
 export const contactRouter = Router();
 
 // POST /api/contact — the contact form on index.html. Always public,
 // no login required.
-contactRouter.post('/', async (req, res) => {
+contactRouter.post('/', strictLimiter, async (req, res) => {
   const { firstName, lastName, email, category, serviceInterest, message } = req.body;
 
   const required = { firstName, lastName, email, message };
@@ -30,7 +32,7 @@ contactRouter.post('/', async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, error, 'contact.create');
   }
 
   res.status(201).json(data);

@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow" />
   <title>My Learning | ResearchBridge Consulting</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
@@ -367,7 +368,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 ResearchBridge Consulting. All rights reserved.</p>
+      <p>&copy; <span id="copyrightYear">2025</span> ResearchBridge Consulting. All rights reserved.</p>
       <a href="#">Back to top ↑</a>
     </div>
   </footer>
@@ -386,6 +387,12 @@
     };
 
     const lessonTypeIcon = { document: '📄', video: '🎥', exercise: '📝', exam: '🎓' };
+
+    function formatSeconds(total) {
+      const m = Math.floor(total / 60);
+      const s = Math.floor(total % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
 
     // ── PROGRESS RING ──
     const RING_RADIUS = 42;
@@ -422,6 +429,125 @@
       const authHeader = { Authorization: `Bearer ${session.access_token}` };
       const apiBase = `${window.rbcApiBaseUrl}/api/enrolments/${enrolmentId}`;
 
+      // ── VIDEO SCRUB GUARD + RESUME ──
+      // Videos are YouTube embeds. The player itself can't have its seek
+      // bar hidden or disabled, but the IFrame API lets us watch playback
+      // position and snap any forward jump back to the furthest point
+      // actually watched — dragging ahead has no effect, while rewinding
+      // to rewatch stays completely free. "Mark as Complete" stays
+      // disabled until playback has genuinely reached the end. The same
+      // furthest-watched position is saved periodically so the video
+      // itself can resume where the user left off, the same way the
+      // curriculum resumes at the last lesson.
+      let ytPlayer = null;
+      let videoGuard = { furthest: 0, fullyWatched: false, pollTimer: null, saveTimer: null, lessonId: null, lastSaved: 0 };
+
+      function toYouTubeApiEmbedUrl(url) {
+        try {
+          const u = new URL(url, window.location.href);
+          u.searchParams.set('enablejsapi', '1');
+          u.searchParams.set('origin', window.location.origin);
+          return u.toString();
+        } catch {
+          return url;
+        }
+      }
+
+      function loadYouTubeApiOnce() {
+        if (window.YT && window.YT.Player) return Promise.resolve();
+        if (!window.__ytApiPromise) {
+          window.__ytApiPromise = new Promise((resolve) => {
+            const previous = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = () => { previous?.(); resolve(); };
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+          });
+        }
+        return window.__ytApiPromise;
+      }
+
+      function saveVideoPosition(lessonId, position, useKeepalive) {
+        if (!lessonId || Math.abs(position - videoGuard.lastSaved) < 1) return;
+        videoGuard.lastSaved = position;
+        fetch(`${apiBase}/lessons/${lessonId}/video-position`, {
+          method: 'POST',
+          headers: { ...authHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ position }),
+          keepalive: !!useKeepalive,
+        }).catch(() => {});
+      }
+
+      function stopVideoGuard() {
+        if (videoGuard.pollTimer) clearInterval(videoGuard.pollTimer);
+        if (videoGuard.saveTimer) clearInterval(videoGuard.saveTimer);
+        if (videoGuard.lessonId) saveVideoPosition(videoGuard.lessonId, videoGuard.furthest, true);
+        if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy();
+        ytPlayer = null;
+        videoGuard = { furthest: 0, fullyWatched: false, pollTimer: null, saveTimer: null, lessonId: null, lastSaved: 0 };
+      }
+
+      function setupVideoGuard(lessonId, resumeFrom) {
+        videoGuard.lessonId = lessonId;
+        videoGuard.furthest = resumeFrom || 0;
+        videoGuard.lastSaved = resumeFrom || 0;
+
+        loadYouTubeApiOnce().then(() => {
+          if (!document.getElementById('ytPlayerFrame')) return; // lesson changed before API loaded
+          ytPlayer = new YT.Player('ytPlayerFrame', {
+            events: {
+              onReady: () => { if (resumeFrom > 0) ytPlayer.seekTo(resumeFrom, true); },
+              onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) markVideoFullyWatched(); },
+            },
+          });
+          videoGuard.pollTimer = setInterval(pollVideoProgress, 400);
+          videoGuard.saveTimer = setInterval(() => {
+            saveVideoPosition(videoGuard.lessonId, videoGuard.furthest, false);
+          }, 15000);
+        });
+      }
+
+      function pollVideoProgress() {
+        if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+        let current, duration;
+        try {
+          current = ytPlayer.getCurrentTime();
+          duration = ytPlayer.getDuration();
+        } catch {
+          return; // player not fully ready yet
+        }
+        const tolerance = 1.5; // seconds, allows for poll granularity/buffering
+        if (current > videoGuard.furthest + tolerance) {
+          ytPlayer.seekTo(videoGuard.furthest, true);
+        } else if (current > videoGuard.furthest) {
+          videoGuard.furthest = current;
+        }
+        if (duration && current >= duration - 1) {
+          markVideoFullyWatched();
+        }
+      }
+
+      function markVideoFullyWatched() {
+        if (videoGuard.fullyWatched) return;
+        videoGuard.fullyWatched = true;
+        const markBtn = document.getElementById('markCompleteBtn');
+        if (markBtn) {
+          markBtn.disabled = false;
+          markBtn.textContent = 'Mark as Complete';
+        }
+        const hint = document.getElementById('videoWatchHint');
+        if (hint) hint.remove();
+      }
+
+      window.addEventListener('beforeunload', () => {
+        if (videoGuard.lessonId) saveVideoPosition(videoGuard.lessonId, videoGuard.furthest, true);
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && videoGuard.lessonId) {
+          saveVideoPosition(videoGuard.lessonId, videoGuard.furthest, true);
+        }
+      });
+
       const curriculumRes = await fetch(`${apiBase}/curriculum`, { headers: authHeader });
       if (!curriculumRes.ok) {
         document.getElementById('learnLockedTitle').textContent = 'Course Not Found';
@@ -457,8 +583,19 @@
         `).join('');
       }
 
+      if (curriculum.lastLesson) {
+        document.getElementById('learnMain').innerHTML = `
+          <div class="learn-main-placeholder">
+            <div style="font-size:3rem; margin-bottom:1rem;">📍</div>
+            <p style="margin-bottom:1.2rem;">Pick up where you left off — <strong>${curriculum.lastLesson.title}</strong>
+              <span style="color:var(--muted);">(${curriculum.lastLesson.moduleTitle})</span></p>
+            <button class="btn-primary" id="resumeLessonBtn" style="border:none; cursor:pointer;">Resume →</button>
+          </div>`;
+      }
+
       // ── LESSON LOADING ──
       async function loadLesson(lessonId, itemEl) {
+        stopVideoGuard();
         document.querySelectorAll('.learn-lesson-item').forEach(el => el.classList.remove('active'));
         if (itemEl) itemEl.classList.add('active');
 
@@ -496,8 +633,16 @@
 
         let html = `<span class="learn-lesson-type-badge">${typeLabel}</span><h2 style="margin-bottom:1.2rem;">${lesson.title}</h2>`;
 
+        const videoNeedsGuard = lesson.type === 'video' && lesson.contentUrl && !lesson.completed;
+        const resumeFrom = videoNeedsGuard ? (lesson.videoPosition || 0) : 0;
+
         if (lesson.type === 'video' && lesson.contentUrl) {
-          html += `<div class="learn-video-embed"><iframe src="${lesson.contentUrl}" allowfullscreen></iframe></div>`;
+          const src = videoNeedsGuard ? toYouTubeApiEmbedUrl(lesson.contentUrl) : lesson.contentUrl;
+          html += `<div class="learn-video-embed"><iframe id="ytPlayerFrame" src="${src}" allowfullscreen></iframe></div>`;
+          if (videoNeedsGuard) {
+            const resumeNote = resumeFrom > 5 ? ` Resuming from ${formatSeconds(resumeFrom)}.` : '';
+            html += `<p id="videoWatchHint" style="color:var(--muted); font-size:0.85rem; margin:0.6rem 0 1rem;">Watch to the end to unlock "Mark as Complete" — you can rewind, but skipping ahead is disabled.${resumeNote}</p>`;
+          }
         }
         if (lesson.contentBody) {
           html += `<div class="learn-document-body">${lesson.contentBody}</div>`;
@@ -509,7 +654,7 @@
         if (lesson.type === 'document' || lesson.type === 'video') {
           html += lesson.completed
             ? `<p style="color:#16a34a; font-weight:600;">✓ Marked complete</p>`
-            : `<button class="btn-primary" id="markCompleteBtn" style="border:none; cursor:pointer;">Mark as Complete</button>`;
+            : `<button class="btn-primary" id="markCompleteBtn" ${videoNeedsGuard ? 'disabled' : ''} style="border:none; cursor:pointer;">${videoNeedsGuard ? 'Watch the full video to unlock' : 'Mark as Complete'}</button>`;
         }
 
         if (lesson.type === 'exercise' || lesson.type === 'exam') {
@@ -517,6 +662,8 @@
         }
 
         main.innerHTML = html;
+
+        if (videoNeedsGuard) setupVideoGuard(lesson.id, resumeFrom);
 
         const markBtn = document.getElementById('markCompleteBtn');
         if (markBtn) {
@@ -604,6 +751,14 @@
       document.querySelectorAll('.learn-lesson-item').forEach(item => {
         item.addEventListener('click', () => loadLesson(item.dataset.lessonId, item));
       });
+
+      const resumeBtn = document.getElementById('resumeLessonBtn');
+      if (resumeBtn && curriculum.lastLesson) {
+        resumeBtn.addEventListener('click', () => {
+          const item = document.querySelector(`.learn-lesson-item[data-lesson-id="${curriculum.lastLesson.id}"]`);
+          loadLesson(curriculum.lastLesson.id, item);
+        });
+      }
 
       learnContent.style.display = 'block';
     })();
