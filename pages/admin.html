@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin — Enrolments | ResearchBridge Consulting</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" type="image/png" href="../images/logo.png" />
+  <style>
+    .admin-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+      padding: 60px 5% 40px;
+    }
+
+    .admin-hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .admin-hero-inner h1 {
+      color: var(--white);
+      font-size: 1.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .admin-hero-inner p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.88rem;
+      margin: 0;
+    }
+
+    .admin-main {
+      background: var(--light-bg);
+      padding: 2rem 5% 80px;
+      min-height: 60vh;
+    }
+
+    .admin-filters {
+      max-width: 1200px;
+      margin: 0 auto 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-filters select {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .admin-result-count {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .admin-table-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      background: var(--light-bg);
+      color: var(--navy);
+      font-weight: 700;
+      white-space: nowrap;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .admin-table td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    .admin-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .admin-sub {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .admin-status {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .admin-status-pending {
+      background: #fff7e6;
+      color: #b8860b;
+    }
+
+    .admin-status-confirmed {
+      background: #e6f7ee;
+      color: #1a7a4c;
+    }
+
+    .admin-status-cancelled {
+      background: #fdeaea;
+      color: #b91c1c;
+    }
+
+    .admin-status-select {
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .admin-table-wrap .admin-table {
+      min-width: 950px;
+    }
+
+    .admin-locked {
+      display: none;
+      text-align: center;
+      padding: 80px 5%;
+    }
+
+    .admin-locked.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="../index.html" class="logo">
+      <img src="../images/logo.png"
+           alt="ResearchBridge Consulting"
+           class="logo-img" />
+      <span class="logo-text">Research<span>Bridge</span></span>
+    </a>
+    <button class="nav-hamburger" id="navHamburger">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="../index.html#about">About</a></li>
+      <li class="nav-dropdown-item">
+        <a href="../index.html#services" class="nav-dropdown-trigger">
+          Services <span class="dropdown-arrow">›</span>
+        </a>
+        <div class="nav-dropdown">
+          <a href="thesis-editing.html">
+            <span>✏️</span> Thesis Editing &amp; Proofreading
+          </a>
+          <a href="data-analysis.html">
+            <span>📊</span> Data Collection &amp; Analysis
+          </a>
+          <a href="research-design.html">
+            <span>🔬</span> Research Project Design
+          </a>
+          <a href="Capacity-building.html">
+            <span>🎓</span> Capacity Building &amp; Training
+          </a>
+        </div>
+      </li>
+      <li class="nav-dropdown-item">
+        <a href="../index.html#courses" class="nav-dropdown-trigger">
+          Courses <span class="dropdown-arrow">›</span>
+        </a>
+        <div class="nav-dropdown">
+          <a href="courses/excel.html">
+            <span><img src="../images/excel.png" alt="" class="icon-img" /></span> Excel for Data &amp; Analysis
+          </a>
+          <a href="courses/python.html">
+            <span><img src="../images/python-logo.svg" alt="" class="icon-img" /></span> Python for Data Science
+          </a>
+          <a href="courses/stata.html">
+            <span><img src="../images/stata-logo.png" alt="" class="icon-img" /></span> Stata for Econometrics
+          </a>
+          <a href="courses/spss.html">
+            <span><img src="../images/spss-logo.png" alt="" class="icon-img" /></span> SPSS for Statistical Analysis
+          </a>
+          <a href="courses/r.html">
+            <span><img src="../images/r-logo.svg" alt="" class="icon-img" /></span> R for Statistical Computing
+          </a>
+          <a href="courses/nvivo.html">
+            <span><img src="../images/nvivo-logo.jpg" alt="" class="icon-img" /></span> NVivo for Qualitative Research
+          </a>
+          <a href="courses/powerbi.html">
+            <span><img src="../images/powerbi-logo.svg" alt="" class="icon-img" /></span> Power BI for Data Visualization
+          </a>
+          <a href="courses/kobo.html">
+            <span><img src="../images/kobo-logo.png" alt="" class="icon-img" /></span> KoBoToolbox for Data Collection
+          </a>
+        </div>
+      </li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+    <div class="nav-auth" id="navAuth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
+        <button type="button" class="account-trigger" id="accountTrigger">
+          <span id="authWelcome">Logged in as User</span>
+          <span class="dropdown-arrow">›</span>
+        </button>
+        <div class="nav-dropdown" id="accountMenu">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ACCESS LOCKED (not logged in, or logged in but not an admin) -->
+  <div class="admin-locked" id="adminLocked">
+    <div style="font-size:4rem; margin-bottom:1rem;">🔒</div>
+    <h2 style="color:var(--navy); margin-bottom:0.8rem;">Admin Access Required</h2>
+    <p id="adminLockedMessage" style="color:var(--muted); margin-bottom:2rem; max-width:420px; margin-left:auto; margin-right:auto;">
+      You need to be logged in as an administrator to view this page.
+    </p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="login.html" class="btn-primary">Log In</a>
+      <a href="../index.html" class="btn-outline" style="border-color:var(--royal); color:var(--royal);">Back to Home</a>
+    </div>
+  </div>
+
+  <!-- ADMIN CONTENT -->
+  <div id="adminContent" style="display:none;">
+
+    <section class="admin-hero">
+      <div class="admin-hero-inner">
+        <h1>Enrolment Management</h1>
+        <p>Confirm, cancel, or reset any enrolment — online or in-person, guest or logged-in.</p>
+      </div>
+    </section>
+
+    <section class="admin-main">
+      <div class="admin-filters">
+        <select id="filterStatus">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="filterMode">
+          <option value="">All Modes</option>
+          <option value="Online">Online</option>
+          <option value="In-Person">In-Person</option>
+        </select>
+        <span class="admin-result-count" id="resultCount"></span>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Course</th>
+              <th>Mode / Details</th>
+              <th>Category</th>
+              <th>Level</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="enrolmentsTableBody"></tbody>
+        </table>
+        <p id="emptyState" style="display:none; text-align:center; color:var(--muted); padding:2rem;">
+          No enrolments match these filters.
+        </p>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // Mirrors the courseCatalog maps duplicated across the frontend —
+    // see docs/ARCHITECTURE.md §9's note on this known duplication.
+    const courseNames = {
+      excel: 'Excel for Data & Analysis',
+      python: 'Python for Data Science',
+      stata: 'Stata for Econometrics',
+      spss: 'SPSS for Statistical Analysis',
+      r: 'R for Statistical Computing',
+      nvivo: 'NVivo for Qualitative Research',
+      powerbi: 'Power BI for Data Visualization',
+      kobo: 'KoBoToolbox for Data Collection',
+    };
+
+    const adminLocked = document.getElementById('adminLocked');
+    const adminLockedMessage = document.getElementById('adminLockedMessage');
+    const adminContent = document.getElementById('adminContent');
+    const tableBody = document.getElementById('enrolmentsTableBody');
+    const emptyState = document.getElementById('emptyState');
+    const resultCount = document.getElementById('resultCount');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterMode = document.getElementById('filterMode');
+
+    let authHeader = null;
+
+    // Enrolments carry free-text fields (name, organisation, email,
+    // phone) submitted by anyone, including anonymous guests. Since
+    // rows are rendered via innerHTML below, every such field must be
+    // escaped first — otherwise a submitted name like
+    // "<script>...</script>" would execute in the admin's own logged-in
+    // session (stored XSS), not just display as text.
+    function escapeHtml(value) {
+      const div = document.createElement('div');
+      div.textContent = value ?? '';
+      return div.innerHTML;
+    }
+
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+      });
+    }
+
+    function renderRows(enrolments) {
+      if (enrolments.length === 0) {
+        tableBody.innerHTML = '';
+        emptyState.textContent = 'No enrolments match these filters.';
+        emptyState.style.display = 'block';
+        resultCount.textContent = '0 enrolments';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      resultCount.textContent = `${enrolments.length} enrolment${enrolments.length === 1 ? '' : 's'}`;
+
+      tableBody.innerHTML = enrolments.map(e => {
+        const courseName = escapeHtml(courseNames[e.course_slug] || e.course_slug);
+        const modeDetail = e.mode === 'In-Person' && e.workshop
+          ? `In-Person<span class="admin-sub">${escapeHtml(e.workshop.venue)} — ${formatDate(e.workshop.start_date)}</span>`
+          : escapeHtml(e.mode);
+
+        return `
+          <tr>
+            <td>${escapeHtml(e.first_name)} ${escapeHtml(e.last_name)}${e.organisation ? `<span class="admin-sub">${escapeHtml(e.organisation)}</span>` : ''}</td>
+            <td>${escapeHtml(e.email)}<span class="admin-sub">${escapeHtml(e.phone)}</span></td>
+            <td>${courseName}</td>
+            <td>${modeDetail}</td>
+            <td>${escapeHtml(e.category)}</td>
+            <td>${escapeHtml(e.level)}</td>
+            <td>${formatDate(e.created_at)}</td>
+            <td><span class="admin-status admin-status-${e.status}">${e.status}</span></td>
+            <td>
+              <select class="admin-status-select" data-id="${e.id}">
+                <option value="pending" ${e.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="confirmed" ${e.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="cancelled" ${e.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tableBody.querySelectorAll('.admin-status-select').forEach(select => {
+        select.addEventListener('change', async () => {
+          const id = select.dataset.id;
+          const newStatus = select.value;
+          select.disabled = true;
+
+          try {
+            const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/enrolments/${id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', ...authHeader },
+              body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!res.ok) {
+              alert('Could not update status. Please try again.');
+              select.disabled = false;
+              return;
+            }
+
+            await loadEnrolments();
+          } catch (err) {
+            alert('Could not reach the server. Please check your connection.');
+            select.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadEnrolments() {
+      const params = new URLSearchParams();
+      if (filterStatus.value) params.set('status', filterStatus.value);
+      if (filterMode.value) params.set('mode', filterMode.value);
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/enrolments?${params}`, {
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          tableBody.innerHTML = '';
+          emptyState.textContent = 'Could not load enrolments.';
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        renderRows(await res.json());
+      } catch (err) {
+        tableBody.innerHTML = '';
+        emptyState.textContent = 'Could not reach the server.';
+        emptyState.style.display = 'block';
+      }
+    }
+
+    filterStatus.addEventListener('change', loadEnrolments);
+    filterMode.addEventListener('change', loadEnrolments);
+
+    (async () => {
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        adminLocked.classList.add('visible');
+        return;
+      }
+
+      authHeader = { Authorization: `Bearer ${session.access_token}` };
+
+      const meRes = await fetch(`${window.rbcApiBaseUrl}/api/auth/me`, { headers: authHeader });
+      const me = meRes.ok ? await meRes.json() : null;
+
+      if (!me || !me.isAdmin) {
+        adminLockedMessage.textContent = 'Your account does not have admin access.';
+        adminLocked.classList.add('visible');
+        return;
+      }
+
+      adminContent.style.display = 'block';
+      loadEnrolments();
+    })();
+  </script>
+
+</body>
+</html>

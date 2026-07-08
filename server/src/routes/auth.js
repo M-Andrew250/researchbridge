@@ -38,7 +38,7 @@ authRouter.get('/check-phone', strictLimiter, async (req, res) => {
 authRouter.get('/me', requireAuth, async (req, res) => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('full_name, phone, avatar_url')
+    .select('full_name, phone, avatar_url, is_admin')
     .eq('id', req.user.id)
     .single();
 
@@ -46,7 +46,12 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     return sendServerError(res, error, 'auth.me.get');
   }
 
-  res.json({ fullName: data.full_name, phone: data.phone, avatarUrl: data.avatar_url });
+  res.json({
+    fullName: data.full_name,
+    phone: data.phone,
+    avatarUrl: data.avatar_url,
+    isAdmin: data.is_admin,
+  });
 });
 
 // PATCH /api/auth/me — update the caller's own name/phone/avatar.
