@@ -12,9 +12,12 @@ const SUPABASE_URL = 'https://ztrokpqlinqezmnicrpi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0cm9rcHFsaW5xZXptbmljcnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjYzNDEsImV4cCI6MjA5ODY0MjM0MX0.Tkd234JkFGvdIQFIsj1DjLJxEj6oVyi5mJZTORbvFl0';
 
 // ── API BASE URL ──
-// Where the Express backend lives. Update this when the backend is
-// deployed (Step 11) — everything else references this one constant.
-window.rbcApiBaseUrl = 'http://localhost:4000';
+// Where the Express backend lives. Auto-detects local dev vs the
+// deployed Render backend so the same file works in both places
+// without manual edits — everything else references this one constant.
+window.rbcApiBaseUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? 'http://localhost:4000'
+  : 'https://researchbridge-10tl.onrender.com';
 
 // ── AUTH SESSION STORAGE ("Remember Me") ──
 // Supabase persists the session (access + refresh token) in whatever
