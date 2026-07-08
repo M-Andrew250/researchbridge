@@ -334,8 +334,8 @@
     // Enrolments carry free-text fields (name, organisation, email,
     // phone) submitted by anyone, including anonymous guests. Since
     // rows are rendered via innerHTML below, every such field must be
-    // escaped first — otherwise a submitted name like
-    // "<script>...</script>" would execute in the admin's own logged-in
+    // escaped first — otherwise a submitted name containing an HTML
+    // script element would execute in the admin's own logged-in
     // session (stored XSS), not just display as text.
     function escapeHtml(value) {
       const div = document.createElement('div');
