@@ -158,8 +158,29 @@
       text-decoration: underline;
     }
 
+    .remember-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.3rem;
+    }
+
+    .remember-check {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-check input {
+      width: auto;
+      cursor: pointer;
+    }
+
     .forgot-link {
-      text-align: right;
       font-size: 0.78rem;
     }
 
@@ -214,9 +235,16 @@
         <a href="login.html" class="auth-btn-login">Log In</a>
         <a href="signup.html" class="auth-btn-signup">Sign Up</a>
       </div>
-      <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
-        <span class="auth-welcome" id="authWelcome">Hi, User</span>
-        <button class="auth-btn-logout" id="authLogout">Log Out</button>
+      <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
+        <button type="button" class="account-trigger" id="accountTrigger">
+          <span id="authWelcome">Logged in as User</span>
+          <span class="dropdown-arrow">›</span>
+        </button>
+        <div class="nav-dropdown" id="accountMenu">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -251,8 +279,14 @@
             <label>Password *</label>
             <input type="password" id="loginPassword"
                    placeholder="Your password" />
-            <div class="forgot-link">
-              <a href="forgot-password.html">Forgot password?</a>
+            <div class="remember-row">
+              <label class="remember-check">
+                <input type="checkbox" id="rememberMe" checked />
+                Remember me
+              </label>
+              <div class="forgot-link">
+                <a href="forgot-password.html">Forgot password?</a>
+              </div>
             </div>
           </div>
 
@@ -320,6 +354,8 @@
 
       loginSubmit.disabled = true;
       loginSubmit.textContent = 'Logging in…';
+
+      window.rbcSetRememberMe(document.getElementById('rememberMe').checked);
 
       const supabase = await window.rbcSupabaseReady;
       const { error } = await supabase.auth.signInWithPassword({ email, password });

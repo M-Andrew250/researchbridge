@@ -16,11 +16,41 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // deployed (Step 11) — everything else references this one constant.
 window.rbcApiBaseUrl = 'http://localhost:4000';
 
+// ── AUTH SESSION STORAGE ("Remember Me") ──
+// Supabase persists the session (access + refresh token) in whatever
+// storage we hand it. To support a "Remember me" checkbox on the login
+// page, this adapter picks the backend at read/write time based on a
+// flag: unchecked -> sessionStorage (wiped when the browser closes),
+// checked (or not set yet, e.g. an already-logged-in visitor before this
+// feature existed) -> localStorage (survives closing the browser).
+const RBC_REMEMBER_KEY = 'rbc-remember-me';
+const RBC_AUTH_TOKEN_KEY = 'sb-ztrokpqlinqezmnicrpi-auth-token';
+
+function rbcPreferredStorage() {
+  return localStorage.getItem(RBC_REMEMBER_KEY) === 'false' ? window.sessionStorage : window.localStorage;
+}
+
+// Called by the login page right before signing in, based on the
+// "Remember me" checkbox. Also clears any leftover session from the
+// other storage so a prior login's tokens can't linger and conflict.
+window.rbcSetRememberMe = function (remember) {
+  localStorage.setItem(RBC_REMEMBER_KEY, remember ? 'true' : 'false');
+  (remember ? window.sessionStorage : window.localStorage).removeItem(RBC_AUTH_TOKEN_KEY);
+};
+
+const rbcAuthStorage = {
+  getItem: (key) => rbcPreferredStorage().getItem(key),
+  setItem: (key, value) => rbcPreferredStorage().setItem(key, value),
+  removeItem: (key) => rbcPreferredStorage().removeItem(key),
+};
+
 window.rbcSupabaseReady = new Promise((resolve, reject) => {
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
   script.onload = () => {
-    window.rbcSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.rbcSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storage: rbcAuthStorage },
+    });
     resolve(window.rbcSupabase);
   };
   script.onerror = () => reject(new Error('Failed to load Supabase client library.'));
@@ -97,96 +127,79 @@ document.querySelectorAll('.faq-question').forEach(question => {
 
 
 
-// ── SCROLLSPY SECTION INDICATOR ──
-// ── SCROLLSPY SECTION INDICATOR — DESKTOP ONLY ──
-if (window.innerWidth > 768) {
-  const indicatorCurrent = document.getElementById('indicatorCurrent');
-  const indicatorLinks = document.querySelectorAll('.indicator-nav a');
-
-  const sectionIds = [
-    'overview', 'instructor', 'outcomes', 'applications',
-    'outline', 'video', 'testimonials', 'faq', 'pricing', 'enrol'
-  ];
-
-  const sectionNames = {
-    overview:      'Overview',
-    instructor:    'Instructor',
-    outcomes:      'Learning Outcomes',
-    applications:  'Real Life Applications',
-    outline:       'Course Outline',
-    video:         'Video Tutorial',
-    testimonials:  'Testimonials',
-    faq:           'FAQ',
-    pricing:       'Pricing',
-    enrol:         'Enrol Now'
-  };
-
-  if (indicatorCurrent) {
-    window.addEventListener('scroll', () => {
-      let current = 'overview';
-
-      sectionIds.forEach(id => {
-        const section = document.getElementById(id);
-        if (section) {
-          const top = section.getBoundingClientRect().top;
-          if (top <= 140) {
-            current = id;
-          }
-        }
-      });
-
-      indicatorCurrent.textContent = sectionNames[current];
-
-      indicatorLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === '#' + current) {
-          link.classList.add('active');
-          link.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'center'
-          });
-        }
-      });
-    }, { passive: true });
-  }
-}
-
-
-
-// ── FLOATING TOC SIDEBAR ──
+// ── SCROLLSPY (section indicator pill + floating TOC sidebar) ──
+// These used to be two separate scroll listeners, each re-reading
+// getBoundingClientRect() for every section on every single scroll
+// event — duplicated work, and enough forced layout thrashing to
+// visibly jank/"shake" while scrolling course pages. Merged into one
+// computation, throttled to run at most once per animation frame, and
+// only calls scrollIntoView() when the active section actually
+// changes (previously it fired on every tick, fighting the user's own
+// scroll gesture).
+const indicatorCurrent = document.getElementById('indicatorCurrent');
+const indicatorLinks = document.querySelectorAll('.indicator-nav a');
 const tocSidebar = document.getElementById('tocSidebar');
 const tocLinks = document.querySelectorAll('.toc-link');
 
-if (tocSidebar) {
-  window.addEventListener('scroll', () => {
+const sectionIds = [
+  'overview', 'instructor', 'outcomes', 'applications',
+  'outline', 'video', 'testimonials', 'faq', 'pricing', 'enrol'
+];
 
-    // Show sidebar after scrolling past hero
-    if (window.scrollY > 500) {
-      tocSidebar.classList.add('visible');
-    } else {
-      tocSidebar.classList.remove('visible');
-    }
+const sectionNames = {
+  overview:      'Overview',
+  instructor:    'Instructor',
+  outcomes:      'Learning Outcomes',
+  applications:  'Real Life Applications',
+  outline:       'Course Outline',
+  video:         'Video Tutorial',
+  testimonials:  'Testimonials',
+  faq:           'FAQ',
+  pricing:       'Pricing',
+  enrol:         'Enrol Now'
+};
 
-    // Highlight active section
+if (indicatorCurrent || tocSidebar) {
+  let lastSection = null;
+  let scrollspyScheduled = false;
+
+  const updateScrollspy = () => {
+    scrollspyScheduled = false;
+
     let current = 'overview';
     sectionIds.forEach(id => {
       const section = document.getElementById(id);
-      if (section) {
-        const top = section.getBoundingClientRect().top;
-        if (top <= 160) {
-          current = id;
+      if (section && section.getBoundingClientRect().top <= 150) {
+        current = id;
+      }
+    });
+
+    if (indicatorCurrent && window.innerWidth > 768) {
+      indicatorCurrent.textContent = sectionNames[current];
+      indicatorLinks.forEach(link => {
+        const isActive = link.getAttribute('href') === '#' + current;
+        link.classList.toggle('active', isActive);
+        if (isActive && current !== lastSection) {
+          link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
-      }
-    });
+      });
+    }
 
-    tocLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === '#' + current) {
-        link.classList.add('active');
-      }
-    });
+    if (tocSidebar) {
+      tocSidebar.classList.toggle('visible', window.scrollY > 500);
+      tocLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+      });
+    }
 
+    lastSection = current;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!scrollspyScheduled) {
+      scrollspyScheduled = true;
+      requestAnimationFrame(updateScrollspy);
+    }
   }, { passive: true });
 }
 
@@ -334,6 +347,7 @@ async function updateAuthState() {
   const authLoggedIn = document.getElementById('authLoggedIn');
   const authWelcome = document.getElementById('authWelcome');
   const authLogout = document.getElementById('authLogout');
+  const accountTrigger = document.getElementById('accountTrigger');
 
   if (!authLoggedOut || !authLoggedIn) return;
 
@@ -343,16 +357,35 @@ async function updateAuthState() {
   const applySessionToNav = (session) => {
     if (session) {
       const fullName = session.user.user_metadata?.full_name || session.user.email;
+      const nameParts = fullName.trim().split(/\s+/);
+      const lastName = nameParts[nameParts.length - 1];
       authLoggedOut.style.display = 'none';
       authLoggedIn.style.display = 'flex';
-      if (authWelcome) authWelcome.textContent = 'Hi, ' + fullName.split(' ')[0];
+      if (authWelcome) authWelcome.textContent = 'Logged in as ' + lastName;
     } else {
       authLoggedOut.style.display = 'flex';
       authLoggedIn.style.display = 'none';
+      authLoggedIn.classList.remove('open');
     }
   };
 
   applySessionToNav(session);
+
+  // Account dropdown: click to open/close, click outside to close.
+  // Deliberately click-based rather than the hover behaviour used by
+  // the Services/Courses nav dropdowns, since a stray mouseover
+  // shouldn't reveal a Log Out control.
+  if (accountTrigger) {
+    accountTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      authLoggedIn.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!authLoggedIn.contains(e.target)) {
+        authLoggedIn.classList.remove('open');
+      }
+    });
+  }
 
   // Keep the navbar in sync if auth state changes on this page
   // (e.g. token refresh, or signed out in another tab).
@@ -369,12 +402,22 @@ async function updateAuthState() {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
       }).catch(() => {});
+
+      // Link any in-person applications submitted as a guest (before
+      // this account existed) to this account now, by matching email.
+      fetch(`${window.rbcApiBaseUrl}/api/enrolments/claim`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      }).catch(() => {});
     }
   });
 
   // Logout
   if (authLogout) {
-    authLogout.addEventListener('click', async () => {
+    authLogout.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!confirm('Are you sure you want to log out?')) return;
+
       // Check for incomplete online courses and send an encouragement
       // email before actually signing out — best-effort, don't let a
       // slow/failed request delay logging out. Re-fetch the session
@@ -404,49 +447,49 @@ updateAuthState();
 const searchData = [
   // COURSES
   {
-    type: 'Course', icon: '📊',
+    type: 'Course', icon: 'images/excel.png',
     title: 'Excel for Data & Analysis',
     desc: 'Spreadsheets, pivot tables, dashboards',
     url: 'pages/courses/excel.html'
   },
   {
-    type: 'Course', icon: '🐍',
+    type: 'Course', icon: 'images/python-logo.svg',
     title: 'Python for Data Science',
     desc: 'Programming, data analysis, machine learning',
     url: 'pages/courses/python.html'
   },
   {
-    type: 'Course', icon: '📉',
+    type: 'Course', icon: 'images/stata-logo.png',
     title: 'Stata for Econometrics',
     desc: 'Regression, panel data, policy research',
     url: 'pages/courses/stata.html'
   },
   {
-    type: 'Course', icon: '🔬',
+    type: 'Course', icon: 'images/spss-logo.png',
     title: 'SPSS for Statistical Analysis',
     desc: 'Survey analysis, social science research',
     url: 'pages/courses/spss.html'
   },
   {
-    type: 'Course', icon: '📐',
+    type: 'Course', icon: 'images/r-logo.svg',
     title: 'R for Statistical Computing',
     desc: 'Statistical modelling, ggplot2, tidyverse',
     url: 'pages/courses/r.html'
   },
   {
-    type: 'Course', icon: '🗃️',
+    type: 'Course', icon: 'images/nvivo-logo.jpg',
     title: 'NVivo for Qualitative Research',
     desc: 'Coding, thematic analysis, qualitative data',
     url: 'pages/courses/nvivo.html'
   },
   {
-    type: 'Course', icon: '🌐',
+    type: 'Course', icon: 'images/powerbi-logo.svg',
     title: 'Power BI for Data Visualization',
     desc: 'Dashboards, DAX, business intelligence',
     url: 'pages/courses/powerbi.html'
   },
   {
-    type: 'Course', icon: '📋',
+    type: 'Course', icon: 'images/kobo-logo.png',
     title: 'KoBoToolbox for Data Collection',
     desc: 'Survey design, field data collection',
     url: 'pages/courses/kobo.html'
@@ -483,6 +526,17 @@ const searchData = [
     url: 'pages/capacity-building.html'
   }
 ];
+
+// An icon is either an emoji character or a path to an image (like
+// the official Python logo) — image paths get resolved the same way
+// result URLs do, since they're both root-relative and this file is
+// loaded from pages at every depth.
+function renderSearchIcon(icon) {
+  if (icon.endsWith('.svg') || icon.endsWith('.png') || icon.endsWith('.jpg') || icon.endsWith('.jpeg')) {
+    return `<img src="${resolveSearchUrl(icon)}" alt="" class="icon-img" />`;
+  }
+  return icon;
+}
 
 function resolveSearchUrl(url) {
   // Get current page path
@@ -543,7 +597,7 @@ function triggerSearch() {
     html += courses.map(item => `
       <a href="${resolveSearchUrl(item.url)}"
          class="search-result-item">
-        <div class="search-result-icon">${item.icon}</div>
+        <div class="search-result-icon">${renderSearchIcon(item.icon)}</div>
         <div class="search-result-text">
           <strong>${item.title}</strong>
           <span>${item.desc}</span>
@@ -559,7 +613,7 @@ function triggerSearch() {
     html += services.map(item => `
       <a href="${resolveSearchUrl(item.url)}"
          class="search-result-item">
-        <div class="search-result-icon">${item.icon}</div>
+        <div class="search-result-icon">${renderSearchIcon(item.icon)}</div>
         <div class="search-result-text">
           <strong>${item.title}</strong>
           <span>${item.desc}</span>

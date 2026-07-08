@@ -155,6 +155,28 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
   res.status(201).json(data);
 });
 
+// POST /api/enrolments/claim — links any guest (unauthenticated)
+// enrolments matching the now-logged-in user's email to their
+// account, so an in-person application submitted before creating an
+// account becomes visible in their dashboard once they do. Called
+// automatically on every sign-in (see main.js's SIGNED_IN handler) —
+// safe to call repeatedly, since it only ever touches rows that are
+// still unclaimed (user_id is null).
+enrolmentsRouter.post('/claim', requireAuth, async (req, res) => {
+  const { data, error } = await supabase
+    .from('enrolments')
+    .update({ user_id: req.user.id })
+    .is('user_id', null)
+    .ilike('email', req.user.email)
+    .select('id');
+
+  if (error) {
+    return sendServerError(res, error, 'enrolments.claim');
+  }
+
+  res.json({ claimed: data.length });
+});
+
 // GET /api/enrolments/me — the logged-in user's own enrolments, with
 // workshop details attached, and a learning-progress percentage for
 // online enrolments (pages/dashboard.html).

@@ -1693,6 +1693,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   font-size: 1.6rem;
   box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
   z-index: 999;
@@ -1702,6 +1703,12 @@
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+}
+
+.whatsapp-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
 }
 }
 

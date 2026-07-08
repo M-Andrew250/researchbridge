@@ -395,6 +395,93 @@ section {
   flex-shrink: 0;
 }
 
+/* ── COURSES DROPDOWN: HOVERABLE ROWS ──
+   Each row in the navbar's Courses flyout is still a plain link
+   (.nav-course-row) so it keeps working normally on touch (see the
+   mobile override below). On desktop, hovering a row slides a panel
+   out to the right — not an overlap — so the rest of the course list
+   stays visible while it's open. */
+.nav-course-item {
+  position: relative;
+}
+
+/* No gap between the row and the panel — they sit flush (left: 100%,
+   no margin) so the mouse never has to cross empty space to get from
+   one to the other. A previous version centered the panel vertically
+   on the row and bridged the horizontal gap with a pseudo-element,
+   but the panel is taller than the row, so it still overflowed above
+   and below the bridge's reach and :hover was lost there. Anchoring
+   to the top and removing the gap entirely avoids the problem instead
+   of patching around it. */
+.nav-course-panel {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--white);
+  border: 1.5px solid var(--royal);
+  border-radius: 12px;
+  box-shadow: 0 16px 44px rgba(10, 31, 68, 0.28);
+  overflow: hidden;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-18px);
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-course-item:hover .nav-course-panel {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+
+/* Next In-Person on top, Take Online Course below it — stacked, not
+   side by side. */
+.nav-course-panel .course-hover-training,
+.nav-course-panel .course-hover-online-btn {
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.9rem 0.8rem;
+}
+
+.nav-course-panel .course-hover-training-row {
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-course-panel .course-hover-training-row span:last-child {
+  text-align: center;
+}
+
+.nav-course-panel .course-hover-training-row + .course-hover-training-row {
+  margin-top: 0.5rem;
+}
+
+.nav-course-panel > :last-child {
+  border-bottom: none;
+}
+
+/* Higher specificity than the generic .course-hover-training.clickable
+   rule (used by the homepage cards' vertical layout) so a scheduled
+   workshop's margin/padding don't fall back to that spacing here. */
+.nav-course-panel .course-hover-training.clickable {
+  margin: 0;
+  padding: 0.9rem 0.8rem;
+  border-radius: 0;
+}
+
 /* On mobile the dropdown becomes an inline expandable list
    instead of a hover flyout (toggled via .mobile-open in JS) */
 @media (max-width: 768px) {
@@ -431,6 +518,12 @@ section {
   .nav-dropdown a:hover {
     background: rgba(255, 255, 255, 0.08);
     color: var(--sky) !important;
+  }
+
+  /* No :hover on touch — the row stays a normal link to the course
+     page instead of revealing the panel. */
+  .nav-course-panel {
+    display: none;
   }
 
   .nav-dropdown-trigger {
@@ -529,6 +622,55 @@ a.auth-welcome:hover {
 @media (max-width: 480px) {
   .nav-auth {
     display: none;
+  }
+}
+
+/* Account dropdown (logged-in nav item) — click-toggled rather than
+   hover, since it includes a destructive Log Out action that
+   shouldn't fire just because the mouse passed over it. */
+.account-dropdown {
+  position: relative;
+}
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--sky);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  white-space: nowrap;
+}
+
+.account-trigger:hover {
+  color: var(--white);
+}
+
+.account-dropdown.open .account-trigger .dropdown-arrow {
+  transform: rotate(90deg);
+}
+
+.account-dropdown .nav-dropdown {
+  left: auto;
+  right: 0;
+  min-width: 200px;
+  transform: translateY(-8px);
+}
+
+.account-dropdown.open .nav-dropdown {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .account-dropdown.open .nav-dropdown {
+    max-height: 300px;
   }
 }
 
@@ -812,14 +954,52 @@ a.auth-welcome:hover {
    ─────────────────────────────────────────────────────────────────────── */
 
 #hero {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
   min-height: 91vh;
   display: flex;
   align-items: center;
-  padding: 80px 5%;
+  padding: 80px 5% 130px;
+}
+
+/* VIDEO BACKGROUND */
+.hero-bg-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.hero-bg-video.loaded {
+  opacity: 1;
+}
+
+/* DARK OVERLAY — keeps hero text/marquee legible over the video */
+#hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 31, 68, 0.88) 0%,
+    rgba(13, 45, 94, 0.82) 50%,
+    rgba(22, 58, 117, 0.78) 100%
+  );
+  z-index: 1;
 }
 
 .hero-content {
+  position: relative;
+  z-index: 2;
   max-width: 640px;
 }
 
@@ -881,9 +1061,109 @@ a.auth-welcome:hover {
   letter-spacing: 0.04em;
 }
 
+/* ── SCROLLING COURSE LOGOS (bottom of hero) ── */
+.hero-course-marquee {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 1.1rem 0 3rem;
+  background: linear-gradient(to top, rgba(6, 20, 46, 0.75), rgba(6, 20, 46, 0.1));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-course-track {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  animation: heroMarqueeScroll 26s linear infinite;
+}
+
+.hero-course-marquee:hover .hero-course-track {
+  animation-play-state: paused;
+}
+
+@keyframes heroMarqueeScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.hero-course-logo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 30px;
+  transition: background 0.25s, transform 0.25s;
+}
+
+.hero-course-logo:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.22);
+  z-index: 5;
+}
+
+.hero-course-logo-icon {
+  height: 28px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.hero-course-logo-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hero-course-explore {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0;
+  background: var(--sky);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 0.32rem 0.75rem;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.hero-course-logo:hover .hero-course-explore {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 @media (max-width: 768px) {
   .hero-stats {
     gap: 1.5rem;
+  }
+
+  .hero-course-track {
+    gap: 2rem;
+    animation-duration: 20s;
+  }
+
+  .hero-course-logo-label {
+    font-size: 0.8rem;
   }
 }
 
@@ -918,6 +1198,13 @@ a.auth-welcome:hover {
   border-radius: 16px;
   padding: 2.2rem;
   text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.promo-card:hover {
+  border-color: var(--sky);
+  box-shadow: 0 8px 32px rgba(30, 94, 188, 0.1);
+  transform: translateY(-4px);
 }
 
 .promo-card-icon {
@@ -1119,6 +1406,15 @@ a.service-card {
   gap: 1rem;
   margin-top: 2.5rem;
   margin-bottom: 2.5rem;
+  /* Hover panels below expand past their own grid cell — this keeps
+     a hovered card's panel drawn above the *next* row rather than
+     getting clipped or clipping into it. */
+  position: relative;
+  z-index: 0;
+}
+
+.course-card {
+  position: relative;
 }
 
 .course-pill {
@@ -1128,13 +1424,7 @@ a.service-card {
   padding: 1.2rem 1rem;
   text-align: center;
   transition: all 0.2s;
-  cursor: default;
-}
-
-a.course-pill {
-  display: block;
-  text-decoration: none;
-  color: inherit;
+  cursor: pointer;
 }
 
 .course-pill:hover {
@@ -1145,6 +1435,17 @@ a.course-pill {
 .course-pill:hover .pill-name,
 .course-pill:hover .pill-sub {
   color: var(--white);
+}
+
+/* Inline logo icons (e.g. the official Python logo) used in place of
+   an emoji — sized in em so they scale with whatever font-size their
+   container already sets, the same way an emoji character would. */
+.icon-img {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  vertical-align: -0.15em;
+  display: inline-block;
 }
 
 .pill-emoji {
@@ -1164,6 +1465,143 @@ a.course-pill {
   color: var(--muted);
   margin-top: 0.2rem;
   transition: color 0.2s;
+}
+
+/* ── COURSE HOVER PANEL ──
+   Revealed on hover (desktop) or tap (touch, via .active toggled in
+   JS). Absolutely positioned over its own resting pill so it doesn't
+   shift grid layout, and elevated above neighbouring cards while open. */
+.course-hover-panel {
+  position: absolute;
+  top: 0;
+  left: -18px;
+  right: -18px;
+  background: var(--white);
+  border: 1.5px solid var(--royal);
+  border-radius: 12px;
+  padding: 1.2rem 1.1rem;
+  box-shadow: 0 16px 44px rgba(10, 31, 68, 0.28);
+  text-align: left;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: top center;
+  transform: translateY(-14px) scaleY(0.94);
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.course-card:hover .course-hover-panel,
+.course-card.active .course-hover-panel {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0) scaleY(1);
+  z-index: 20;
+}
+
+.course-hover-summary {
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+}
+
+.course-hover-training {
+  font-size: 0.76rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0;
+  margin-bottom: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+/* Only added when a workshop actually exists to apply for. */
+.course-hover-training.clickable {
+  cursor: pointer;
+  margin: 0 -0.4rem 0.9rem;
+  padding: 0.6rem 0.4rem;
+  border-radius: 6px;
+}
+
+.course-hover-training.clickable:hover {
+  background: rgba(59, 158, 232, 0.08);
+  border-color: var(--sky);
+}
+
+.course-hover-training.clickable .course-hover-training-row:first-child span:first-child::after {
+  content: ' →';
+  color: var(--sky);
+  font-weight: 700;
+}
+
+.course-hover-training-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.course-hover-training-row + .course-hover-training-row {
+  margin-top: 0.3rem;
+}
+
+.course-hover-training-row span:last-child {
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+.course-hover-online-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--sky);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  margin-bottom: 0.7rem;
+  transition: background 0.2s;
+}
+
+.course-hover-online-btn:hover {
+  background: #2a8fd4;
+}
+
+.course-hover-explore {
+  display: block;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--royal);
+  text-decoration: none;
+}
+
+.course-hover-explore:hover {
+  color: var(--sky);
+}
+
+/* Hover panels rely on :hover, which touch devices don't have — the
+   JS .active toggle covers tap instead, so no extra rule is needed
+   here beyond making sure the panel isn't clipped on narrow screens. */
+@media (max-width: 480px) {
+  .course-hover-panel {
+    position: static;
+    opacity: 1;
+    pointer-events: all;
+    transform: none;
+    box-shadow: none;
+    display: none;
+    margin-top: 0.6rem;
+  }
+
+  .course-card.active .course-hover-panel {
+    display: block;
+  }
 }
 
 /* ── DELIVERY BADGES ── */
@@ -1338,6 +1776,37 @@ footer {
   max-width: 240px;
 }
 
+.footer-social {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.social-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.social-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.social-icon:hover {
+  background: var(--sky);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
 .footer-heading {
   color: var(--white);
   font-size: 0.82rem;
@@ -1445,10 +1914,17 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   font-size: 1.6rem;
   box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
   z-index: 999;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.whatsapp-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
 }
 
 .whatsapp-btn:hover {

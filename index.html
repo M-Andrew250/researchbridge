@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ResearchBridge Consulting empowers students, professionals, NGOs, and institutions with research support, data analysis training, and academic services. Courses in Excel, Python, Stata, SPSS, R, NVivo, Power BI, and KoBoToolbox — online or in-person in Kigali, Rwanda." />
     <title>ResearchBridge Consulting</title>
+
+    <!-- Social sharing preview (Open Graph / Twitter). Replace
+         https://YOUR-DOMAIN-HERE with the real production domain
+         before deploying — these need absolute URLs since Facebook/
+         LinkedIn/WhatsApp crawlers fetch them directly, not through
+         a browser session. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ResearchBridge Consulting" />
+    <meta property="og:title" content="ResearchBridge Consulting" />
+    <meta property="og:description" content="ResearchBridge Consulting empowers students, professionals, NGOs, and institutions with research support, data analysis training, and academic services. Courses in Excel, Python, Stata, SPSS, R, NVivo, Power BI, and KoBoToolbox — online or in-person in Kigali, Rwanda." />
+    <meta property="og:url" content="https://YOUR-DOMAIN-HERE/index.html" />
+    <meta property="og:image" content="https://YOUR-DOMAIN-HERE/images/ResearchBridge%20Banner.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ResearchBridge Consulting" />
+    <meta name="twitter:description" content="ResearchBridge Consulting empowers students, professionals, NGOs, and institutions with research support, data analysis training, and academic services. Courses in Excel, Python, Stata, SPSS, R, NVivo, Power BI, and KoBoToolbox — online or in-person in Kigali, Rwanda." />
+    <meta name="twitter:image" content="https://YOUR-DOMAIN-HERE/images/ResearchBridge%20Banner.png" />
+
     <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" type="image/png" href="images/logo.png" />
 </head>
@@ -77,31 +94,86 @@
                 <a href="#courses" class="nav-dropdown-trigger">
                 Courses <span class="dropdown-arrow">›</span>
                 </a>
-                <div class="nav-dropdown">
-                    <a href="pages/courses/excel.html">
-                        <span>📊</span> Excel for Data &amp; Analysis
-                    </a>
-                    <a href="pages/courses/python.html">
-                        <span>🐍</span> Python for Data Science
-                    </a>
-                    <a href="pages/courses/stata.html">
-                        <span>📉</span> Stata for Econometrics
-                    </a>
-                    <a href="pages/courses/spss.html">
-                        <span>🔬</span> SPSS for Statistical Analysis
-                    </a>
-                    <a href="pages/courses/r.html">
-                        <span>📐</span> R for Statistical Computing
-                    </a>
-                    <a href="pages/courses/nvivo.html">
-                        <span>🗃️</span> NVivo for Qualitative Research
-                    </a>
-                    <a href="pages/courses/powerbi.html">
-                        <span>🌐</span> Power BI for Data Visualization
-                    </a>
-                    <a href="pages/courses/kobo.html">
-                        <span>📋</span> KoBoToolbox for Data Collection
-                    </a>
+                <div class="nav-dropdown" id="navCoursesDropdown">
+                    <div class="nav-course-item" data-slug="excel">
+                        <a href="pages/courses/excel.html" class="nav-course-row">
+                            <span><img src="images/excel.png" alt="" class="icon-img" /></span> Excel for Data &amp; Analysis
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="python">
+                        <a href="pages/courses/python.html" class="nav-course-row">
+                            <span><img src="images/python-logo.svg" alt="" class="icon-img" /></span> Python for Data Science
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="stata">
+                        <a href="pages/courses/stata.html" class="nav-course-row">
+                            <span><img src="images/stata-logo.png" alt="" class="icon-img" /></span> Stata for Econometrics
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="spss">
+                        <a href="pages/courses/spss.html" class="nav-course-row">
+                            <span><img src="images/spss-logo.png" alt="" class="icon-img" /></span> SPSS for Statistical Analysis
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="r">
+                        <a href="pages/courses/r.html" class="nav-course-row">
+                            <span><img src="images/r-logo.svg" alt="" class="icon-img" /></span> R for Statistical Computing
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="nvivo">
+                        <a href="pages/courses/nvivo.html" class="nav-course-row">
+                            <span><img src="images/nvivo-logo.jpg" alt="" class="icon-img" /></span> NVivo for Qualitative Research
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="powerbi">
+                        <a href="pages/courses/powerbi.html" class="nav-course-row">
+                            <span><img src="images/powerbi-logo.svg" alt="" class="icon-img" /></span> Power BI for Data Visualization
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-course-item" data-slug="kobo">
+                        <a href="pages/courses/kobo.html" class="nav-course-row">
+                            <span><img src="images/kobo-logo.png" alt="" class="icon-img" /></span> KoBoToolbox for Data Collection
+                        </a>
+                        <div class="nav-course-panel">
+                            <div class="course-hover-training" data-training></div>
+                            <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                        </div>
+                    </div>
                 </div>
             </li>
 
@@ -118,11 +190,16 @@
                 <a href="pages/signup.html" class="auth-btn-signup">Sign Up</a>
             </div>
             <!-- Logged in state -->
-            <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
-                <a href="pages/dashboard.html" class="auth-welcome" id="authWelcome">
-                    Hi, User
-                </a>
-                <button class="auth-btn-logout" id="authLogout">Log Out</button>
+            <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
+                <button type="button" class="account-trigger" id="accountTrigger">
+                    <span id="authWelcome">Logged in as User</span>
+                    <span class="dropdown-arrow">›</span>
+                </button>
+                <div class="nav-dropdown" id="accountMenu">
+                    <a href="pages/dashboard.html"><span>📊</span> Dashboard</a>
+                    <a href="pages/profile.html"><span>👤</span> Profile</a>
+                    <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
+                </div>
             </div>
             
             <!-- <div class="auth-logged-in" id="authLoggedIn" style="display:none;">
@@ -137,7 +214,22 @@
 
     <!-- HERO SECTION -->
     <section id="hero">
-            <!-- VIDEO BACKGROUND -->
+
+        <!-- VIDEO BACKGROUND — src is intentionally left off the
+             <source> tag; js/main.js only assigns it (and starts
+             playback) on wider screens, so phones/slow connections
+             never download the 4MB+ file. Below that width, the
+             section's own CSS gradient shows instead. -->
+        <video
+          class="hero-bg-video"
+          id="heroVideo"
+          muted
+          loop
+          playsinline
+          preload="none">
+            <source data-src="videos/Research.mp4" type="video/mp4" />
+        </video>
+
         <div class="hero-content">
 
             <div class="hero-eyebrow">Research &amp; Data Consulting</div>
@@ -170,6 +262,94 @@
 
         </div>
 
+        <!-- SCROLLING COURSE LOGOS -->
+        <div class="hero-course-marquee">
+            <div class="hero-course-track">
+
+                <a href="pages/courses/excel.html" class="hero-course-logo">
+                    <img src="images/excel.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Excel</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/python.html" class="hero-course-logo">
+                    <img src="images/python-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Python</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/stata.html" class="hero-course-logo">
+                    <img src="images/stata-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Stata</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/spss.html" class="hero-course-logo">
+                    <img src="images/spss-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">SPSS</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/R.html" class="hero-course-logo">
+                    <img src="images/r-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">R</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/nvivo.html" class="hero-course-logo">
+                    <img src="images/nvivo-logo.jpg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">NVivo</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/powerbi.html" class="hero-course-logo">
+                    <img src="images/powerbi-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Power BI</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/kobo.html" class="hero-course-logo">
+                    <img src="images/kobo-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">KoBoToolbox</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+
+                <a href="pages/courses/excel.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/excel.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Excel</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/python.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/python-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Python</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/stata.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/stata-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Stata</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/spss.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/spss-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">SPSS</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/R.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/r-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">R</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/nvivo.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/nvivo-logo.jpg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">NVivo</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/powerbi.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/powerbi-logo.svg" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">Power BI</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+                <a href="pages/courses/kobo.html" class="hero-course-logo" aria-hidden="true" tabindex="-1">
+                    <img src="images/kobo-logo.png" alt="" class="hero-course-logo-icon" />
+                    <span class="hero-course-logo-label">KoBoToolbox</span>
+                    <span class="hero-course-explore">Explore the course →</span>
+                </a>
+
+            </div>
+        </div>
 
     </section>
 
@@ -307,55 +487,119 @@
         and in-person — designed to take you from beginner to confident user of
         leading research and analytics tools.</p>
 
-        <div class="courses-grid">
+        <div class="courses-grid" id="coursesGrid">
 
-            <a href="pages/courses/excel.html" class="course-pill">
-                <div class="pill-emoji">📊</div>
-                <div class="pill-name">Excel</div>
-                <div class="pill-sub">Data &amp; Analysis</div>
-            </a>
+            <div class="course-card" data-slug="excel">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/excel.png" alt="" class="icon-img" /></div>
+                    <div class="pill-name">Excel</div>
+                    <div class="pill-sub">Data &amp; Analysis</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn Excel from the ground up — spreadsheets, formulas, pivot tables, and dynamic dashboards. Beginner to advanced, certificate included.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/excel.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/python.html" class="course-pill">
-                <div class="pill-emoji">🐍</div>
-                <div class="pill-name">Python</div>
-                <div class="pill-sub">Programming &amp; ML</div>
-            </a>
+            <div class="course-card" data-slug="python">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/python-logo.svg" alt="" class="icon-img" /></div>
+                    <div class="pill-name">Python</div>
+                    <div class="pill-sub">Programming &amp; ML</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn Python for Data Science — programming, data analysis, visualisation, and machine learning fundamentals. Certificate included.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/python.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/stata.html" class="course-pill">
-                <div class="pill-emoji">📉</div>
-                <div class="pill-name">Stata</div>
-                <div class="pill-sub">Econometrics</div>
-            </a>
+            <div class="course-card" data-slug="stata">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/stata-logo.png" alt="" class="icon-img" /></div>
+                    <div class="pill-name">Stata</div>
+                    <div class="pill-sub">Econometrics</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Master Stata for econometric analysis, regression modelling, and research data management. The tool of choice for economists and social scientists.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/stata.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/spss.html" class="course-pill">
-                <div class="pill-emoji">🔬</div>
-                <div class="pill-name">SPSS</div>
-                <div class="pill-sub">Statistical Analysis</div>
-            </a>
+            <div class="course-card" data-slug="spss">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/spss-logo.png" alt="" class="icon-img" /></div>
+                    <div class="pill-name">SPSS</div>
+                    <div class="pill-sub">Statistical Analysis</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn SPSS for statistical analysis — data management, hypothesis testing, and research reporting. Certificate included.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/spss.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/R.html" class="course-pill">
-                <div class="pill-emoji">📐</div>
-                <div class="pill-name">R</div>
-                <div class="pill-sub">Statistical Computing</div>
-            </a>
+            <div class="course-card" data-slug="r">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/r-logo.svg" alt="" class="icon-img" /></div>
+                    <div class="pill-name">R</div>
+                    <div class="pill-sub">Statistical Computing</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn R for statistical computing — data analysis, visualisation, and reproducible research workflows. Certificate included.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/R.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/nvivo.html" class="course-pill">
-                <div class="pill-emoji">🗃️</div>
-                <div class="pill-name">NVivo</div>
-                <div class="pill-sub">Qualitative Research</div>
-            </a>
+            <div class="course-card" data-slug="nvivo">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/nvivo-logo.jpg" alt="" class="icon-img" /></div>
+                    <div class="pill-name">NVivo</div>
+                    <div class="pill-sub">Qualitative Research</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Master NVivo for qualitative research — coding, thematic analysis, and organising qualitative data for your thesis or research project.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/nvivo.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/powerbi.html" class="course-pill">
-                <div class="pill-emoji">🌐</div>
-                <div class="pill-name">Power BI</div>
-                <div class="pill-sub">Data Visualization</div>
-            </a>
+            <div class="course-card" data-slug="powerbi">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/powerbi-logo.svg" alt="" class="icon-img" /></div>
+                    <div class="pill-name">Power BI</div>
+                    <div class="pill-sub">Data Visualization</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn Power BI for data visualisation and business intelligence — build interactive dashboards and reports. Certificate included.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/powerbi.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
-            <a href="pages/courses/kobo.html" class="course-pill">
-                <div class="pill-emoji">📋</div>
-                <div class="pill-name">KoBoToolbox</div>
-                <div class="pill-sub">Survey &amp; Data Collection</div>
-            </a>
+            <div class="course-card" data-slug="kobo">
+                <div class="course-pill">
+                    <div class="pill-emoji"><img src="images/kobo-logo.png" alt="" class="icon-img" /></div>
+                    <div class="pill-name">KoBoToolbox</div>
+                    <div class="pill-sub">Survey &amp; Data Collection</div>
+                </div>
+                <div class="course-hover-panel">
+                    <p class="course-hover-summary">Learn KoBoToolbox for digital data collection — design surveys, collect field data, and manage research or M&amp;E data.</p>
+                    <div class="course-hover-training" data-training></div>
+                    <a href="#" class="course-hover-online-btn" data-online-cta>Take Online Course →</a>
+                    <a href="pages/courses/kobo.html" class="course-hover-explore">Explore Course →</a>
+                </div>
+            </div>
 
         </div>
 
@@ -479,6 +723,20 @@
                 </a>
                 <p>Empowering individuals and institutions through
                 research excellence and data skills training.</p>
+                <div class="footer-social">
+                    <a href="https://www.facebook.com/Oneshotfilmss/" target="_blank" rel="noopener" class="social-icon" aria-label="Facebook">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg>
+                    </a>
+                    <a href="https://www.instagram.com/researchbridgeltd/" target="_blank" rel="noopener" class="social-icon" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg>
+                    </a>
+                    <a href="https://www.linkedin.com/company/researchbridge-consulting-ltd/" target="_blank" rel="noopener" class="social-icon" aria-label="LinkedIn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </a>
+                    <a href="https://www.youtube.com/@ResearchBridgeconsulting" target="_blank" rel="noopener" class="social-icon" aria-label="YouTube">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                </div>
             </div>
 
             <div class="footer-links">
@@ -505,7 +763,7 @@
                 <p class="footer-heading">Contact</p>
                 <ul>
                     <li><a href="mailto:info@researchbridgeconsulting.com">Email Us</a></li>
-                    <li><a href="tel:+250789452479">WhatsApp Us</a></li>
+                    <li><a href="https://wa.me/250789452479" target="_blank" rel="noopener">WhatsApp Us</a></li>
                     <li><span>Kigali, Rwanda</span></li>
                 </ul>
             </div>
@@ -524,14 +782,34 @@
     </footer>
 
     <!-- WHATSAPP BUTTON -->
-    <a href="https://wa.me/250789452479" 
-    class="whatsapp-btn" 
-    target="_blank" 
+    <a href="https://wa.me/250789452479"
+    class="whatsapp-btn"
+    target="_blank"
+    rel="noopener"
     title="Chat with us on WhatsApp">
-    🗨️
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
     </a>
     <script src="js/main.js"></script>
     <script>
+      // ── HERO VIDEO: SKIP ON MOBILE / DATA SAVER ──
+      // The <source> tag only carries data-src, not src, so nothing
+      // downloads until this runs. Above the 768px breakpoint (and
+      // only if the browser isn't flagging a "Data Saver" preference),
+      // we assign the real src and start playback; js/main.js's
+      // existing canplay/scroll listeners (shared with the course
+      // pages) take it from there. Below that, the video element is
+      // left empty and the section's own CSS gradient shows instead.
+      (function () {
+        const saveData = navigator.connection && navigator.connection.saveData;
+        if (window.innerWidth <= 768 || saveData) return;
+        const heroVideo = document.getElementById('heroVideo');
+        const source = heroVideo && heroVideo.querySelector('source[data-src]');
+        if (!source) return;
+        source.src = source.dataset.src;
+        heroVideo.load();
+        heroVideo.play().catch(() => {});
+      })();
+
       // ── CONTACT FORM ──
       const contactSubmit = document.getElementById('contactSubmit');
       const contactStatus = document.getElementById('contactStatus');
@@ -604,14 +882,14 @@
         }
 
         const courseCatalog = {
-          excel:   { emoji: '📊', name: 'Excel for Data & Analysis' },
-          python:  { emoji: '🐍', name: 'Python for Data Science' },
-          stata:   { emoji: '📉', name: 'Stata for Econometrics' },
-          spss:    { emoji: '🔬', name: 'SPSS for Statistical Analysis' },
-          r:       { emoji: '📐', name: 'R for Statistical Computing' },
-          nvivo:   { emoji: '🗃️', name: 'NVivo for Qualitative Research' },
-          powerbi: { emoji: '🌐', name: 'Power BI for Data Visualization' },
-          kobo:    { emoji: '📋', name: 'KoBoToolbox for Data Collection' },
+          excel:   { emoji: '<img src="images/excel.png" alt="" class="icon-img" />', name: 'Excel for Data & Analysis' },
+          python:  { emoji: '<img src="images/python-logo.svg" alt="" class="icon-img" />', name: 'Python for Data Science' },
+          stata:   { emoji: '<img src="images/stata-logo.png" alt="" class="icon-img" />', name: 'Stata for Econometrics' },
+          spss:    { emoji: '<img src="images/spss-logo.png" alt="" class="icon-img" />', name: 'SPSS for Statistical Analysis' },
+          r:       { emoji: '<img src="images/r-logo.svg" alt="" class="icon-img" />', name: 'R for Statistical Computing' },
+          nvivo:   { emoji: '<img src="images/nvivo-logo.jpg" alt="" class="icon-img" />', name: 'NVivo for Qualitative Research' },
+          powerbi: { emoji: '<img src="images/powerbi-logo.svg" alt="" class="icon-img" />', name: 'Power BI for Data Visualization' },
+          kobo:    { emoji: '<img src="images/kobo-logo.png" alt="" class="icon-img" />', name: 'KoBoToolbox for Data Collection' },
         };
 
         const inPersonBody = document.getElementById('inPersonPromoBody');
@@ -659,6 +937,98 @@
           e.preventDefault();
           goTo('#courses', '../index.html#courses');
         });
+      })();
+    </script>
+
+    <script>
+      // ── COURSE CARD HOVER PANELS ──
+      (async () => {
+        const supabase = await window.rbcSupabaseReady;
+        const { data: { session } } = await supabase.auth.getSession();
+
+        // Same login-gating pattern as the guest training promo above:
+        // logged-in visitors go straight there, guests detour through
+        // login/signup and land back on the exact enrolment they picked.
+        function goTo(directPath, loginRedirectPath) {
+          if (session) {
+            window.location.href = directPath;
+          } else {
+            window.location.href = `pages/login.html?redirect=${encodeURIComponent(loginRedirectPath)}`;
+          }
+        }
+
+        // Shared by the homepage course cards and the navbar's Courses
+        // dropdown rows — both use the same data-slug/data-training/
+        // data-online-cta structure, just inside a different container.
+        async function wireCourseActions(item) {
+          const slug = item.dataset.slug;
+          const trainingEl = item.querySelector('[data-training]');
+          const onlineCta = item.querySelector('[data-online-cta]');
+
+          onlineCta.addEventListener('click', (e) => {
+            e.preventDefault();
+            const enrolQuery = `course=${slug}&mode=Online`;
+            goTo(`pages/enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
+          });
+
+          try {
+            const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${slug}`);
+            const workshops = res.ok ? await res.json() : [];
+            const next = workshops[0];
+
+            if (!next) {
+              trainingEl.innerHTML = `<div class="course-hover-training-row">
+                <span>No in-person training scheduled yet</span>
+              </div>`;
+            } else {
+              const dateLabel = new Date(next.start_date).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric',
+              });
+              trainingEl.classList.add('clickable');
+              trainingEl.title = 'Apply for this in-person training';
+              trainingEl.innerHTML = `
+                <div class="course-hover-training-row"><span>Next In-Person</span><span>${dateLabel}</span></div>
+                <div class="course-hover-training-row"><span>Venue</span><span>${next.venue}</span></div>
+              `;
+              trainingEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const enrolQuery = `course=${slug}&mode=In-Person&workshop=${next.id}`;
+                goTo(`pages/enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
+              });
+            }
+          } catch (err) {
+            trainingEl.innerHTML = `<div class="course-hover-training-row"><span>Could not load training dates</span></div>`;
+          }
+        }
+
+        // ── HOMEPAGE COURSE CARDS ──
+        const cards = document.querySelectorAll('.course-card');
+        cards.forEach((card) => {
+          wireCourseActions(card);
+
+          // Tap-to-toggle for touch devices, which have no :hover.
+          // Also closes any other open card first.
+          card.querySelector('.course-pill').addEventListener('click', (e) => {
+            const wasActive = card.classList.contains('active');
+            cards.forEach(c => c.classList.remove('active'));
+            if (!wasActive) {
+              e.stopPropagation();
+              card.classList.add('active');
+            }
+          });
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.course-card')) {
+            cards.forEach(c => c.classList.remove('active'));
+          }
+        });
+
+        // ── NAVBAR "COURSES" DROPDOWN ROWS ──
+        // Hover-only (see the mobile CSS override) — the row underneath
+        // stays a plain link to the course page, so tapping on touch
+        // devices still works exactly as before.
+        document.querySelectorAll('.nav-course-item').forEach(wireCourseActions);
       })();
     </script>
 

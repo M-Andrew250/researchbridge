@@ -93,6 +93,49 @@ describe('auth', () => {
     const res = await fetch(`${API}/api/auth/check-phone`);
     assert.equal(res.status, 400);
   });
+
+  test('GET /api/auth/me returns the profile, PATCH updates name and phone', async () => {
+    const user = await createTestUser();
+
+    const before = await (await fetch(`${API}/api/auth/me`, { headers: user.authHeader })).json();
+    assert.equal(before.fullName, 'Test User');
+    assert.equal(before.avatarUrl, null);
+
+    const newPhone = `+250700${Date.now().toString().slice(-6)}`;
+    const patchRes = await fetch(`${API}/api/auth/me`, {
+      method: 'PATCH', headers: { ...user.authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullName: 'Updated Name', phone: newPhone }),
+    });
+    assert.equal(patchRes.status, 200);
+    const patched = await patchRes.json();
+    assert.equal(patched.fullName, 'Updated Name');
+    assert.equal(patched.phone, newPhone);
+
+    const after = await (await fetch(`${API}/api/auth/me`, { headers: user.authHeader })).json();
+    assert.equal(after.fullName, 'Updated Name');
+
+    await deleteTestUser(user.userId);
+  });
+
+  test('PATCH /api/auth/me rejects a phone number already used by another account', async () => {
+    const phone = `+250700${Date.now().toString().slice(-6)}`;
+    const userA = await createTestUser({ phone });
+    const userB = await createTestUser();
+
+    const res = await fetch(`${API}/api/auth/me`, {
+      method: 'PATCH', headers: { ...userB.authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    assert.equal(res.status, 409);
+
+    await deleteTestUser(userA.userId);
+    await deleteTestUser(userB.userId);
+  });
+
+  test('GET /api/auth/me requires authentication', async () => {
+    const res = await fetch(`${API}/api/auth/me`);
+    assert.equal(res.status, 401);
+  });
 });
 
 // ── ENROLMENTS ──
