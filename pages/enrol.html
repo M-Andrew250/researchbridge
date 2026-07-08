@@ -467,7 +467,37 @@
       const { data: { session } } = await supabase.auth.getSession();
       hasSession = !!session;
       updateOnlineGate();
+      if (session) prefillFromProfile(session);
     })();
+
+    // Defaults the form to the logged-in user's real account info —
+    // avoids the enrolment's email/phone silently drifting from the
+    // account it's linked to (they were previously just blank, free
+    // text). Still fully editable, since someone might be enrolling
+    // on another person's behalf or want different contact details
+    // for this specific application.
+    async function prefillFromProfile(session) {
+      document.getElementById('email').value = session.user.email || '';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!res.ok) return;
+
+        const { fullName, phone } = await res.json();
+        const nameParts = (fullName || '').trim().split(/\s+/).filter(Boolean);
+        if (nameParts.length > 0) {
+          document.getElementById('firstName').value = nameParts[0];
+          document.getElementById('lastName').value = nameParts.slice(1).join(' ');
+        }
+        if (phone) {
+          document.getElementById('phone').value = phone;
+        }
+      } catch (err) {
+        // Pre-fill is a convenience, not required for the form to work.
+      }
+    }
 
     // Online courses require an account (to access the learning
     // platform and track progress); in-person applications don't, so
