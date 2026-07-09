@@ -758,11 +758,19 @@
             </div>
             <div class="admin-form-field">
               <label for="lessonContentUrl">Content URL</label>
-              <input type="text" id="lessonContentUrl" placeholder="Video/document link (optional)" />
+              <input type="text" id="lessonContentUrl" placeholder="Video link, or upload a document below" />
             </div>
             <div class="admin-form-field" id="lessonPassThresholdField" style="display:none;">
               <label for="lessonPassThreshold">Pass Threshold (%)</label>
               <input type="number" id="lessonPassThreshold" min="0" max="100" value="70" />
+            </div>
+          </div>
+          <div class="admin-form-field" id="lessonUploadField" style="display:none; margin-bottom:1.2rem;">
+            <label for="lessonUploadInput">Or Upload a Document (PDF/Word/PowerPoint/Excel, max 20MB)</label>
+            <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+              <input type="file" id="lessonUploadInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" />
+              <button type="button" class="admin-outline-btn" id="lessonUploadBtn">Upload</button>
+              <span class="admin-sub" id="lessonUploadStatus"></span>
             </div>
           </div>
           <div class="admin-form-field" style="margin-bottom:1.2rem;">
@@ -894,6 +902,10 @@
     const lessonPassThresholdField = document.getElementById('lessonPassThresholdField');
     const lessonPassThreshold = document.getElementById('lessonPassThreshold');
     const lessonContentBody = document.getElementById('lessonContentBody');
+    const lessonUploadField = document.getElementById('lessonUploadField');
+    const lessonUploadInput = document.getElementById('lessonUploadInput');
+    const lessonUploadBtn = document.getElementById('lessonUploadBtn');
+    const lessonUploadStatus = document.getElementById('lessonUploadStatus');
     const modulesAccordion = document.getElementById('modulesAccordion');
     const modulesEmptyState = document.getElementById('modulesEmptyState');
 
@@ -1604,9 +1616,51 @@
     function updateLessonFieldVisibility() {
       const isQuiz = lessonType.value === 'exercise' || lessonType.value === 'exam';
       lessonPassThresholdField.style.display = isQuiz ? 'block' : 'none';
+      lessonUploadField.style.display = lessonType.value === 'document' ? 'block' : 'none';
     }
 
     lessonType.addEventListener('change', updateLessonFieldVisibility);
+
+    lessonUploadBtn.addEventListener('click', async () => {
+      const file = lessonUploadInput.files[0];
+      if (!file) {
+        lessonUploadStatus.textContent = 'Choose a file first.';
+        return;
+      }
+      if (!currentCourseSlug) {
+        lessonUploadStatus.textContent = 'Select a course first.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('course_slug', currentCourseSlug);
+
+      lessonUploadBtn.disabled = true;
+      lessonUploadStatus.textContent = 'Uploading…';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/uploads/course-material`, {
+          method: 'POST',
+          headers: authHeader,
+          body: formData,
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          lessonUploadStatus.textContent = data.error || 'Upload failed. Please try again.';
+          return;
+        }
+
+        lessonContentUrl.value = data.path;
+        lessonUploadStatus.textContent = `Uploaded: ${file.name}`;
+      } catch (err) {
+        lessonUploadStatus.textContent = 'Could not reach the server.';
+      } finally {
+        lessonUploadBtn.disabled = false;
+      }
+    });
 
     function openLessonForm(lesson, module) {
       moduleForm.classList.remove('visible');
@@ -1621,6 +1675,8 @@
       lessonContentUrl.value = lesson ? (lesson.content_url || '') : '';
       lessonContentBody.value = lesson ? (lesson.content_body || '') : '';
       lessonPassThreshold.value = lesson ? lesson.pass_threshold : 70;
+      lessonUploadStatus.textContent = '';
+      lessonUploadInput.value = '';
       updateLessonFieldVisibility();
       lessonForm.classList.add('visible');
       lessonForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

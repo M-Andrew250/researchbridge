@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { supabase } from '../config/supabaseClient.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
@@ -368,6 +369,63 @@ adminRouter.delete('/lessons/:id', async (req, res) => {
   }
 
   res.status(204).end();
+});
+
+// ── COURSE MATERIAL UPLOADS ──
+// Feeds a document lesson's content_url: learning.js's resolveContentUrl
+// treats a non-"http" content_url as a path inside this private bucket
+// and signs a short-lived URL to it on each request.
+
+const UPLOAD_BUCKET = 'course-materials';
+const ALLOWED_UPLOAD_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  fileFilter: (req, file, cb) => {
+    cb(null, ALLOWED_UPLOAD_TYPES.has(file.mimetype));
+  },
+});
+
+// POST /api/admin/uploads/course-material — multipart form: { file, course_slug }
+// Returns { path } to paste into a document lesson's Content URL field.
+adminRouter.post('/uploads/course-material', (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: err.code === 'LIMIT_FILE_SIZE' ? 'File is too large (max 20MB).' : 'Could not process the upload.',
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Missing file, or its type/size is not allowed (PDF/Word/PowerPoint/Excel, up to 20MB).' });
+  }
+  if (!String(req.body.course_slug ?? '').trim()) {
+    return res.status(400).json({ error: 'Missing required field: course_slug' });
+  }
+
+  const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${req.body.course_slug}/${Date.now()}-${safeName}`;
+
+  const { error } = await supabase.storage
+    .from(UPLOAD_BUCKET)
+    .upload(path, req.file.buffer, { contentType: req.file.mimetype });
+
+  if (error) {
+    return sendServerError(res, error, 'admin.uploads.courseMaterial');
+  }
+
+  res.status(201).json({ path });
 });
 
 // ── QUIZ QUESTIONS & OPTIONS (exercise/exam lessons) ──
