@@ -29,33 +29,66 @@ async function resolveMaterialUrl(material) {
   return error ? null : data.signedUrl;
 }
 
+// A module unlocks once every module before it (by order_index) is
+// complete — "complete" meaning every one of its lessons is done
+// (document/video: marked completed; exercise/exam: quiz passed).
+// The first module is always unlocked. Used both to annotate the
+// curriculum for the sidebar and to gate direct lesson-detail access
+// server-side (not just hidden in the UI — see verifyOnlineEnrolment's
+// own comment on why that matters).
+async function computeModuleUnlocks(courseSlug, userId, enrolmentId) {
+  const { data: modules, error: modulesError } = await supabase
+    .from('course_modules')
+    .select('*, lessons(*)')
+    .eq('course_slug', courseSlug)
+    .order('order_index', { ascending: true })
+    .order('order_index', { referencedTable: 'lessons', ascending: true });
+
+  if (modulesError) throw modulesError;
+
+  const { data: progressRows, error: progressError } = await supabase
+    .from('lesson_progress')
+    .select('lesson_id, completed, quiz_score, quiz_passed')
+    .eq('user_id', userId)
+    .eq('enrolment_id', enrolmentId);
+
+  if (progressError) throw progressError;
+
+  const progressByLesson = Object.fromEntries(progressRows.map(p => [p.lesson_id, p]));
+
+  function isLessonDone(lesson) {
+    const progress = progressByLesson[lesson.id];
+    return (lesson.type === 'exercise' || lesson.type === 'exam')
+      ? !!progress?.quiz_passed
+      : !!progress?.completed;
+  }
+
+  let allPriorComplete = true;
+  const moduleUnlocked = {};
+  const moduleCompleted = {};
+
+  for (const m of modules) {
+    moduleUnlocked[m.id] = allPriorComplete;
+    const thisComplete = m.lessons.length > 0 && m.lessons.every(isLessonDone);
+    moduleCompleted[m.id] = thisComplete;
+    allPriorComplete = allPriorComplete && thisComplete;
+  }
+
+  return { modules, progressByLesson, moduleUnlocked, moduleCompleted, isLessonDone };
+}
+
 // GET /api/enrolments/:enrolmentId/curriculum
 // Modules + lessons for this enrolment's course, each lesson tagged
 // with this user's completion state, plus the overall percentage
 // that drives the progress ring.
 learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolment, async (req, res) => {
-  const { data: modules, error: modulesError } = await supabase
-    .from('course_modules')
-    .select('*, lessons(*)')
-    .eq('course_slug', req.enrolment.course_slug)
-    .order('order_index', { ascending: true })
-    .order('order_index', { referencedTable: 'lessons', ascending: true });
-
-  if (modulesError) {
-    return sendServerError(res, modulesError, 'learning.curriculum.modules');
+  let unlocks;
+  try {
+    unlocks = await computeModuleUnlocks(req.enrolment.course_slug, req.user.id, req.enrolment.id);
+  } catch (err) {
+    return sendServerError(res, err, 'learning.curriculum.unlocks');
   }
-
-  const { data: progressRows, error: progressError } = await supabase
-    .from('lesson_progress')
-    .select('lesson_id, completed, quiz_score, quiz_passed')
-    .eq('user_id', req.user.id)
-    .eq('enrolment_id', req.enrolment.id);
-
-  if (progressError) {
-    return sendServerError(res, progressError, 'learning.curriculum.progress');
-  }
-
-  const progressByLesson = Object.fromEntries(progressRows.map(p => [p.lesson_id, p]));
+  const { modules, progressByLesson, moduleUnlocked, moduleCompleted } = unlocks;
 
   let totalLessons = 0;
   let completedLessons = 0;
@@ -63,6 +96,8 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
   const modulesOut = modules.map(m => ({
     id: m.id,
     title: m.title,
+    unlocked: moduleUnlocked[m.id],
+    completed: moduleCompleted[m.id],
     lessons: m.lessons.map(l => {
       totalLessons += 1;
       const progress = progressByLesson[l.id];
@@ -74,6 +109,7 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
         completed: !!progress?.completed,
         quizScore: progress?.quiz_score ?? null,
         quizPassed: progress?.quiz_passed ?? null,
+        locked: !moduleUnlocked[m.id],
       };
     }),
   }));
@@ -112,12 +148,22 @@ learningRouter.get('/:enrolmentId/curriculum', requireAuth, verifyOnlineEnrolmen
 learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineEnrolment, async (req, res) => {
   const { data: lesson, error: lessonError } = await supabase
     .from('lessons')
-    .select('*, module:course_modules!inner(course_slug)')
+    .select('*, module:course_modules!inner(id, course_slug)')
     .eq('id', req.params.lessonId)
     .single();
 
   if (lessonError || !lesson || lesson.module.course_slug !== req.enrolment.course_slug) {
     return res.status(404).json({ error: 'Lesson not found.' });
+  }
+
+  let unlocks;
+  try {
+    unlocks = await computeModuleUnlocks(req.enrolment.course_slug, req.user.id, req.enrolment.id);
+  } catch (err) {
+    return sendServerError(res, err, 'learning.lesson.unlocks');
+  }
+  if (!unlocks.moduleUnlocked[lesson.module.id]) {
+    return res.status(403).json({ error: 'Complete the previous module to unlock this lesson.' });
   }
 
   // Remember this as "where they were" for the resume-prompt on next visit.
@@ -131,7 +177,7 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
 
   const { data: progress } = await supabase
     .from('lesson_progress')
-    .select('completed, quiz_score, quiz_passed, last_position_seconds')
+    .select('completed, quiz_score, quiz_passed, quiz_attempts, last_position_seconds')
     .eq('user_id', req.user.id)
     .eq('enrolment_id', req.enrolment.id)
     .eq('lesson_id', lesson.id)
@@ -161,13 +207,18 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
     completed: !!progress?.completed,
     quizScore: progress?.quiz_score ?? null,
     quizPassed: progress?.quiz_passed ?? null,
+    quizAttempts: progress?.quiz_attempts ?? 0,
     videoPosition: progress?.last_position_seconds ?? 0,
   };
 
   if (lesson.type === 'exercise' || lesson.type === 'exam') {
+    // is_correct is fetched here (server-side only) purely to compute
+    // allowMultiple — it's stripped out below before the response is
+    // built, same guarantee as before: the answer key never reaches
+    // the browser ahead of grading.
     const { data: questions, error: qError } = await supabase
       .from('quiz_questions')
-      .select('id, question_text, order_index, quiz_options(id, option_text, order_index)')
+      .select('id, question_text, order_index, quiz_options(id, option_text, order_index, is_correct)')
       .eq('lesson_id', lesson.id)
       .order('order_index', { ascending: true })
       .order('order_index', { referencedTable: 'quiz_options', ascending: true });
@@ -179,6 +230,7 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
     out.questions = questions.map(q => ({
       id: q.id,
       questionText: q.question_text,
+      allowMultiple: q.quiz_options.filter(o => o.is_correct).length > 1,
       options: q.quiz_options.map(o => ({ id: o.id, optionText: o.option_text })),
     }));
     out.passThreshold = lesson.pass_threshold;
@@ -255,10 +307,58 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/complete', requireAuth, ver
   res.json(data);
 });
 
+function gradeAnswer(question, submittedIds) {
+  const correctIds = new Set(question.quiz_options.filter(o => o.is_correct).map(o => o.id));
+  const submitted = new Set(submittedIds);
+  const isCorrect = submitted.size === correctIds.size && [...submitted].every(id => correctIds.has(id));
+  return { isCorrect, correctIds: [...correctIds] };
+}
+
+// POST /api/enrolments/:enrolmentId/lessons/:lessonId/questions/:questionId/check
+// body: { optionIds: [...] }
+// Grades ONE question against the answer key as a formative "check
+// yourself" aid for the per-question submit/retry flow on exercise
+// lessons. Never persists anything — submit-quiz below is the only
+// thing that records an official score/pass. Exam lessons don't get
+// this (no reveal-as-you-go on a real exam); they're graded blind,
+// only via submit-quiz.
+learningRouter.post('/:enrolmentId/lessons/:lessonId/questions/:questionId/check', requireAuth, verifyOnlineEnrolment, async (req, res) => {
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('id, type')
+    .eq('id', req.params.lessonId)
+    .single();
+
+  if (!lesson || lesson.type !== 'exercise') {
+    return res.status(400).json({ error: 'Only exercise questions can be checked individually.' });
+  }
+
+  const { data: question, error } = await supabase
+    .from('quiz_questions')
+    .select('id, quiz_options(id, is_correct)')
+    .eq('id', req.params.questionId)
+    .eq('lesson_id', lesson.id)
+    .maybeSingle();
+
+  if (error || !question) {
+    return res.status(404).json({ error: 'Question not found.' });
+  }
+
+  const submittedIds = Array.isArray(req.body.optionIds) ? req.body.optionIds : [];
+  const { isCorrect, correctIds } = gradeAnswer(question, submittedIds);
+
+  res.json({ correct: isCorrect, correctOptionIds: correctIds });
+});
+
+const MAX_QUIZ_ATTEMPTS = 3;
+
 // POST /api/enrolments/:enrolmentId/lessons/:lessonId/submit-quiz
-// body: { answers: [{ questionId, optionId }, ...] }
-// Grades server-side against quiz_options.is_correct — the client
-// never sees correct answers before submitting.
+// body: { answers: [{ questionId, optionIds: [...] }, ...] }
+// Grades server-side against quiz_options.is_correct — a question is
+// correct only if the submitted set of option ids exactly matches the
+// correct set (works for both single- and multi-answer questions).
+// Capped at MAX_QUIZ_ATTEMPTS while not yet passed. Exam lessons never
+// get per-question feedback back, even here — only the overall score.
 learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, verifyOnlineEnrolment, async (req, res) => {
   const { data: lesson } = await supabase
     .from('lessons')
@@ -268,6 +368,19 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
 
   if (!lesson || (lesson.type !== 'exercise' && lesson.type !== 'exam')) {
     return res.status(400).json({ error: 'This lesson is not a quiz.' });
+  }
+
+  const { data: existingProgress } = await supabase
+    .from('lesson_progress')
+    .select('quiz_attempts, quiz_passed')
+    .eq('user_id', req.user.id)
+    .eq('enrolment_id', req.enrolment.id)
+    .eq('lesson_id', lesson.id)
+    .maybeSingle();
+
+  const attemptsSoFar = existingProgress?.quiz_attempts ?? 0;
+  if (!existingProgress?.quiz_passed && attemptsSoFar >= MAX_QUIZ_ATTEMPTS) {
+    return res.status(403).json({ error: `Maximum attempts (${MAX_QUIZ_ATTEMPTS}) reached for this quiz.` });
   }
 
   const answers = Array.isArray(req.body.answers) ? req.body.answers : [];
@@ -287,14 +400,14 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
   let correctCount = 0;
   const feedback = questions.map(q => {
     const submitted = answers.find(a => a.questionId === q.id);
-    const correctOption = q.quiz_options.find(o => o.is_correct);
-    const isCorrect = !!submitted && submitted.optionId === correctOption?.id;
+    const { isCorrect, correctIds } = gradeAnswer(q, submitted?.optionIds ?? []);
     if (isCorrect) correctCount += 1;
-    return { questionId: q.id, correct: isCorrect, correctOptionId: correctOption?.id ?? null };
+    return { questionId: q.id, correct: isCorrect, correctOptionIds: correctIds };
   });
 
   const score = Math.round((correctCount / questions.length) * 100);
   const passed = score >= lesson.pass_threshold;
+  const newAttemptCount = attemptsSoFar + 1;
 
   const { data, error } = await supabase
     .from('lesson_progress')
@@ -305,6 +418,7 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
       completed: true,
       quiz_score: score,
       quiz_passed: passed,
+      quiz_attempts: newAttemptCount,
       completed_at: new Date().toISOString(),
     }, { onConflict: 'user_id,enrolment_id,lesson_id' })
     .select()
@@ -314,5 +428,13 @@ learningRouter.post('/:enrolmentId/lessons/:lessonId/submit-quiz', requireAuth, 
     return sendServerError(res, error, 'learning.submitQuiz.save');
   }
 
-  res.json({ score, passed, passThreshold: lesson.pass_threshold, feedback, progress: data });
+  res.json({
+    score,
+    passed,
+    passThreshold: lesson.pass_threshold,
+    attemptsUsed: newAttemptCount,
+    attemptsRemaining: Math.max(0, MAX_QUIZ_ATTEMPTS - newAttemptCount),
+    feedback: lesson.type === 'exam' ? null : feedback,
+    progress: data,
+  });
 });

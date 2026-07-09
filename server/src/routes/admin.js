@@ -589,8 +589,8 @@ function parseQuestionBody(body) {
   if (options.some(o => !o.option_text)) {
     return { error: 'Every option needs text.' };
   }
-  if (options.filter(o => o.is_correct).length !== 1) {
-    return { error: 'Exactly one option must be marked correct.' };
+  if (options.filter(o => o.is_correct).length < 1) {
+    return { error: 'At least one option must be marked correct.' };
   }
 
   return { questionText, options };

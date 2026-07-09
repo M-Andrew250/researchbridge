@@ -1797,7 +1797,7 @@
 
       optionsList.innerHTML = rows.map(() => `
         <div class="admin-option-row">
-          <input type="radio" name="correctOptionRadio" class="option-correct-radio" />
+          <input type="checkbox" class="option-correct-checkbox" title="Correct answer" />
           <input type="text" class="option-text-input" placeholder="Option text" />
           <button type="button" class="admin-link-btn danger" data-remove-option>Remove</button>
         </div>
@@ -1806,7 +1806,7 @@
       const rowEls = optionsList.querySelectorAll('.admin-option-row');
       rowEls.forEach((rowEl, i) => {
         rowEl.querySelector('.option-text-input').value = rows[i].option_text;
-        rowEl.querySelector('.option-correct-radio').checked = !!rows[i].is_correct;
+        rowEl.querySelector('.option-correct-checkbox').checked = !!rows[i].is_correct;
       });
 
       wireRemoveOptionButtons();
@@ -1827,7 +1827,7 @@
     addOptionBtn.addEventListener('click', () => {
       optionsList.insertAdjacentHTML('beforeend', `
         <div class="admin-option-row">
-          <input type="radio" name="correctOptionRadio" class="option-correct-radio" />
+          <input type="checkbox" class="option-correct-checkbox" title="Correct answer" />
           <input type="text" class="option-text-input" placeholder="Option text" />
           <button type="button" class="admin-link-btn danger" data-remove-option>Remove</button>
         </div>
@@ -1937,15 +1937,15 @@
 
       const options = [...optionsList.querySelectorAll('.admin-option-row')].map(row => ({
         optionText: row.querySelector('.option-text-input').value.trim(),
-        isCorrect: row.querySelector('.option-correct-radio').checked,
+        isCorrect: row.querySelector('.option-correct-checkbox').checked,
       }));
 
       if (options.some(o => !o.optionText)) {
         alert('Every option needs text.');
         return;
       }
-      if (options.filter(o => o.isCorrect).length !== 1) {
-        alert('Select exactly one correct option.');
+      if (options.filter(o => o.isCorrect).length < 1) {
+        alert('Check at least one correct option.');
         return;
       }
 

@@ -125,6 +125,19 @@
       font-weight: 600;
     }
 
+    .learn-lesson-item.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .learn-lesson-item.locked:hover {
+      background: none;
+    }
+
+    .learn-module-title .learn-module-lock {
+      margin-left: 0.3rem;
+    }
+
     .learn-lesson-icon {
       flex-shrink: 0;
       width: 20px;
@@ -217,6 +230,12 @@
       border-color: var(--sky);
     }
 
+    .quiz-option input {
+      accent-color: var(--royal);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
     .quiz-option.selected {
       border-color: var(--royal);
       background: var(--light-bg);
@@ -230,6 +249,54 @@
     .quiz-option.incorrect {
       border-color: #ef4444;
       background: rgba(239, 68, 68, 0.08);
+    }
+
+    .quiz-option input:disabled,
+    .quiz-option input:disabled + span {
+      cursor: not-allowed;
+    }
+
+    .quiz-question-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 0.6rem 0 1.8rem;
+    }
+
+    .quiz-check-btn {
+      background: var(--white);
+      color: var(--royal);
+      border: 1.5px solid var(--royal);
+      border-radius: 8px;
+      padding: 0.5rem 1.1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .quiz-check-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .quiz-question-feedback {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .quiz-multi-hint {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: none;
+    }
+
+    /* Soft deterrent against copy-pasting question/answer text during
+       a quiz or exam — client-side only, not real DRM. */
+    .quiz-question, .quiz-question * {
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .quiz-result {
@@ -626,6 +693,18 @@
         }
       });
 
+      // Soft deterrent against copy-pasting quiz/exam question or
+      // answer text — client-side only, not real exam security, but
+      // makes casual copying harder. Delegated once since #learnMain's
+      // content is replaced on every lesson load.
+      const learnMainEl = document.getElementById('learnMain');
+      learnMainEl.addEventListener('copy', (e) => {
+        if (e.target.closest('.quiz-question')) e.preventDefault();
+      });
+      learnMainEl.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.quiz-question')) e.preventDefault();
+      });
+
       const curriculumRes = await fetch(`${apiBase}/curriculum`, { headers: authHeader });
       if (!curriculumRes.ok) {
         document.getElementById('learnLockedTitle').textContent = 'Course Not Found';
@@ -645,21 +724,39 @@
 
       // ── RENDER SIDEBAR ──
       const sidebar = document.getElementById('learnSidebar');
-      if (curriculum.modules.length === 0) {
-        sidebar.innerHTML = `<p style="text-align:center; color:var(--muted); font-size:0.85rem; padding:1rem;">
-          Course content for this module is coming soon.</p>`;
-      } else {
-        sidebar.innerHTML = curriculum.modules.map(m => `
-          <div class="learn-module-title">${m.title}</div>
+      let currentLessonId = null;
+
+      function renderSidebar(curr) {
+        if (curr.modules.length === 0) {
+          sidebar.innerHTML = `<p style="text-align:center; color:var(--muted); font-size:0.85rem; padding:1rem;">
+            Course content for this module is coming soon.</p>`;
+          return;
+        }
+
+        sidebar.innerHTML = curr.modules.map(m => `
+          <div class="learn-module-title">${m.title}${!m.unlocked ? '<span class="learn-module-lock" title="Complete the previous module to unlock">🔒</span>' : ''}</div>
           ${m.lessons.map(l => `
-            <div class="learn-lesson-item" data-lesson-id="${l.id}">
+            <div class="learn-lesson-item ${l.locked ? 'locked' : ''} ${l.id === currentLessonId ? 'active' : ''}" data-lesson-id="${l.id}" data-locked="${!!l.locked}">
               <span class="learn-lesson-icon">${lessonTypeIcon[l.type] || '📄'}</span>
               <span>${l.title}</span>
-              ${l.completed ? '<span class="learn-lesson-check">✓</span>' : ''}
+              ${l.locked ? '<span class="learn-lesson-check">🔒</span>' : (l.completed ? '<span class="learn-lesson-check">✓</span>' : '')}
             </div>
           `).join('')}
         `).join('');
+
+        sidebar.querySelectorAll('.learn-lesson-item').forEach(item => {
+          item.addEventListener('click', () => {
+            if (item.dataset.locked === 'true') {
+              alert('Complete the previous module to unlock this lesson.');
+              return;
+            }
+            currentLessonId = item.dataset.lessonId;
+            loadLesson(item.dataset.lessonId, item);
+          });
+        });
       }
+
+      renderSidebar(curriculum);
 
       if (curriculum.lastLesson) {
         document.getElementById('learnMain').innerHTML = `
@@ -674,6 +771,7 @@
       // ── LESSON LOADING ──
       async function loadLesson(lessonId, itemEl) {
         stopVideoGuard();
+        currentLessonId = lessonId;
         document.querySelectorAll('.learn-lesson-item').forEach(el => el.classList.remove('active'));
         if (itemEl) itemEl.classList.add('active');
 
@@ -682,27 +780,22 @@
 
         const res = await fetch(`${apiBase}/lessons/${lessonId}`, { headers: authHeader });
         if (!res.ok) {
-          main.innerHTML = `<p style="text-align:center; color:var(--muted); padding:3rem;">Could not load this lesson.</p>`;
+          const body = await res.json().catch(() => ({}));
+          main.innerHTML = `<p style="text-align:center; color:var(--muted); padding:3rem;">${body.error || 'Could not load this lesson.'}</p>`;
           return;
         }
         const lesson = await res.json();
         renderLesson(lesson);
       }
 
-      function refreshCurriculumSidebarAndRing() {
-        fetch(`${apiBase}/curriculum`, { headers: authHeader })
-          .then(r => r.json())
-          .then(c => {
-            setProgressRing(c.overallPercent);
-            document.getElementById('learnCourseMeta').textContent =
-              `${c.completedLessons} of ${c.totalLessons} lessons complete`;
-            c.modules.forEach(m => m.lessons.forEach(l => {
-              const item = document.querySelector(`.learn-lesson-item[data-lesson-id="${l.id}"]`);
-              if (item && l.completed && !item.querySelector('.learn-lesson-check')) {
-                item.insertAdjacentHTML('beforeend', '<span class="learn-lesson-check">✓</span>');
-              }
-            }));
-          });
+      async function refreshCurriculumSidebarAndRing() {
+        const res = await fetch(`${apiBase}/curriculum`, { headers: authHeader });
+        if (!res.ok) return;
+        const c = await res.json();
+        setProgressRing(c.overallPercent);
+        document.getElementById('learnCourseMeta').textContent =
+          `${c.completedLessons} of ${c.totalLessons} lessons complete`;
+        renderSidebar(c);
       }
 
       function renderLesson(lesson) {
@@ -770,43 +863,171 @@
         wireQuiz(lesson);
       }
 
+      const MAX_QUIZ_ATTEMPTS = 3;
+      let quizState = {}; // questionId -> { tries, locked }
+
       function renderQuiz(lesson) {
+        if (lesson.quizPassed) {
+          return `<div class="quiz-result pass">✓ Passed — scored ${lesson.quizScore}%</div>`;
+        }
+
+        const attemptsUsed = lesson.quizAttempts || 0;
+        if (attemptsUsed >= MAX_QUIZ_ATTEMPTS) {
+          return `<div class="quiz-result fail">
+            Maximum attempts (${MAX_QUIZ_ATTEMPTS}) reached. Best score: ${lesson.quizScore}% — ${lesson.passThreshold}% needed to pass.
+            Please contact us if you'd like guidance on this course.
+          </div>`;
+        }
+
+        const isExam = lesson.type === 'exam';
         let html = `<div id="quizForm">`;
+
+        if (isExam) {
+          html += `<p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.2rem;">This is a graded exam — each answer locks in as you submit it, and results only appear once you submit the whole exam.</p>`;
+        }
+        if (attemptsUsed > 0) {
+          html += `<p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.2rem;">Attempt ${attemptsUsed + 1} of ${MAX_QUIZ_ATTEMPTS}. Previous best: ${lesson.quizScore}%.</p>`;
+        }
+
         lesson.questions.forEach((q, i) => {
+          const inputType = q.allowMultiple ? 'checkbox' : 'radio';
           html += `<div class="quiz-question" data-question-id="${q.id}">
-            <div class="quiz-question-text">${i + 1}. ${q.questionText}</div>
+            <div class="quiz-question-text">${i + 1}. ${q.questionText}${q.allowMultiple ? ' <span class="quiz-multi-hint">(select all that apply)</span>' : ''}</div>
             ${q.options.map(o => `
-              <div class="quiz-option" data-option-id="${o.id}">${o.optionText}</div>
+              <label class="quiz-option" data-option-id="${o.id}">
+                <input type="${inputType}" name="q-${q.id}" value="${o.id}" />
+                <span>${o.optionText}</span>
+              </label>
             `).join('')}
+            <div class="quiz-question-actions">
+              <button type="button" class="quiz-check-btn" data-question-id="${q.id}">${isExam ? 'Lock In Answer' : 'Submit Answer'}</button>
+              <span class="quiz-question-feedback" data-question-id="${q.id}"></span>
+            </div>
           </div>`;
         });
-        html += `<button class="btn-primary" id="submitQuizBtn" style="border:none; cursor:pointer;">Submit ${lesson.type === 'exam' ? 'Exam' : 'Exercise'} →</button>`;
-        html += `<div id="quizResult"></div></div>`;
 
-        if (lesson.quizScore !== null) {
-          html += `<p style="margin-top:1rem; color:var(--muted); font-size:0.85rem;">
-            Your last attempt: ${lesson.quizScore}% ${lesson.quizPassed ? '(Passed ✓)' : '(Not yet passed)'}
-          </p>`;
-        }
+        html += `<button class="btn-primary" id="submitQuizBtn" style="border:none; cursor:pointer;" disabled>Submit All →</button>`;
+        html += `<p style="color:var(--muted); font-size:0.8rem; margin-top:0.5rem;" id="submitAllHint">Answer and submit every question above first.</p>`;
+        html += `<div id="quizResult"></div></div>`;
         return html;
       }
 
       function wireQuiz(lesson) {
         if (lesson.type !== 'exercise' && lesson.type !== 'exam') return;
+        if (lesson.quizPassed || (lesson.quizAttempts || 0) >= MAX_QUIZ_ATTEMPTS) return;
+
+        const isExam = lesson.type === 'exam';
+        quizState = {};
+        lesson.questions.forEach(q => { quizState[q.id] = { tries: 0, locked: false }; });
+
+        function selectedIdsFor(qEl) {
+          return [...qEl.querySelectorAll('input:checked')].map(i => i.value);
+        }
+
+        function updateSubmitAllState() {
+          const allLocked = lesson.questions.every(q => quizState[q.id].locked);
+          const submitBtn = document.getElementById('submitQuizBtn');
+          submitBtn.disabled = !allLocked;
+          document.getElementById('submitAllHint').style.display = allLocked ? 'none' : 'block';
+        }
+
+        function applyOptionColors(qEl, correctIds, selectedIds) {
+          qEl.querySelectorAll('.quiz-option').forEach(optEl => {
+            const id = optEl.dataset.optionId;
+            optEl.classList.remove('correct', 'incorrect');
+            if (correctIds.includes(id)) optEl.classList.add('correct');
+            else if (selectedIds.includes(id)) optEl.classList.add('incorrect');
+          });
+        }
+
+        function lockQuestion(qEl, questionId) {
+          quizState[questionId].locked = true;
+          qEl.querySelectorAll('input').forEach(i => { i.disabled = true; });
+          const btn = qEl.querySelector('.quiz-check-btn');
+          if (btn) btn.remove();
+          updateSubmitAllState();
+        }
 
         document.querySelectorAll('.quiz-question').forEach(qEl => {
-          qEl.querySelectorAll('.quiz-option').forEach(optEl => {
-            optEl.addEventListener('click', () => {
-              qEl.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
-              optEl.classList.add('selected');
+          const questionId = qEl.dataset.questionId;
+
+          qEl.querySelectorAll('input').forEach(inputEl => {
+            inputEl.addEventListener('change', () => {
+              qEl.querySelectorAll('.quiz-option').forEach(optEl => {
+                optEl.classList.toggle('selected', optEl.querySelector('input').checked);
+              });
             });
+          });
+
+          const checkBtn = qEl.querySelector('.quiz-check-btn');
+          const feedbackEl = qEl.querySelector(`.quiz-question-feedback[data-question-id="${questionId}"]`);
+
+          checkBtn.addEventListener('click', async () => {
+            const selectedIds = selectedIdsFor(qEl);
+            if (selectedIds.length === 0) {
+              feedbackEl.textContent = 'Select an answer first.';
+              feedbackEl.style.color = '#dc2626';
+              return;
+            }
+
+            qEl.dataset.finalSelection = JSON.stringify(selectedIds);
+
+            if (isExam) {
+              // Exams: no reveal, no retry — one submit locks it in.
+              feedbackEl.textContent = 'Answer locked in.';
+              feedbackEl.style.color = 'var(--muted)';
+              lockQuestion(qEl, questionId);
+              return;
+            }
+
+            checkBtn.disabled = true;
+            try {
+              const res = await fetch(`${apiBase}/lessons/${lesson.id}/questions/${questionId}/check`, {
+                method: 'POST',
+                headers: { ...authHeader, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ optionIds: selectedIds }),
+              });
+              const result = await res.json();
+              if (!res.ok) {
+                feedbackEl.textContent = result.error || 'Could not check this answer.';
+                feedbackEl.style.color = '#dc2626';
+                checkBtn.disabled = false;
+                return;
+              }
+
+              quizState[questionId].tries += 1;
+
+              if (result.correct) {
+                applyOptionColors(qEl, result.correctOptionIds, selectedIds);
+                feedbackEl.textContent = 'Correct!';
+                feedbackEl.style.color = '#16a34a';
+                lockQuestion(qEl, questionId);
+              } else if (quizState[questionId].tries >= 2) {
+                applyOptionColors(qEl, result.correctOptionIds, selectedIds);
+                feedbackEl.textContent = 'Incorrect. Moving on.';
+                feedbackEl.style.color = '#dc2626';
+                lockQuestion(qEl, questionId);
+              } else {
+                feedbackEl.textContent = 'Not quite — try once more.';
+                feedbackEl.style.color = '#dc2626';
+                checkBtn.disabled = false;
+              }
+            } catch (err) {
+              feedbackEl.textContent = 'Could not reach the server. Try again.';
+              feedbackEl.style.color = '#dc2626';
+              checkBtn.disabled = false;
+            }
           });
         });
 
         document.getElementById('submitQuizBtn').addEventListener('click', async () => {
-          const answers = [...document.querySelectorAll('.quiz-question')].map(qEl => {
-            const selected = qEl.querySelector('.quiz-option.selected');
-            return { questionId: qEl.dataset.questionId, optionId: selected?.dataset.optionId ?? null };
+          const submitBtn = document.getElementById('submitQuizBtn');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting…';
+
+          const answers = lesson.questions.map(q => {
+            const qEl = document.querySelector(`.quiz-question[data-question-id="${q.id}"]`);
+            return { questionId: q.id, optionIds: JSON.parse(qEl.dataset.finalSelection || '[]') };
           });
 
           const res = await fetch(`${apiBase}/lessons/${lesson.id}/submit-quiz`, {
@@ -817,31 +1038,37 @@
           const result = await res.json();
           if (!res.ok) {
             document.getElementById('quizResult').textContent = result.error || 'Could not submit.';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit All →';
             return;
           }
 
-          result.feedback.forEach(f => {
-            const qEl = document.querySelector(`.quiz-question[data-question-id="${f.questionId}"]`);
-            const selected = qEl.querySelector('.quiz-option.selected');
-            const correctOpt = qEl.querySelector(`.quiz-option[data-option-id="${f.correctOptionId}"]`);
-            if (selected) selected.classList.add(f.correct ? 'correct' : 'incorrect');
-            if (correctOpt) correctOpt.classList.add('correct');
-            qEl.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
-          });
+          submitBtn.style.display = 'none';
 
-          document.getElementById('submitQuizBtn').style.display = 'none';
-          document.getElementById('quizResult').innerHTML = `
-            <div class="quiz-result ${result.passed ? 'pass' : 'fail'}">
-              You scored ${result.score}% — ${result.passed ? 'Passed ✓' : `Needs ${result.passThreshold}% to pass`}
-            </div>`;
+          let resultHtml = `<div class="quiz-result ${result.passed ? 'pass' : 'fail'}">
+            You scored ${result.score}% — ${result.passed ? 'Passed ✓' : `Needs ${result.passThreshold}% to pass`}
+          </div>`;
+
+          if (result.passed) {
+            resultHtml += `<p style="color:var(--muted); font-size:0.85rem; margin-top:1rem;">The next module is now unlocked.</p>`;
+          } else if (result.attemptsRemaining > 0) {
+            resultHtml += `<button type="button" class="btn-outline" id="retakeQuizBtn" style="border-color:var(--royal); color:var(--royal); margin-top:1rem;">Retake (${result.attemptsRemaining} attempt${result.attemptsRemaining === 1 ? '' : 's'} left) →</button>`;
+          } else {
+            resultHtml += `<p style="color:var(--muted); font-size:0.85rem; margin-top:1rem;">You've used all ${MAX_QUIZ_ATTEMPTS} attempts for this quiz. Please contact us if you'd like guidance on this course.</p>`;
+          }
+
+          document.getElementById('quizResult').innerHTML = resultHtml;
+
+          const retakeBtn = document.getElementById('retakeQuizBtn');
+          if (retakeBtn) {
+            retakeBtn.addEventListener('click', () => {
+              loadLesson(lesson.id, document.querySelector(`.learn-lesson-item[data-lesson-id="${lesson.id}"]`));
+            });
+          }
 
           refreshCurriculumSidebarAndRing();
         });
       }
-
-      document.querySelectorAll('.learn-lesson-item').forEach(item => {
-        item.addEventListener('click', () => loadLesson(item.dataset.lessonId, item));
-      });
 
       const resumeBtn = document.getElementById('resumeLessonBtn');
       if (resumeBtn && curriculum.lastLesson) {
