@@ -756,32 +756,71 @@
               <label for="lessonOrder">Order</label>
               <input type="number" id="lessonOrder" min="0" value="0" />
             </div>
-            <div class="admin-form-field">
-              <label for="lessonContentUrl">Content URL</label>
-              <input type="text" id="lessonContentUrl" placeholder="Video link, or upload a document below" />
-            </div>
             <div class="admin-form-field" id="lessonPassThresholdField" style="display:none;">
               <label for="lessonPassThreshold">Pass Threshold (%)</label>
               <input type="number" id="lessonPassThreshold" min="0" max="100" value="70" />
             </div>
           </div>
-          <div class="admin-form-field" id="lessonUploadField" style="display:none; margin-bottom:1.2rem;">
-            <label for="lessonUploadInput">Or Upload a Document (PDF/Word/PowerPoint/Excel, max 20MB)</label>
-            <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
-              <input type="file" id="lessonUploadInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" />
-              <button type="button" class="admin-outline-btn" id="lessonUploadBtn">Upload</button>
-              <span class="admin-sub" id="lessonUploadStatus"></span>
-            </div>
-          </div>
-          <div class="admin-form-field" style="margin-bottom:1.2rem;">
-            <label for="lessonContentBody">Content Body (optional intro text)</label>
-            <textarea id="lessonContentBody" rows="4"></textarea>
-          </div>
+          <p class="admin-form-note">Content (documents, videos, images, text) is added from the Materials panel after saving this lesson.</p>
           <div class="admin-form-actions">
             <button type="submit" class="btn-primary" id="lessonFormSubmit">Save Lesson</button>
             <button type="button" class="btn-outline" id="lessonFormCancel" style="border-color:var(--royal); color:var(--royal);">Cancel</button>
           </div>
         </form>
+
+        <div class="admin-form" id="materialsPanel">
+          <h3>Lesson Materials <span class="admin-sub" id="materialsPanelLessonTitle"></span></h3>
+
+          <div id="materialsList"></div>
+          <p id="materialsEmptyState" style="display:none; color:var(--muted); font-size:0.85rem; margin-bottom:1rem;">
+            No materials yet.
+          </p>
+
+          <button type="button" class="admin-outline-btn" id="addMaterialBtn">+ Add Material</button>
+
+          <form id="materialForm" style="display:none; margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--border);">
+            <input type="hidden" id="materialFormId" />
+            <div class="admin-form-grid">
+              <div class="admin-form-field">
+                <label for="materialTitleInput">Title (optional)</label>
+                <input type="text" id="materialTitleInput" placeholder="e.g. Lecture Slides" />
+              </div>
+              <div class="admin-form-field">
+                <label for="materialType">Type</label>
+                <select id="materialType">
+                  <option value="document">Document</option>
+                  <option value="video">Video</option>
+                  <option value="image">Image</option>
+                  <option value="text">Text</option>
+                </select>
+              </div>
+            </div>
+            <div class="admin-form-field" id="materialUrlField" style="margin-bottom:1rem;">
+              <label for="materialContentUrl">Content URL</label>
+              <input type="text" id="materialContentUrl" placeholder="Video link, or upload below" />
+            </div>
+            <div class="admin-form-field" id="materialUploadField" style="display:none; margin-bottom:1.2rem;">
+              <label for="materialUploadInput" id="materialUploadLabel">Or Upload a File</label>
+              <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+                <input type="file" id="materialUploadInput" />
+                <button type="button" class="admin-outline-btn" id="materialUploadBtn">Upload</button>
+                <span class="admin-sub" id="materialUploadStatus"></span>
+              </div>
+            </div>
+            <div class="admin-form-field" id="materialBodyField" style="display:none; margin-bottom:1.2rem;">
+              <label for="materialContentBody">Text</label>
+              <textarea id="materialContentBody" rows="4"></textarea>
+            </div>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary" id="materialFormSubmit">Save Material</button>
+              <button type="button" class="btn-outline" id="materialFormCancel" style="border-color:var(--royal); color:var(--royal);">Cancel</button>
+            </div>
+          </form>
+
+          <div class="admin-form-actions" style="margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border);">
+            <button type="button" class="btn-outline" id="materialsPanelClose" style="border-color:var(--royal); color:var(--royal);">Close</button>
+          </div>
+        </div>
 
         <div class="admin-form" id="questionsPanel">
           <h3>Quiz Questions <span class="admin-sub" id="questionsPanelLessonTitle"></span></h3>
@@ -898,14 +937,8 @@
     const lessonTitleInput = document.getElementById('lessonTitleInput');
     const lessonType = document.getElementById('lessonType');
     const lessonOrder = document.getElementById('lessonOrder');
-    const lessonContentUrl = document.getElementById('lessonContentUrl');
     const lessonPassThresholdField = document.getElementById('lessonPassThresholdField');
     const lessonPassThreshold = document.getElementById('lessonPassThreshold');
-    const lessonContentBody = document.getElementById('lessonContentBody');
-    const lessonUploadField = document.getElementById('lessonUploadField');
-    const lessonUploadInput = document.getElementById('lessonUploadInput');
-    const lessonUploadBtn = document.getElementById('lessonUploadBtn');
-    const lessonUploadStatus = document.getElementById('lessonUploadStatus');
     const modulesAccordion = document.getElementById('modulesAccordion');
     const modulesEmptyState = document.getElementById('modulesEmptyState');
 
@@ -922,14 +955,37 @@
     const addOptionBtn = document.getElementById('addOptionBtn');
     const questionFormCancel = document.getElementById('questionFormCancel');
 
+    const materialsPanel = document.getElementById('materialsPanel');
+    const materialsPanelLessonTitle = document.getElementById('materialsPanelLessonTitle');
+    const materialsPanelClose = document.getElementById('materialsPanelClose');
+    const materialsList = document.getElementById('materialsList');
+    const materialsEmptyState = document.getElementById('materialsEmptyState');
+    const addMaterialBtn = document.getElementById('addMaterialBtn');
+    const materialForm = document.getElementById('materialForm');
+    const materialFormId = document.getElementById('materialFormId');
+    const materialTitleInput = document.getElementById('materialTitleInput');
+    const materialType = document.getElementById('materialType');
+    const materialUrlField = document.getElementById('materialUrlField');
+    const materialContentUrl = document.getElementById('materialContentUrl');
+    const materialUploadField = document.getElementById('materialUploadField');
+    const materialUploadLabel = document.getElementById('materialUploadLabel');
+    const materialUploadInput = document.getElementById('materialUploadInput');
+    const materialUploadBtn = document.getElementById('materialUploadBtn');
+    const materialUploadStatus = document.getElementById('materialUploadStatus');
+    const materialBodyField = document.getElementById('materialBodyField');
+    const materialContentBody = document.getElementById('materialContentBody');
+    const materialFormCancel = document.getElementById('materialFormCancel');
+
     let authHeader = null;
     let latestEnrolments = [];
     let latestMessages = [];
     let latestWorkshops = [];
     let latestModules = [];
     let latestQuestions = [];
+    let latestMaterials = [];
     let currentCourseSlug = '';
     let currentQuestionsLessonId = null;
+    let currentMaterialsLessonId = null;
     const expandedModuleIds = new Set();
     let messagesLoaded = false;
     let workshopsLoaded = false;
@@ -1437,6 +1493,7 @@
                         <td><span class="admin-type-badge">${l.type}</span></td>
                         <td>
                           <div class="admin-row-actions">
+                            <button type="button" class="admin-link-btn" data-manage-materials-id="${l.id}">Materials</button>
                             ${l.type === 'exercise' || l.type === 'exam' ? `<button type="button" class="admin-link-btn" data-manage-questions-id="${l.id}">Questions</button>` : ''}
                             <button type="button" class="admin-link-btn" data-edit-lesson-id="${l.id}">Edit</button>
                             <button type="button" class="admin-link-btn danger" data-delete-lesson-id="${l.id}">Delete</button>
@@ -1500,6 +1557,15 @@
         });
       });
 
+      modulesAccordion.querySelectorAll('[data-manage-materials-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          for (const m of latestModules) {
+            const lesson = (m.lessons || []).find(l => l.id === btn.dataset.manageMaterialsId);
+            if (lesson) return openMaterialsPanel(lesson);
+          }
+        });
+      });
+
       modulesAccordion.querySelectorAll('[data-delete-lesson-id]').forEach(btn => {
         btn.addEventListener('click', () => deleteLesson(btn.dataset.deleteLessonId, btn));
       });
@@ -1536,6 +1602,7 @@
     function openModuleForm(module) {
       lessonForm.classList.remove('visible');
       closeQuestionsPanel();
+      closeMaterialsPanel();
       moduleFormTitle.textContent = module ? 'Edit Module' : 'Add Module';
       moduleFormId.value = module ? module.id : '';
       moduleTitle.value = module ? module.title : '';
@@ -1616,55 +1683,14 @@
     function updateLessonFieldVisibility() {
       const isQuiz = lessonType.value === 'exercise' || lessonType.value === 'exam';
       lessonPassThresholdField.style.display = isQuiz ? 'block' : 'none';
-      lessonUploadField.style.display = lessonType.value === 'document' ? 'block' : 'none';
     }
 
     lessonType.addEventListener('change', updateLessonFieldVisibility);
 
-    lessonUploadBtn.addEventListener('click', async () => {
-      const file = lessonUploadInput.files[0];
-      if (!file) {
-        lessonUploadStatus.textContent = 'Choose a file first.';
-        return;
-      }
-      if (!currentCourseSlug) {
-        lessonUploadStatus.textContent = 'Select a course first.';
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('course_slug', currentCourseSlug);
-
-      lessonUploadBtn.disabled = true;
-      lessonUploadStatus.textContent = 'Uploading…';
-
-      try {
-        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/uploads/course-material`, {
-          method: 'POST',
-          headers: authHeader,
-          body: formData,
-        });
-
-        const data = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          lessonUploadStatus.textContent = data.error || 'Upload failed. Please try again.';
-          return;
-        }
-
-        lessonContentUrl.value = data.path;
-        lessonUploadStatus.textContent = `Uploaded: ${file.name}`;
-      } catch (err) {
-        lessonUploadStatus.textContent = 'Could not reach the server.';
-      } finally {
-        lessonUploadBtn.disabled = false;
-      }
-    });
-
     function openLessonForm(lesson, module) {
       moduleForm.classList.remove('visible');
       closeQuestionsPanel();
+      closeMaterialsPanel();
       lessonFormTitle.textContent = lesson ? 'Edit Lesson' : 'Add Lesson';
       lessonFormModuleTitle.textContent = module.title;
       lessonFormId.value = lesson ? lesson.id : '';
@@ -1672,11 +1698,7 @@
       lessonTitleInput.value = lesson ? lesson.title : '';
       lessonType.value = lesson ? lesson.type : 'document';
       lessonOrder.value = lesson ? lesson.order_index : (module.lessons || []).length;
-      lessonContentUrl.value = lesson ? (lesson.content_url || '') : '';
-      lessonContentBody.value = lesson ? (lesson.content_body || '') : '';
       lessonPassThreshold.value = lesson ? lesson.pass_threshold : 70;
-      lessonUploadStatus.textContent = '';
-      lessonUploadInput.value = '';
       updateLessonFieldVisibility();
       lessonForm.classList.add('visible');
       lessonForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1698,8 +1720,6 @@
         title: lessonTitleInput.value.trim(),
         type: lessonType.value,
         order_index: Number(lessonOrder.value) || 0,
-        content_url: lessonContentUrl.value.trim() || null,
-        content_body: lessonContentBody.value.trim() || null,
         pass_threshold: Number(lessonPassThreshold.value) || 70,
       };
 
@@ -1754,6 +1774,7 @@
         }
 
         if (currentQuestionsLessonId === id) closeQuestionsPanel();
+        if (currentMaterialsLessonId === id) closeMaterialsPanel();
         await loadModules();
       } catch (err) {
         alert('Could not reach the server. Please check your connection.');
@@ -1767,6 +1788,7 @@
       closeModuleForm();
       closeLessonForm();
       closeQuestionsPanel();
+      closeMaterialsPanel();
       loadModules();
     });
 
@@ -1874,6 +1896,7 @@
     function openQuestionsPanel(lesson) {
       moduleForm.classList.remove('visible');
       lessonForm.classList.remove('visible');
+      closeMaterialsPanel();
       currentQuestionsLessonId = lesson.id;
       questionsPanelLessonTitle.textContent = `— ${lesson.title}`;
       questionForm.style.display = 'none';
@@ -1974,6 +1997,243 @@
         }
 
         await loadQuestions();
+      } catch (err) {
+        alert('Could not reach the server. Please check your connection.');
+        btn.disabled = false;
+      }
+    }
+
+    function updateMaterialFieldVisibility() {
+      const type = materialType.value;
+      materialUrlField.style.display = type === 'text' ? 'none' : 'block';
+      materialBodyField.style.display = type === 'text' ? 'block' : 'none';
+      materialUploadField.style.display = (type === 'document' || type === 'image') ? 'block' : 'none';
+
+      if (type === 'document') {
+        materialUploadLabel.textContent = 'Or Upload a Document (PDF/Word/PowerPoint/Excel, max 20MB)';
+        materialUploadInput.accept = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
+      } else if (type === 'image') {
+        materialUploadLabel.textContent = 'Or Upload an Image (PNG/JPEG/GIF/WebP/SVG, max 20MB)';
+        materialUploadInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml';
+      }
+    }
+
+    materialType.addEventListener('change', updateMaterialFieldVisibility);
+
+    materialUploadBtn.addEventListener('click', async () => {
+      const file = materialUploadInput.files[0];
+      if (!file) {
+        materialUploadStatus.textContent = 'Choose a file first.';
+        return;
+      }
+      if (!currentCourseSlug) {
+        materialUploadStatus.textContent = 'Select a course first.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('course_slug', currentCourseSlug);
+
+      materialUploadBtn.disabled = true;
+      materialUploadStatus.textContent = 'Uploading…';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/uploads/course-material`, {
+          method: 'POST',
+          headers: authHeader,
+          body: formData,
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          materialUploadStatus.textContent = data.error || 'Upload failed. Please try again.';
+          return;
+        }
+
+        materialContentUrl.value = data.path;
+        materialUploadStatus.textContent = `Uploaded: ${file.name}`;
+      } catch (err) {
+        materialUploadStatus.textContent = 'Could not reach the server.';
+      } finally {
+        materialUploadBtn.disabled = false;
+      }
+    });
+
+    function renderMaterialsList() {
+      if (latestMaterials.length === 0) {
+        materialsList.innerHTML = '';
+        materialsEmptyState.style.display = 'block';
+        return;
+      }
+
+      materialsEmptyState.style.display = 'none';
+
+      materialsList.innerHTML = latestMaterials.map((m, i) => {
+        const preview = m.type === 'text'
+          ? escapeHtml((m.content_body || '').slice(0, 120))
+          : escapeHtml(m.content_url || '');
+
+        return `
+          <div class="admin-question-item">
+            <div class="admin-question-header">
+              <strong>${i + 1}. ${escapeHtml(m.title || m.type)} <span class="admin-type-badge">${m.type}</span></strong>
+              <div class="admin-row-actions">
+                <button type="button" class="admin-link-btn" data-edit-material-id="${m.id}">Edit</button>
+                <button type="button" class="admin-link-btn danger" data-delete-material-id="${m.id}">Delete</button>
+              </div>
+            </div>
+            <p class="admin-sub" style="word-break:break-all;">${preview}</p>
+          </div>
+        `;
+      }).join('');
+
+      materialsList.querySelectorAll('[data-edit-material-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const material = latestMaterials.find(m => m.id === btn.dataset.editMaterialId);
+          if (material) openMaterialForm(material);
+        });
+      });
+
+      materialsList.querySelectorAll('[data-delete-material-id]').forEach(btn => {
+        btn.addEventListener('click', () => deleteMaterial(btn.dataset.deleteMaterialId, btn));
+      });
+    }
+
+    async function loadMaterials() {
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/lessons/${currentMaterialsLessonId}/materials`, {
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          materialsList.innerHTML = '';
+          materialsEmptyState.textContent = 'Could not load materials.';
+          materialsEmptyState.style.display = 'block';
+          return;
+        }
+
+        latestMaterials = await res.json();
+        renderMaterialsList();
+      } catch (err) {
+        materialsList.innerHTML = '';
+        materialsEmptyState.textContent = 'Could not reach the server.';
+        materialsEmptyState.style.display = 'block';
+      }
+    }
+
+    function openMaterialsPanel(lesson) {
+      moduleForm.classList.remove('visible');
+      lessonForm.classList.remove('visible');
+      closeQuestionsPanel();
+      currentMaterialsLessonId = lesson.id;
+      materialsPanelLessonTitle.textContent = `— ${lesson.title}`;
+      materialForm.style.display = 'none';
+      materialsPanel.classList.add('visible');
+      materialsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      loadMaterials();
+    }
+
+    function closeMaterialsPanel() {
+      materialsPanel.classList.remove('visible');
+      materialForm.style.display = 'none';
+      currentMaterialsLessonId = null;
+      latestMaterials = [];
+    }
+
+    materialsPanelClose.addEventListener('click', closeMaterialsPanel);
+
+    function openMaterialForm(material) {
+      materialFormId.value = material ? material.id : '';
+      materialTitleInput.value = material ? (material.title || '') : '';
+      materialType.value = material ? material.type : 'document';
+      materialContentUrl.value = material ? (material.content_url || '') : '';
+      materialContentBody.value = material ? (material.content_body || '') : '';
+      materialUploadStatus.textContent = '';
+      materialUploadInput.value = '';
+      updateMaterialFieldVisibility();
+      materialForm.style.display = 'block';
+      materialForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeMaterialForm() {
+      materialForm.style.display = 'none';
+      materialForm.reset();
+      materialFormId.value = '';
+      updateMaterialFieldVisibility();
+    }
+
+    addMaterialBtn.addEventListener('click', () => openMaterialForm(null));
+    materialFormCancel.addEventListener('click', closeMaterialForm);
+
+    materialForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const type = materialType.value;
+      const body = {
+        title: materialTitleInput.value.trim() || null,
+        type,
+        content_url: type === 'text' ? null : (materialContentUrl.value.trim() || null),
+        content_body: type === 'text' ? (materialContentBody.value.trim() || null) : null,
+      };
+
+      if (type !== 'text' && !body.content_url) {
+        alert(`A ${type} material needs a content URL (paste a link or upload a file).`);
+        return;
+      }
+      if (type === 'text' && !body.content_body) {
+        alert('A text material needs some text.');
+        return;
+      }
+
+      const editingId = materialFormId.value;
+      const url = editingId
+        ? `${window.rbcApiBaseUrl}/api/admin/materials/${editingId}`
+        : `${window.rbcApiBaseUrl}/api/admin/lessons/${currentMaterialsLessonId}/materials`;
+
+      const submitBtn = document.getElementById('materialFormSubmit');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(url, {
+          method: editingId ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({}));
+          alert(error || 'Could not save this material. Please try again.');
+          return;
+        }
+
+        closeMaterialForm();
+        await loadMaterials();
+      } catch (err) {
+        alert('Could not reach the server. Please check your connection.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    async function deleteMaterial(id, btn) {
+      if (!confirm('Delete this material?')) return;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/materials/${id}`, {
+          method: 'DELETE',
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          alert('Could not delete this material. Please try again.');
+          btn.disabled = false;
+          return;
+        }
+
+        await loadMaterials();
       } catch (err) {
         alert('Could not reach the server. Please check your connection.');
         btn.disabled = false;

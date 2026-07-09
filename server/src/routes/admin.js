@@ -293,9 +293,10 @@ adminRouter.delete('/course-modules/:id', async (req, res) => {
   res.status(204).end();
 });
 
-// POST /api/admin/lessons — body: { module_id, title, type, order_index?, content_url?, content_body?, pass_threshold? }
+// POST /api/admin/lessons — body: { module_id, title, type, order_index?, pass_threshold? }
+// A lesson's content lives in lesson_materials (see below), not here.
 adminRouter.post('/lessons', async (req, res) => {
-  const { module_id, title, type, order_index, content_url, content_body, pass_threshold } = req.body;
+  const { module_id, title, type, order_index, pass_threshold } = req.body;
 
   if (!String(module_id ?? '').trim() || !String(title ?? '').trim()) {
     return res.status(400).json({ error: 'Missing required field(s): module_id, title' });
@@ -311,8 +312,6 @@ adminRouter.post('/lessons', async (req, res) => {
       title: title.trim(),
       type,
       order_index: Number(order_index) || 0,
-      content_url: content_url || null,
-      content_body: content_body || null,
       pass_threshold: Number(pass_threshold) || 70,
     })
     .select()
@@ -327,7 +326,7 @@ adminRouter.post('/lessons', async (req, res) => {
 
 // PATCH /api/admin/lessons/:id — same body shape as POST (minus module_id, which doesn't move).
 adminRouter.patch('/lessons/:id', async (req, res) => {
-  const { title, type, order_index, content_url, content_body, pass_threshold } = req.body;
+  const { title, type, order_index, pass_threshold } = req.body;
 
   if (!String(title ?? '').trim()) {
     return res.status(400).json({ error: 'Missing required field(s): title' });
@@ -342,8 +341,6 @@ adminRouter.patch('/lessons/:id', async (req, res) => {
       title: title.trim(),
       type,
       order_index: Number(order_index) || 0,
-      content_url: content_url || null,
-      content_body: content_body || null,
       pass_threshold: Number(pass_threshold) || 70,
     })
     .eq('id', req.params.id)
@@ -357,7 +354,7 @@ adminRouter.patch('/lessons/:id', async (req, res) => {
   res.json(data);
 });
 
-// DELETE /api/admin/lessons/:id — cascades to its quiz questions/options.
+// DELETE /api/admin/lessons/:id — cascades to its materials and quiz questions/options.
 adminRouter.delete('/lessons/:id', async (req, res) => {
   const { error } = await supabase
     .from('lessons')
@@ -371,10 +368,124 @@ adminRouter.delete('/lessons/:id', async (req, res) => {
   res.status(204).end();
 });
 
+// ── LESSON MATERIALS ──
+// A lesson's content: an ordered list of document/video/image/text
+// items, rather than a single content_url/content_body on the lesson
+// itself — one lesson can hold a video, a PDF, an image, and a text
+// note together.
+
+const MATERIAL_TYPES = ['document', 'video', 'image', 'text'];
+
+// GET /api/admin/lessons/:id/materials
+adminRouter.get('/lessons/:id/materials', async (req, res) => {
+  const { data, error } = await supabase
+    .from('lesson_materials')
+    .select('*')
+    .eq('lesson_id', req.params.id)
+    .order('order_index', { ascending: true });
+
+  if (error) {
+    return sendServerError(res, error, 'admin.materials.list');
+  }
+
+  res.json(data);
+});
+
+function validateMaterialBody(body) {
+  if (!MATERIAL_TYPES.includes(body.type)) {
+    return `type must be one of: ${MATERIAL_TYPES.join(', ')}`;
+  }
+  if (body.type === 'text' && !String(body.content_body ?? '').trim()) {
+    return 'A text material needs content_body.';
+  }
+  if (body.type !== 'text' && !String(body.content_url ?? '').trim()) {
+    return `A ${body.type} material needs content_url.`;
+  }
+  return null;
+}
+
+// POST /api/admin/lessons/:id/materials
+// body: { title?, type, content_url?, content_body?, order_index? }
+adminRouter.post('/lessons/:id/materials', async (req, res) => {
+  const validationError = validateMaterialBody(req.body);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
+
+  const { title, type, content_url, content_body, order_index } = req.body;
+
+  const { count } = await supabase
+    .from('lesson_materials')
+    .select('id', { count: 'exact', head: true })
+    .eq('lesson_id', req.params.id);
+
+  const { data, error } = await supabase
+    .from('lesson_materials')
+    .insert({
+      lesson_id: req.params.id,
+      title: title || null,
+      type,
+      content_url: content_url || null,
+      content_body: content_body || null,
+      order_index: order_index !== undefined ? Number(order_index) || 0 : (count ?? 0),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.materials.create');
+  }
+
+  res.status(201).json(data);
+});
+
+// PATCH /api/admin/materials/:id — same body shape as POST.
+adminRouter.patch('/materials/:id', async (req, res) => {
+  const validationError = validateMaterialBody(req.body);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
+
+  const { title, type, content_url, content_body, order_index } = req.body;
+
+  const { data, error } = await supabase
+    .from('lesson_materials')
+    .update({
+      title: title || null,
+      type,
+      content_url: content_url || null,
+      content_body: content_body || null,
+      order_index: Number(order_index) || 0,
+    })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Material not found.' });
+  }
+
+  res.json(data);
+});
+
+// DELETE /api/admin/materials/:id
+adminRouter.delete('/materials/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('lesson_materials')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) {
+    return sendServerError(res, error, 'admin.materials.delete');
+  }
+
+  res.status(204).end();
+});
+
 // ── COURSE MATERIAL UPLOADS ──
-// Feeds a document lesson's content_url: learning.js's resolveContentUrl
-// treats a non-"http" content_url as a path inside this private bucket
-// and signs a short-lived URL to it on each request.
+// Feeds a material's content_url (document/image types): learning.js's
+// resolveMaterialUrl treats a non-"http" content_url as a path inside
+// this private bucket and signs a short-lived URL to it on each request.
 
 const UPLOAD_BUCKET = 'course-materials';
 const ALLOWED_UPLOAD_TYPES = new Set([
@@ -385,6 +496,11 @@ const ALLOWED_UPLOAD_TYPES = new Set([
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
 ]);
 
 const upload = multer({
@@ -396,7 +512,8 @@ const upload = multer({
 });
 
 // POST /api/admin/uploads/course-material — multipart form: { file, course_slug }
-// Returns { path } to paste into a document lesson's Content URL field.
+// Returns { path } to paste into a lesson material's Content URL field
+// (document/image type materials — see lesson_materials below).
 adminRouter.post('/uploads/course-material', (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
@@ -408,7 +525,7 @@ adminRouter.post('/uploads/course-material', (req, res, next) => {
   });
 }, async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'Missing file, or its type/size is not allowed (PDF/Word/PowerPoint/Excel, up to 20MB).' });
+    return res.status(400).json({ error: 'Missing file, or its type/size is not allowed (PDF/Word/PowerPoint/Excel/image, up to 20MB).' });
   }
   if (!String(req.body.course_slug ?? '').trim()) {
     return res.status(400).json({ error: 'Missing required field: course_slug' });

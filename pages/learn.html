@@ -711,23 +711,36 @@
 
         let html = `<span class="learn-lesson-type-badge">${typeLabel}</span><h2 style="margin-bottom:1.2rem;">${lesson.title}</h2>`;
 
-        const videoNeedsGuard = lesson.type === 'video' && lesson.contentUrl && !lesson.completed;
+        const materials = lesson.materials || [];
+        // Only the first video material gets the watch-to-unlock guard and
+        // resume-position tracking — video-position is saved per lesson,
+        // not per material, so a second video in the same lesson (rare)
+        // just plays back plainly.
+        const guardedVideo = materials.find(m => m.type === 'video' && m.contentUrl);
+        const videoNeedsGuard = !!guardedVideo && !lesson.completed;
         const resumeFrom = videoNeedsGuard ? (lesson.videoPosition || 0) : 0;
 
-        if (lesson.type === 'video' && lesson.contentUrl) {
-          const src = videoNeedsGuard ? toYouTubeApiEmbedUrl(lesson.contentUrl) : lesson.contentUrl;
-          html += `<div class="learn-video-embed"><iframe id="ytPlayerFrame" src="${src}" allowfullscreen></iframe></div>`;
-          if (videoNeedsGuard) {
-            const resumeNote = resumeFrom > 5 ? ` Resuming from ${formatSeconds(resumeFrom)}.` : '';
-            html += `<p id="videoWatchHint" style="color:var(--muted); font-size:0.85rem; margin:0.6rem 0 1rem;">Watch to the end to unlock "Mark as Complete" — you can rewind, but skipping ahead is disabled.${resumeNote}</p>`;
+        materials.forEach(material => {
+          if (material.title) {
+            html += `<h3 style="margin:1.5rem 0 0.6rem; color:var(--navy); font-size:1.05rem;">${material.title}</h3>`;
           }
-        }
-        if (lesson.contentBody) {
-          html += `<div class="learn-document-body">${lesson.contentBody}</div>`;
-        }
-        if (lesson.type === 'document' && lesson.contentUrl) {
-          html += `<p style="margin-bottom:1.5rem;"><a href="${lesson.contentUrl}" target="_blank" class="btn-outline" style="border-color:var(--royal); color:var(--royal);">Open Document →</a></p>`;
-        }
+
+          if (material.type === 'video' && material.contentUrl) {
+            const isGuarded = material === guardedVideo;
+            const src = (isGuarded && videoNeedsGuard) ? toYouTubeApiEmbedUrl(material.contentUrl) : material.contentUrl;
+            html += `<div class="learn-video-embed"><iframe ${isGuarded ? 'id="ytPlayerFrame"' : ''} src="${src}" allowfullscreen></iframe></div>`;
+            if (isGuarded && videoNeedsGuard) {
+              const resumeNote = resumeFrom > 5 ? ` Resuming from ${formatSeconds(resumeFrom)}.` : '';
+              html += `<p id="videoWatchHint" style="color:var(--muted); font-size:0.85rem; margin:0.6rem 0 1rem;">Watch to the end to unlock "Mark as Complete" — you can rewind, but skipping ahead is disabled.${resumeNote}</p>`;
+            }
+          } else if (material.type === 'image' && material.contentUrl) {
+            html += `<img src="${material.contentUrl}" alt="${material.title || ''}" style="max-width:100%; border-radius:8px; margin-bottom:1rem;" />`;
+          } else if (material.type === 'text' && material.contentBody) {
+            html += `<div class="learn-document-body">${material.contentBody}</div>`;
+          } else if (material.type === 'document' && material.contentUrl) {
+            html += `<p style="margin-bottom:1.5rem;"><a href="${material.contentUrl}" target="_blank" class="btn-outline" style="border-color:var(--royal); color:var(--royal);">Open Document →</a></p>`;
+          }
+        });
 
         if (lesson.type === 'document' || lesson.type === 'video') {
           html += lesson.completed

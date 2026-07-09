@@ -6,21 +6,26 @@ import { sendServerError } from '../lib/errors.js';
 
 export const learningRouter = Router();
 
-// Private Storage bucket for uploaded course documents (PDFs etc.).
-// A lesson's content_url is treated as a bucket path (not a full
-// URL) when it doesn't start with "http" — resolved to a short-lived
-// signed URL here, so a raw link can never be shared/guessed to
-// bypass the enrolment check above.
+// Private Storage bucket for uploaded course documents/images. A
+// document/image material's content_url is treated as a bucket path
+// (not a full URL) when it doesn't start with "http" — resolved to a
+// short-lived signed URL here, so a raw link can never be
+// shared/guessed to bypass the enrolment check above.
 const STORAGE_BUCKET = 'course-materials';
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
 
-async function resolveContentUrl(lesson) {
-  if (lesson.type !== 'document' || !lesson.content_url || lesson.content_url.startsWith('http')) {
-    return lesson.content_url;
+async function resolveMaterialUrl(material) {
+  const needsSigning = (material.type === 'document' || material.type === 'image')
+    && material.content_url
+    && !material.content_url.startsWith('http');
+
+  if (!needsSigning) {
+    return material.content_url;
   }
+
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .createSignedUrl(lesson.content_url, SIGNED_URL_TTL_SECONDS);
+    .createSignedUrl(material.content_url, SIGNED_URL_TTL_SECONDS);
   return error ? null : data.signedUrl;
 }
 
@@ -132,12 +137,27 @@ learningRouter.get('/:enrolmentId/lessons/:lessonId', requireAuth, verifyOnlineE
     .eq('lesson_id', lesson.id)
     .maybeSingle();
 
+  const { data: materials, error: materialsError } = await supabase
+    .from('lesson_materials')
+    .select('id, title, type, content_url, content_body, order_index')
+    .eq('lesson_id', lesson.id)
+    .order('order_index', { ascending: true });
+
+  if (materialsError) {
+    return sendServerError(res, materialsError, 'learning.lesson.materials');
+  }
+
   const out = {
     id: lesson.id,
     title: lesson.title,
     type: lesson.type,
-    contentUrl: await resolveContentUrl(lesson),
-    contentBody: lesson.content_body,
+    materials: await Promise.all(materials.map(async m => ({
+      id: m.id,
+      title: m.title,
+      type: m.type,
+      contentUrl: await resolveMaterialUrl(m),
+      contentBody: m.content_body,
+    }))),
     completed: !!progress?.completed,
     quizScore: progress?.quiz_score ?? null,
     quizPassed: progress?.quiz_passed ?? null,
