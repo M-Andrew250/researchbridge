@@ -225,6 +225,18 @@
       margin-left: auto;
     }
 
+    .admin-outline-btn {
+      background: var(--white);
+      color: var(--royal);
+      border: 1.5px solid var(--royal);
+      border-radius: 8px;
+      padding: 0.6rem 1.1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .admin-form {
       display: none;
       max-width: 1200px;
@@ -429,6 +441,7 @@
             <option value="In-Person">In-Person</option>
           </select>
           <span class="admin-result-count" id="resultCount"></span>
+          <button type="button" class="admin-outline-btn" id="exportEnrolmentsBtn">Download CSV</button>
         </div>
 
         <div class="admin-table-wrap">
@@ -464,6 +477,7 @@
             <option value="responded">Responded</option>
           </select>
           <span class="admin-result-count" id="messagesResultCount"></span>
+          <button type="button" class="admin-outline-btn" id="exportMessagesBtn">Download CSV</button>
         </div>
 
         <div class="admin-table-wrap">
@@ -498,7 +512,8 @@
             <option value="closed">Closed</option>
           </select>
           <span class="admin-result-count" id="workshopsResultCount"></span>
-          <button type="button" class="admin-add-btn" id="addWorkshopBtn">+ New Workshop</button>
+          <button type="button" class="admin-outline-btn" id="exportWorkshopsBtn">Download CSV</button>
+          <button type="button" class="admin-add-btn" id="addWorkshopBtn" style="margin-left:0;">+ New Workshop</button>
         </div>
 
         <form class="admin-form" id="workshopForm">
@@ -617,6 +632,9 @@
     const workshopTrainerName = document.getElementById('workshopTrainerName');
     const workshopFee = document.getElementById('workshopFee');
     const workshopStatus = document.getElementById('workshopStatus');
+    const exportEnrolmentsBtn = document.getElementById('exportEnrolmentsBtn');
+    const exportMessagesBtn = document.getElementById('exportMessagesBtn');
+    const exportWorkshopsBtn = document.getElementById('exportWorkshopsBtn');
 
     let authHeader = null;
     let latestEnrolments = [];
@@ -1014,6 +1032,71 @@
 
     filterWorkshopCourse.addEventListener('change', loadWorkshops);
     filterWorkshopStatus.addEventListener('change', loadWorkshops);
+
+    function toCsvField(value) {
+      const str = value === null || value === undefined ? '' : String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    }
+
+    // Exports exactly what's currently on screen — the already
+    // filtered/searched rows, not a fresh unfiltered fetch.
+    function downloadCsv(filename, columns, rows) {
+      const lines = [
+        columns.map(c => toCsvField(c.header)).join(','),
+        ...rows.map(row => columns.map(c => toCsvField(c.value(row))).join(',')),
+      ];
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    exportEnrolmentsBtn.addEventListener('click', () => {
+      downloadCsv('enrolments.csv', [
+        { header: 'First Name', value: e => e.first_name },
+        { header: 'Last Name', value: e => e.last_name },
+        { header: 'Organisation', value: e => e.organisation },
+        { header: 'Email', value: e => e.email },
+        { header: 'Phone', value: e => e.phone },
+        { header: 'Course', value: e => courseNames[e.course_slug] || e.course_slug },
+        { header: 'Mode', value: e => e.mode },
+        { header: 'Venue', value: e => e.workshop?.venue },
+        { header: 'Workshop Date', value: e => e.workshop?.start_date },
+        { header: 'Category', value: e => e.category },
+        { header: 'Level', value: e => e.level },
+        { header: 'Status', value: e => e.status },
+        { header: 'Submitted', value: e => e.created_at },
+      ], filterBySearch(latestEnrolments));
+    });
+
+    exportMessagesBtn.addEventListener('click', () => {
+      downloadCsv('contact-messages.csv', [
+        { header: 'First Name', value: m => m.first_name },
+        { header: 'Last Name', value: m => m.last_name },
+        { header: 'Email', value: m => m.email },
+        { header: 'Category', value: m => m.category },
+        { header: 'Service Interest', value: m => m.service_interest },
+        { header: 'Message', value: m => m.message },
+        { header: 'Status', value: m => m.status },
+        { header: 'Submitted', value: m => m.created_at },
+      ], filterMessagesBySearch(latestMessages));
+    });
+
+    exportWorkshopsBtn.addEventListener('click', () => {
+      downloadCsv('workshops.csv', [
+        { header: 'Course', value: w => courseNames[w.course_slug] || w.course_slug },
+        { header: 'Venue', value: w => w.venue },
+        { header: 'Start Date', value: w => w.start_date },
+        { header: 'Trainer', value: w => w.trainer_name },
+        { header: 'Fee', value: w => w.fee },
+        { header: 'Status', value: w => w.status },
+      ], latestWorkshops);
+    });
 
     const tabs = [
       { tab: tabEnrolments, section: enrolmentsSection, onShow: null },
