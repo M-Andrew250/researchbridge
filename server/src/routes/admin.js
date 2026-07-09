@@ -60,3 +60,50 @@ adminRouter.patch('/enrolments/:id/status', async (req, res) => {
 
   res.json(data);
 });
+
+const MESSAGE_STATUSES = ['new', 'read', 'responded'];
+
+// GET /api/admin/contact-messages — every message submitted via the
+// site's contact form. Optional ?status= filter; unfiltered =
+// everything, newest first.
+adminRouter.get('/contact-messages', async (req, res) => {
+  const { status } = req.query;
+
+  let query = supabase
+    .from('contact_messages')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+
+  if (error) {
+    return sendServerError(res, error, 'admin.contactMessages.list');
+  }
+
+  res.json(data);
+});
+
+// PATCH /api/admin/contact-messages/:id/status — mark a message
+// new/read/responded. body: { status: 'new' | 'read' | 'responded' }
+adminRouter.patch('/contact-messages/:id/status', async (req, res) => {
+  const { status } = req.body;
+
+  if (!MESSAGE_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Status must be one of: ${MESSAGE_STATUSES.join(', ')}` });
+  }
+
+  const { data, error } = await supabase
+    .from('contact_messages')
+    .update({ status })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Message not found.' });
+  }
+
+  res.json(data);
+});
