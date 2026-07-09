@@ -207,3 +207,165 @@ adminRouter.delete('/workshops/:id', async (req, res) => {
 
   res.status(204).end();
 });
+
+// ── COURSE CONTENT (modules + lessons) ──
+// Quiz question/option authoring for exercise/exam lessons is a
+// separate follow-up; these routes only manage course structure.
+
+const LESSON_TYPES = ['document', 'video', 'exercise', 'exam'];
+
+// GET /api/admin/course-modules?course=<slug> — every module for a
+// course, each with its lessons nested, ordered for display.
+adminRouter.get('/course-modules', async (req, res) => {
+  const { course } = req.query;
+  if (!course) {
+    return res.status(400).json({ error: 'Missing course query parameter.' });
+  }
+
+  const { data, error } = await supabase
+    .from('course_modules')
+    .select('*, lessons(*)')
+    .eq('course_slug', course)
+    .order('order_index', { ascending: true })
+    .order('order_index', { referencedTable: 'lessons', ascending: true });
+
+  if (error) {
+    return sendServerError(res, error, 'admin.courseModules.list');
+  }
+
+  res.json(data);
+});
+
+// POST /api/admin/course-modules — body: { course_slug, title, order_index? }
+adminRouter.post('/course-modules', async (req, res) => {
+  const { course_slug, title, order_index } = req.body;
+  if (!String(course_slug ?? '').trim() || !String(title ?? '').trim()) {
+    return res.status(400).json({ error: 'Missing required field(s): course_slug, title' });
+  }
+
+  const { data, error } = await supabase
+    .from('course_modules')
+    .insert({ course_slug, title: title.trim(), order_index: Number(order_index) || 0 })
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.courseModules.create');
+  }
+
+  res.status(201).json(data);
+});
+
+// PATCH /api/admin/course-modules/:id — body: { title, order_index? }
+adminRouter.patch('/course-modules/:id', async (req, res) => {
+  const { title, order_index } = req.body;
+  if (!String(title ?? '').trim()) {
+    return res.status(400).json({ error: 'Missing required field(s): title' });
+  }
+
+  const { data, error } = await supabase
+    .from('course_modules')
+    .update({ title: title.trim(), order_index: Number(order_index) || 0 })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Module not found.' });
+  }
+
+  res.json(data);
+});
+
+// DELETE /api/admin/course-modules/:id — cascades to its lessons
+// (and their quiz questions/options) via ON DELETE CASCADE.
+adminRouter.delete('/course-modules/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('course_modules')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) {
+    return sendServerError(res, error, 'admin.courseModules.delete');
+  }
+
+  res.status(204).end();
+});
+
+// POST /api/admin/lessons — body: { module_id, title, type, order_index?, content_url?, content_body?, pass_threshold? }
+adminRouter.post('/lessons', async (req, res) => {
+  const { module_id, title, type, order_index, content_url, content_body, pass_threshold } = req.body;
+
+  if (!String(module_id ?? '').trim() || !String(title ?? '').trim()) {
+    return res.status(400).json({ error: 'Missing required field(s): module_id, title' });
+  }
+  if (!LESSON_TYPES.includes(type)) {
+    return res.status(400).json({ error: `type must be one of: ${LESSON_TYPES.join(', ')}` });
+  }
+
+  const { data, error } = await supabase
+    .from('lessons')
+    .insert({
+      module_id,
+      title: title.trim(),
+      type,
+      order_index: Number(order_index) || 0,
+      content_url: content_url || null,
+      content_body: content_body || null,
+      pass_threshold: Number(pass_threshold) || 70,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.lessons.create');
+  }
+
+  res.status(201).json(data);
+});
+
+// PATCH /api/admin/lessons/:id — same body shape as POST (minus module_id, which doesn't move).
+adminRouter.patch('/lessons/:id', async (req, res) => {
+  const { title, type, order_index, content_url, content_body, pass_threshold } = req.body;
+
+  if (!String(title ?? '').trim()) {
+    return res.status(400).json({ error: 'Missing required field(s): title' });
+  }
+  if (!LESSON_TYPES.includes(type)) {
+    return res.status(400).json({ error: `type must be one of: ${LESSON_TYPES.join(', ')}` });
+  }
+
+  const { data, error } = await supabase
+    .from('lessons')
+    .update({
+      title: title.trim(),
+      type,
+      order_index: Number(order_index) || 0,
+      content_url: content_url || null,
+      content_body: content_body || null,
+      pass_threshold: Number(pass_threshold) || 70,
+    })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Lesson not found.' });
+  }
+
+  res.json(data);
+});
+
+// DELETE /api/admin/lessons/:id — cascades to its quiz questions/options.
+adminRouter.delete('/lessons/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('lessons')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) {
+    return sendServerError(res, error, 'admin.lessons.delete');
+  }
+
+  res.status(204).end();
+});
