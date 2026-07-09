@@ -56,6 +56,17 @@
       cursor: pointer;
     }
 
+    .admin-filters input[type="text"] {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      min-width: 220px;
+    }
+
     .admin-result-count {
       font-size: 0.85rem;
       color: var(--muted);
@@ -266,6 +277,7 @@
 
     <section class="admin-main">
       <div class="admin-filters">
+        <input type="text" id="filterSearch" placeholder="Search name or email…" />
         <select id="filterStatus">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
@@ -328,8 +340,10 @@
     const resultCount = document.getElementById('resultCount');
     const filterStatus = document.getElementById('filterStatus');
     const filterMode = document.getElementById('filterMode');
+    const filterSearch = document.getElementById('filterSearch');
 
     let authHeader = null;
+    let latestEnrolments = [];
 
     // Enrolments carry free-text fields (name, organisation, email,
     // phone) submitted by anyone, including anonymous guests. Since
@@ -343,6 +357,19 @@
       return div.innerHTML;
     }
 
+    // Search runs client-side against the already-fetched (and
+    // status/mode-filtered) list, so typing doesn't hit the network —
+    // status/mode changes still re-fetch since those are server-side filters.
+    function filterBySearch(enrolments) {
+      const term = filterSearch.value.trim().toLowerCase();
+      if (!term) return enrolments;
+
+      return enrolments.filter(e => {
+        const haystack = `${e.first_name} ${e.last_name} ${e.email}`.toLowerCase();
+        return haystack.includes(term);
+      });
+    }
+
     function formatDate(iso) {
       return new Date(iso).toLocaleDateString(undefined, {
         year: 'numeric', month: 'short', day: 'numeric',
@@ -352,7 +379,9 @@
     function renderRows(enrolments) {
       if (enrolments.length === 0) {
         tableBody.innerHTML = '';
-        emptyState.textContent = 'No enrolments match these filters.';
+        emptyState.textContent = filterSearch.value.trim()
+          ? 'No enrolments match this search.'
+          : 'No enrolments match these filters.';
         emptyState.style.display = 'block';
         resultCount.textContent = '0 enrolments';
         return;
@@ -433,7 +462,8 @@
           return;
         }
 
-        renderRows(await res.json());
+        latestEnrolments = await res.json();
+        renderRows(filterBySearch(latestEnrolments));
       } catch (err) {
         tableBody.innerHTML = '';
         emptyState.textContent = 'Could not reach the server.';
@@ -443,6 +473,7 @@
 
     filterStatus.addEventListener('change', loadEnrolments);
     filterMode.addEventListener('change', loadEnrolments);
+    filterSearch.addEventListener('input', () => renderRows(filterBySearch(latestEnrolments)));
 
     (async () => {
       const supabase = await window.rbcSupabaseReady;
