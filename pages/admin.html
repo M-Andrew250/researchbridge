@@ -211,6 +211,91 @@
     .admin-locked.visible {
       display: block;
     }
+
+    .admin-add-btn {
+      background: var(--royal);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .admin-form {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto 1.2rem;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .admin-form.visible {
+      display: block;
+    }
+
+    .admin-form h3 {
+      color: var(--navy);
+      font-size: 1.05rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .admin-form-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .admin-form-field input,
+    .admin-form-field select {
+      width: 100%;
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .admin-form-actions {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    .admin-row-actions {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .admin-link-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--royal);
+      cursor: pointer;
+    }
+
+    .admin-link-btn.danger {
+      color: #b91c1c;
+    }
   </style>
 </head>
 <body>
@@ -326,6 +411,7 @@
       <div class="admin-tabs">
         <button type="button" class="admin-tab active" id="tabEnrolments">Enrolments</button>
         <button type="button" class="admin-tab" id="tabMessages">Messages</button>
+        <button type="button" class="admin-tab" id="tabWorkshops">Workshops</button>
       </div>
 
       <div id="enrolmentsSection">
@@ -400,6 +486,79 @@
           </p>
         </div>
       </div>
+
+      <div id="workshopsSection" style="display:none;">
+        <div class="admin-filters">
+          <select id="filterWorkshopCourse">
+            <option value="">All Courses</option>
+          </select>
+          <select id="filterWorkshopStatus">
+            <option value="">All Statuses</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="closed">Closed</option>
+          </select>
+          <span class="admin-result-count" id="workshopsResultCount"></span>
+          <button type="button" class="admin-add-btn" id="addWorkshopBtn">+ New Workshop</button>
+        </div>
+
+        <form class="admin-form" id="workshopForm">
+          <h3 id="workshopFormTitle">Add Workshop</h3>
+          <input type="hidden" id="workshopFormId" />
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label for="workshopCourseSlug">Course</label>
+              <select id="workshopCourseSlug" required></select>
+            </div>
+            <div class="admin-form-field">
+              <label for="workshopVenue">Venue</label>
+              <input type="text" id="workshopVenue" placeholder="e.g. Kigali Office" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="workshopStartDate">Start Date</label>
+              <input type="date" id="workshopStartDate" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="workshopTrainerName">Trainer Name</label>
+              <input type="text" id="workshopTrainerName" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="workshopFee">Fee</label>
+              <input type="text" id="workshopFee" placeholder="e.g. 150,000 RWF" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="workshopStatus">Status</label>
+              <select id="workshopStatus">
+                <option value="upcoming">Upcoming</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn-primary" id="workshopFormSubmit">Save Workshop</button>
+            <button type="button" class="btn-outline" id="workshopFormCancel" style="border-color:var(--royal); color:var(--royal);">Cancel</button>
+          </div>
+        </form>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Venue</th>
+                <th>Start Date</th>
+                <th>Trainer</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="workshopsTableBody"></tbody>
+          </table>
+          <p id="workshopsEmptyState" style="display:none; text-align:center; color:var(--muted); padding:2rem;">
+            No workshops match these filters.
+          </p>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -431,18 +590,45 @@
 
     const tabEnrolments = document.getElementById('tabEnrolments');
     const tabMessages = document.getElementById('tabMessages');
+    const tabWorkshops = document.getElementById('tabWorkshops');
     const enrolmentsSection = document.getElementById('enrolmentsSection');
     const messagesSection = document.getElementById('messagesSection');
+    const workshopsSection = document.getElementById('workshopsSection');
     const messagesTableBody = document.getElementById('messagesTableBody');
     const messagesEmptyState = document.getElementById('messagesEmptyState');
     const messagesResultCount = document.getElementById('messagesResultCount');
     const filterMessageStatus = document.getElementById('filterMessageStatus');
     const filterMessageSearch = document.getElementById('filterMessageSearch');
 
+    const workshopsTableBody = document.getElementById('workshopsTableBody');
+    const workshopsEmptyState = document.getElementById('workshopsEmptyState');
+    const workshopsResultCount = document.getElementById('workshopsResultCount');
+    const filterWorkshopCourse = document.getElementById('filterWorkshopCourse');
+    const filterWorkshopStatus = document.getElementById('filterWorkshopStatus');
+    const addWorkshopBtn = document.getElementById('addWorkshopBtn');
+    const workshopForm = document.getElementById('workshopForm');
+    const workshopFormTitle = document.getElementById('workshopFormTitle');
+    const workshopFormId = document.getElementById('workshopFormId');
+    const workshopFormSubmit = document.getElementById('workshopFormSubmit');
+    const workshopFormCancel = document.getElementById('workshopFormCancel');
+    const workshopCourseSlug = document.getElementById('workshopCourseSlug');
+    const workshopVenue = document.getElementById('workshopVenue');
+    const workshopStartDate = document.getElementById('workshopStartDate');
+    const workshopTrainerName = document.getElementById('workshopTrainerName');
+    const workshopFee = document.getElementById('workshopFee');
+    const workshopStatus = document.getElementById('workshopStatus');
+
     let authHeader = null;
     let latestEnrolments = [];
     let latestMessages = [];
+    let latestWorkshops = [];
     let messagesLoaded = false;
+    let workshopsLoaded = false;
+
+    Object.entries(courseNames).forEach(([slug, name]) => {
+      filterWorkshopCourse.insertAdjacentHTML('beforeend', `<option value="${slug}">${escapeHtml(name)}</option>`);
+      workshopCourseSlug.insertAdjacentHTML('beforeend', `<option value="${slug}">${escapeHtml(name)}</option>`);
+    });
 
     // Enrolments carry free-text fields (name, organisation, email,
     // phone) submitted by anyone, including anonymous guests. Since
@@ -672,23 +858,178 @@
     filterMessageStatus.addEventListener('change', loadMessages);
     filterMessageSearch.addEventListener('input', () => renderMessageRows(filterMessagesBySearch(latestMessages)));
 
-    tabEnrolments.addEventListener('click', () => {
-      tabEnrolments.classList.add('active');
-      tabMessages.classList.remove('active');
-      enrolmentsSection.style.display = 'block';
-      messagesSection.style.display = 'none';
+    function renderWorkshopRows(workshops) {
+      if (workshops.length === 0) {
+        workshopsTableBody.innerHTML = '';
+        workshopsEmptyState.textContent = 'No workshops match these filters.';
+        workshopsEmptyState.style.display = 'block';
+        workshopsResultCount.textContent = '0 workshops';
+        return;
+      }
+
+      workshopsEmptyState.style.display = 'none';
+      workshopsResultCount.textContent = `${workshops.length} workshop${workshops.length === 1 ? '' : 's'}`;
+
+      workshopsTableBody.innerHTML = workshops.map(w => `
+        <tr>
+          <td>${escapeHtml(courseNames[w.course_slug] || w.course_slug)}</td>
+          <td>${escapeHtml(w.venue)}</td>
+          <td>${formatDate(w.start_date)}</td>
+          <td>${escapeHtml(w.trainer_name)}</td>
+          <td>${escapeHtml(w.fee)}</td>
+          <td><span class="admin-status admin-status-${w.status === 'upcoming' ? 'confirmed' : 'cancelled'}">${w.status}</span></td>
+          <td>
+            <div class="admin-row-actions">
+              <button type="button" class="admin-link-btn" data-edit-id="${w.id}">Edit</button>
+              <button type="button" class="admin-link-btn danger" data-delete-id="${w.id}">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      workshopsTableBody.querySelectorAll('[data-edit-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const workshop = latestWorkshops.find(w => w.id === btn.dataset.editId);
+          if (!workshop) return;
+          openWorkshopForm(workshop);
+        });
+      });
+
+      workshopsTableBody.querySelectorAll('[data-delete-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Delete this workshop session? Any enrolments linked to it will keep their record.')) return;
+          btn.disabled = true;
+
+          try {
+            const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/workshops/${btn.dataset.deleteId}`, {
+              method: 'DELETE',
+              headers: authHeader,
+            });
+
+            if (!res.ok) {
+              alert('Could not delete this workshop. Please try again.');
+              btn.disabled = false;
+              return;
+            }
+
+            await loadWorkshops();
+          } catch (err) {
+            alert('Could not reach the server. Please check your connection.');
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadWorkshops() {
+      const params = new URLSearchParams();
+      if (filterWorkshopCourse.value) params.set('course', filterWorkshopCourse.value);
+      if (filterWorkshopStatus.value) params.set('status', filterWorkshopStatus.value);
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/workshops?${params}`, {
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          workshopsTableBody.innerHTML = '';
+          workshopsEmptyState.textContent = 'Could not load workshops.';
+          workshopsEmptyState.style.display = 'block';
+          return;
+        }
+
+        latestWorkshops = await res.json();
+        renderWorkshopRows(latestWorkshops);
+      } catch (err) {
+        workshopsTableBody.innerHTML = '';
+        workshopsEmptyState.textContent = 'Could not reach the server.';
+        workshopsEmptyState.style.display = 'block';
+      }
+    }
+
+    function openWorkshopForm(workshop) {
+      workshopFormTitle.textContent = workshop ? 'Edit Workshop' : 'Add Workshop';
+      workshopFormId.value = workshop ? workshop.id : '';
+      workshopCourseSlug.value = workshop ? workshop.course_slug : workshopCourseSlug.options[0].value;
+      workshopVenue.value = workshop ? workshop.venue : '';
+      workshopStartDate.value = workshop ? workshop.start_date : '';
+      workshopTrainerName.value = workshop ? workshop.trainer_name : '';
+      workshopFee.value = workshop ? workshop.fee : '';
+      workshopStatus.value = workshop ? workshop.status : 'upcoming';
+      workshopFormSubmit.textContent = workshop ? 'Update Workshop' : 'Save Workshop';
+      workshopForm.classList.add('visible');
+      workshopForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeWorkshopForm() {
+      workshopForm.classList.remove('visible');
+      workshopForm.reset();
+      workshopFormId.value = '';
+    }
+
+    addWorkshopBtn.addEventListener('click', () => openWorkshopForm(null));
+    workshopFormCancel.addEventListener('click', closeWorkshopForm);
+
+    workshopForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const body = {
+        course_slug: workshopCourseSlug.value,
+        venue: workshopVenue.value.trim(),
+        start_date: workshopStartDate.value,
+        trainer_name: workshopTrainerName.value.trim(),
+        fee: workshopFee.value.trim(),
+        status: workshopStatus.value,
+      };
+
+      const editingId = workshopFormId.value;
+      const url = editingId
+        ? `${window.rbcApiBaseUrl}/api/admin/workshops/${editingId}`
+        : `${window.rbcApiBaseUrl}/api/admin/workshops`;
+
+      workshopFormSubmit.disabled = true;
+
+      try {
+        const res = await fetch(url, {
+          method: editingId ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({}));
+          alert(error || 'Could not save this workshop. Please try again.');
+          workshopFormSubmit.disabled = false;
+          return;
+        }
+
+        closeWorkshopForm();
+        await loadWorkshops();
+      } catch (err) {
+        alert('Could not reach the server. Please check your connection.');
+      } finally {
+        workshopFormSubmit.disabled = false;
+      }
     });
 
-    tabMessages.addEventListener('click', () => {
-      tabMessages.classList.add('active');
-      tabEnrolments.classList.remove('active');
-      messagesSection.style.display = 'block';
-      enrolmentsSection.style.display = 'none';
+    filterWorkshopCourse.addEventListener('change', loadWorkshops);
+    filterWorkshopStatus.addEventListener('change', loadWorkshops);
 
-      if (!messagesLoaded) {
-        messagesLoaded = true;
-        loadMessages();
-      }
+    const tabs = [
+      { tab: tabEnrolments, section: enrolmentsSection, onShow: null },
+      { tab: tabMessages, section: messagesSection, onShow: () => { if (!messagesLoaded) { messagesLoaded = true; loadMessages(); } } },
+      { tab: tabWorkshops, section: workshopsSection, onShow: () => { if (!workshopsLoaded) { workshopsLoaded = true; loadWorkshops(); } } },
+    ];
+
+    tabs.forEach(({ tab, section, onShow }) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(({ tab: otherTab, section: otherSection }) => {
+          const active = otherTab === tab;
+          otherTab.classList.toggle('active', active);
+          otherSection.style.display = active ? 'block' : 'none';
+        });
+        if (onShow) onShow();
+      });
     });
 
     (async () => {
