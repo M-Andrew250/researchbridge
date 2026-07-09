@@ -384,6 +384,60 @@
       background: #eef1fb;
       color: var(--royal);
     }
+
+    .admin-question-item {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .admin-question-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .admin-question-header strong {
+      color: var(--navy);
+    }
+
+    .admin-options-preview {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .admin-options-preview li {
+      padding: 0.2rem 0;
+    }
+
+    .admin-options-preview li.correct {
+      color: #1a7a4c;
+      font-weight: 600;
+    }
+
+    .admin-option-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .admin-option-row input[type="text"] {
+      flex: 1;
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.86rem;
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -721,6 +775,35 @@
           </div>
         </form>
 
+        <div class="admin-form" id="questionsPanel">
+          <h3>Quiz Questions <span class="admin-sub" id="questionsPanelLessonTitle"></span></h3>
+
+          <div id="questionsList"></div>
+          <p id="questionsEmptyState" style="display:none; color:var(--muted); font-size:0.85rem; margin-bottom:1rem;">
+            No questions yet.
+          </p>
+
+          <button type="button" class="admin-outline-btn" id="addQuestionBtn">+ Add Question</button>
+
+          <form id="questionForm" style="display:none; margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--border);">
+            <input type="hidden" id="questionFormId" />
+            <div class="admin-form-field" style="margin-bottom:1rem;">
+              <label for="questionTextInput">Question</label>
+              <textarea id="questionTextInput" rows="2" required></textarea>
+            </div>
+            <div id="optionsList"></div>
+            <button type="button" class="admin-outline-btn" id="addOptionBtn" style="margin-bottom:1.2rem;">+ Add Option</button>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary" id="questionFormSubmit">Save Question</button>
+              <button type="button" class="btn-outline" id="questionFormCancel" style="border-color:var(--royal); color:var(--royal);">Cancel</button>
+            </div>
+          </form>
+
+          <div class="admin-form-actions" style="margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border);">
+            <button type="button" class="btn-outline" id="questionsPanelClose" style="border-color:var(--royal); color:var(--royal);">Close</button>
+          </div>
+        </div>
+
         <div id="modulesAccordion"></div>
         <p id="modulesEmptyState" style="text-align:center; color:var(--muted); padding:2rem;">
           Select a course to manage its content.
@@ -814,12 +897,27 @@
     const modulesAccordion = document.getElementById('modulesAccordion');
     const modulesEmptyState = document.getElementById('modulesEmptyState');
 
+    const questionsPanel = document.getElementById('questionsPanel');
+    const questionsPanelLessonTitle = document.getElementById('questionsPanelLessonTitle');
+    const questionsPanelClose = document.getElementById('questionsPanelClose');
+    const questionsList = document.getElementById('questionsList');
+    const questionsEmptyState = document.getElementById('questionsEmptyState');
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    const questionForm = document.getElementById('questionForm');
+    const questionFormId = document.getElementById('questionFormId');
+    const questionTextInput = document.getElementById('questionTextInput');
+    const optionsList = document.getElementById('optionsList');
+    const addOptionBtn = document.getElementById('addOptionBtn');
+    const questionFormCancel = document.getElementById('questionFormCancel');
+
     let authHeader = null;
     let latestEnrolments = [];
     let latestMessages = [];
     let latestWorkshops = [];
     let latestModules = [];
+    let latestQuestions = [];
     let currentCourseSlug = '';
+    let currentQuestionsLessonId = null;
     const expandedModuleIds = new Set();
     let messagesLoaded = false;
     let workshopsLoaded = false;
@@ -1327,6 +1425,7 @@
                         <td><span class="admin-type-badge">${l.type}</span></td>
                         <td>
                           <div class="admin-row-actions">
+                            ${l.type === 'exercise' || l.type === 'exam' ? `<button type="button" class="admin-link-btn" data-manage-questions-id="${l.id}">Questions</button>` : ''}
                             <button type="button" class="admin-link-btn" data-edit-lesson-id="${l.id}">Edit</button>
                             <button type="button" class="admin-link-btn danger" data-delete-lesson-id="${l.id}">Delete</button>
                           </div>
@@ -1380,6 +1479,15 @@
         });
       });
 
+      modulesAccordion.querySelectorAll('[data-manage-questions-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          for (const m of latestModules) {
+            const lesson = (m.lessons || []).find(l => l.id === btn.dataset.manageQuestionsId);
+            if (lesson) return openQuestionsPanel(lesson);
+          }
+        });
+      });
+
       modulesAccordion.querySelectorAll('[data-delete-lesson-id]').forEach(btn => {
         btn.addEventListener('click', () => deleteLesson(btn.dataset.deleteLessonId, btn));
       });
@@ -1415,6 +1523,7 @@
 
     function openModuleForm(module) {
       lessonForm.classList.remove('visible');
+      closeQuestionsPanel();
       moduleFormTitle.textContent = module ? 'Edit Module' : 'Add Module';
       moduleFormId.value = module ? module.id : '';
       moduleTitle.value = module ? module.title : '';
@@ -1501,6 +1610,7 @@
 
     function openLessonForm(lesson, module) {
       moduleForm.classList.remove('visible');
+      closeQuestionsPanel();
       lessonFormTitle.textContent = lesson ? 'Edit Lesson' : 'Add Lesson';
       lessonFormModuleTitle.textContent = module.title;
       lessonFormId.value = lesson ? lesson.id : '';
@@ -1587,6 +1697,7 @@
           return;
         }
 
+        if (currentQuestionsLessonId === id) closeQuestionsPanel();
         await loadModules();
       } catch (err) {
         alert('Could not reach the server. Please check your connection.');
@@ -1599,8 +1710,219 @@
       addModuleBtn.disabled = !currentCourseSlug;
       closeModuleForm();
       closeLessonForm();
+      closeQuestionsPanel();
       loadModules();
     });
+
+    function renderOptionRows(options) {
+      const rows = options.length > 0 ? options : [{ option_text: '', is_correct: false }, { option_text: '', is_correct: false }];
+
+      optionsList.innerHTML = rows.map(() => `
+        <div class="admin-option-row">
+          <input type="radio" name="correctOptionRadio" class="option-correct-radio" />
+          <input type="text" class="option-text-input" placeholder="Option text" />
+          <button type="button" class="admin-link-btn danger" data-remove-option>Remove</button>
+        </div>
+      `).join('');
+
+      const rowEls = optionsList.querySelectorAll('.admin-option-row');
+      rowEls.forEach((rowEl, i) => {
+        rowEl.querySelector('.option-text-input').value = rows[i].option_text;
+        rowEl.querySelector('.option-correct-radio').checked = !!rows[i].is_correct;
+      });
+
+      wireRemoveOptionButtons();
+    }
+
+    function wireRemoveOptionButtons() {
+      optionsList.querySelectorAll('[data-remove-option]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (optionsList.children.length <= 2) {
+            alert('A question needs at least 2 options.');
+            return;
+          }
+          btn.closest('.admin-option-row').remove();
+        });
+      });
+    }
+
+    addOptionBtn.addEventListener('click', () => {
+      optionsList.insertAdjacentHTML('beforeend', `
+        <div class="admin-option-row">
+          <input type="radio" name="correctOptionRadio" class="option-correct-radio" />
+          <input type="text" class="option-text-input" placeholder="Option text" />
+          <button type="button" class="admin-link-btn danger" data-remove-option>Remove</button>
+        </div>
+      `);
+      wireRemoveOptionButtons();
+    });
+
+    function renderQuestionsList() {
+      if (latestQuestions.length === 0) {
+        questionsList.innerHTML = '';
+        questionsEmptyState.style.display = 'block';
+        return;
+      }
+
+      questionsEmptyState.style.display = 'none';
+
+      questionsList.innerHTML = latestQuestions.map((q, i) => `
+        <div class="admin-question-item">
+          <div class="admin-question-header">
+            <strong>${i + 1}. ${escapeHtml(q.question_text)}</strong>
+            <div class="admin-row-actions">
+              <button type="button" class="admin-link-btn" data-edit-question-id="${q.id}">Edit</button>
+              <button type="button" class="admin-link-btn danger" data-delete-question-id="${q.id}">Delete</button>
+            </div>
+          </div>
+          <ul class="admin-options-preview">
+            ${q.quiz_options.map(o => `<li class="${o.is_correct ? 'correct' : ''}">${escapeHtml(o.option_text)}${o.is_correct ? ' ✓' : ''}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+
+      questionsList.querySelectorAll('[data-edit-question-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const question = latestQuestions.find(q => q.id === btn.dataset.editQuestionId);
+          if (question) openQuestionForm(question);
+        });
+      });
+
+      questionsList.querySelectorAll('[data-delete-question-id]').forEach(btn => {
+        btn.addEventListener('click', () => deleteQuestion(btn.dataset.deleteQuestionId, btn));
+      });
+    }
+
+    async function loadQuestions() {
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/lessons/${currentQuestionsLessonId}/questions`, {
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          questionsList.innerHTML = '';
+          questionsEmptyState.textContent = 'Could not load questions.';
+          questionsEmptyState.style.display = 'block';
+          return;
+        }
+
+        latestQuestions = await res.json();
+        renderQuestionsList();
+      } catch (err) {
+        questionsList.innerHTML = '';
+        questionsEmptyState.textContent = 'Could not reach the server.';
+        questionsEmptyState.style.display = 'block';
+      }
+    }
+
+    function openQuestionsPanel(lesson) {
+      moduleForm.classList.remove('visible');
+      lessonForm.classList.remove('visible');
+      currentQuestionsLessonId = lesson.id;
+      questionsPanelLessonTitle.textContent = `— ${lesson.title}`;
+      questionForm.style.display = 'none';
+      questionsPanel.classList.add('visible');
+      questionsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      loadQuestions();
+    }
+
+    function closeQuestionsPanel() {
+      questionsPanel.classList.remove('visible');
+      questionForm.style.display = 'none';
+      currentQuestionsLessonId = null;
+      latestQuestions = [];
+    }
+
+    questionsPanelClose.addEventListener('click', closeQuestionsPanel);
+
+    function openQuestionForm(question) {
+      questionFormId.value = question ? question.id : '';
+      questionTextInput.value = question ? question.question_text : '';
+      renderOptionRows(question ? question.quiz_options.slice().sort((a, b) => a.order_index - b.order_index) : []);
+      questionForm.style.display = 'block';
+      questionForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeQuestionForm() {
+      questionForm.style.display = 'none';
+      questionForm.reset();
+      questionFormId.value = '';
+      optionsList.innerHTML = '';
+    }
+
+    addQuestionBtn.addEventListener('click', () => openQuestionForm(null));
+    questionFormCancel.addEventListener('click', closeQuestionForm);
+
+    questionForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const options = [...optionsList.querySelectorAll('.admin-option-row')].map(row => ({
+        optionText: row.querySelector('.option-text-input').value.trim(),
+        isCorrect: row.querySelector('.option-correct-radio').checked,
+      }));
+
+      if (options.some(o => !o.optionText)) {
+        alert('Every option needs text.');
+        return;
+      }
+      if (options.filter(o => o.isCorrect).length !== 1) {
+        alert('Select exactly one correct option.');
+        return;
+      }
+
+      const body = { questionText: questionTextInput.value.trim(), options };
+      const editingId = questionFormId.value;
+      const url = editingId
+        ? `${window.rbcApiBaseUrl}/api/admin/questions/${editingId}`
+        : `${window.rbcApiBaseUrl}/api/admin/lessons/${currentQuestionsLessonId}/questions`;
+
+      const submitBtn = document.getElementById('questionFormSubmit');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(url, {
+          method: editingId ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({}));
+          alert(error || 'Could not save this question. Please try again.');
+          return;
+        }
+
+        closeQuestionForm();
+        await loadQuestions();
+      } catch (err) {
+        alert('Could not reach the server. Please check your connection.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    async function deleteQuestion(id, btn) {
+      if (!confirm('Delete this question and its options?')) return;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/questions/${id}`, {
+          method: 'DELETE',
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          alert('Could not delete this question. Please try again.');
+          btn.disabled = false;
+          return;
+        }
+
+        await loadQuestions();
+      } catch (err) {
+        alert('Could not reach the server. Please check your connection.');
+        btn.disabled = false;
+      }
+    }
 
     const tabs = [
       { tab: tabEnrolments, section: enrolmentsSection, onShow: null },

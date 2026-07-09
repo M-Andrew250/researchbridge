@@ -369,3 +369,156 @@ adminRouter.delete('/lessons/:id', async (req, res) => {
 
   res.status(204).end();
 });
+
+// ── QUIZ QUESTIONS & OPTIONS (exercise/exam lessons) ──
+// Options are fully replaced on every question save (delete existing,
+// insert submitted) rather than diffed by id — this is a low-volume
+// admin action and it keeps the frontend's "one form, N option rows"
+// UX simple.
+
+// GET /api/admin/lessons/:id/questions — questions with their options,
+// including is_correct (unlike the learner-facing route — this IS
+// the answer key, for the admin authoring panel).
+adminRouter.get('/lessons/:id/questions', async (req, res) => {
+  const { data, error } = await supabase
+    .from('quiz_questions')
+    .select('*, quiz_options(*)')
+    .eq('lesson_id', req.params.id)
+    .order('order_index', { ascending: true })
+    .order('order_index', { referencedTable: 'quiz_options', ascending: true });
+
+  if (error) {
+    return sendServerError(res, error, 'admin.questions.list');
+  }
+
+  res.json(data);
+});
+
+function parseQuestionBody(body) {
+  const questionText = String(body.questionText ?? '').trim();
+  if (!questionText) {
+    return { error: 'Missing required field: questionText' };
+  }
+
+  const rawOptions = Array.isArray(body.options) ? body.options : [];
+  if (rawOptions.length < 2) {
+    return { error: 'A question needs at least 2 options.' };
+  }
+
+  const options = rawOptions.map((o, i) => ({
+    option_text: String(o.optionText ?? '').trim(),
+    is_correct: !!o.isCorrect,
+    order_index: i,
+  }));
+
+  if (options.some(o => !o.option_text)) {
+    return { error: 'Every option needs text.' };
+  }
+  if (options.filter(o => o.is_correct).length !== 1) {
+    return { error: 'Exactly one option must be marked correct.' };
+  }
+
+  return { questionText, options };
+}
+
+// POST /api/admin/lessons/:id/questions
+// body: { questionText, options: [{ optionText, isCorrect }, ...] }
+adminRouter.post('/lessons/:id/questions', async (req, res) => {
+  const parsed = parseQuestionBody(req.body);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
+  }
+
+  const { count } = await supabase
+    .from('quiz_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('lesson_id', req.params.id);
+
+  const { data: question, error: qError } = await supabase
+    .from('quiz_questions')
+    .insert({
+      lesson_id: req.params.id,
+      question_text: parsed.questionText,
+      order_index: count ?? 0,
+    })
+    .select()
+    .single();
+
+  if (qError) {
+    return sendServerError(res, qError, 'admin.questions.create');
+  }
+
+  const { error: oError } = await supabase
+    .from('quiz_options')
+    .insert(parsed.options.map(o => ({ ...o, question_id: question.id })));
+
+  if (oError) {
+    return sendServerError(res, oError, 'admin.questions.create.options');
+  }
+
+  const { data: full } = await supabase
+    .from('quiz_questions')
+    .select('*, quiz_options(*)')
+    .eq('id', question.id)
+    .single();
+
+  res.status(201).json(full);
+});
+
+// PATCH /api/admin/questions/:id — same body shape as POST.
+adminRouter.patch('/questions/:id', async (req, res) => {
+  const parsed = parseQuestionBody(req.body);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
+  }
+
+  const { data: question, error: qError } = await supabase
+    .from('quiz_questions')
+    .update({ question_text: parsed.questionText })
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (qError) {
+    return res.status(404).json({ error: 'Question not found.' });
+  }
+
+  const { error: deleteError } = await supabase
+    .from('quiz_options')
+    .delete()
+    .eq('question_id', question.id);
+
+  if (deleteError) {
+    return sendServerError(res, deleteError, 'admin.questions.update.clearOptions');
+  }
+
+  const { error: oError } = await supabase
+    .from('quiz_options')
+    .insert(parsed.options.map(o => ({ ...o, question_id: question.id })));
+
+  if (oError) {
+    return sendServerError(res, oError, 'admin.questions.update.options');
+  }
+
+  const { data: full } = await supabase
+    .from('quiz_questions')
+    .select('*, quiz_options(*)')
+    .eq('id', question.id)
+    .single();
+
+  res.json(full);
+});
+
+// DELETE /api/admin/questions/:id — cascades its options.
+adminRouter.delete('/questions/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('quiz_questions')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) {
+    return sendServerError(res, error, 'admin.questions.delete');
+  }
+
+  res.status(204).end();
+});
