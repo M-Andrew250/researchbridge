@@ -132,87 +132,30 @@
       white-space: nowrap;
     }
 
-    /* ── QUOTE CALCULATOR MODAL ── */
-    .quote-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-
-    .quote-modal.open {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .quote-modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(6, 15, 34, 0.85);
-      backdrop-filter: blur(6px);
-    }
-
-    .quote-modal-close {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.5rem;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1.5px solid rgba(255, 255, 255, 0.2);
-      color: var(--white);
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, transform 0.2s;
-      z-index: 2;
-    }
-
-    .quote-modal-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(1.08);
-    }
-
-    .quote-modal-content {
-      position: relative;
-      z-index: 1;
+    /* ── QUOTE CALCULATOR ── */
+    .quote-calculator {
       background: var(--white);
+      border: 1.5px solid var(--border);
       border-radius: 16px;
       max-width: 720px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      transform: scale(0.9) translateY(20px);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin: 3rem auto 0;
       padding: 2rem;
+      box-shadow: 0 4px 32px rgba(10, 31, 68, 0.08);
     }
 
-    .quote-modal.open .quote-modal-content {
-      transform: scale(1) translateY(0);
-    }
-
-    .quote-modal-header h3 {
+    .quote-calc-header h3 {
       font-size: 1.25rem;
       color: var(--navy);
       margin-bottom: 0.3rem;
     }
 
-    .quote-modal-header p {
+    .quote-calc-header p {
       color: var(--muted);
       font-size: 0.88rem;
       margin-bottom: 1.5rem;
     }
 
-    .quote-modal-body {
+    .quote-calc-body {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
@@ -347,11 +290,11 @@
     }
 
     @media (max-width: 640px) {
-      .quote-modal-body {
+      .quote-calc-body {
         grid-template-columns: 1fr;
       }
 
-      .quote-modal-content {
+      .quote-calculator {
         padding: 1.5rem;
       }
     }
@@ -678,116 +621,101 @@
     <div class="service-section-inner">
       <p class="section-label">Pricing</p>
       <h2>How Pricing Works</h2>
-      <p>There's no one-size-fits-all rate — your quote is based on a
-      few factors, and we confirm the exact price before any work
-      begins.</p>
+      <p>There's no one-size-fits-all rate — your price depends on
+      three factors below. Use the calculator to get an instant
+      estimate; we confirm the exact price before any work begins.</p>
       <div class="included-grid">
 
         <div class="included-card">
           <div class="included-icon">📄</div>
           <h3>Document Length</h3>
-          <p>Priced by page or word count — the more pages, the more
-          review time required.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">🛠️</div>
-          <h3>Service Type</h3>
-          <p>Proofreading only is more affordable than a full
-          edit, and combined editing &amp; proofreading covers both.</p>
+          <p>Priced per page, at 250 words per page — the more pages,
+          the more review time required.</p>
         </div>
 
         <div class="included-card">
           <div class="included-icon">⏱️</div>
           <h3>Turnaround Time</h3>
-          <p>Standard deadlines cost less than rush requests needing
-          a faster turnaround.</p>
+          <p>Standard 30-day delivery costs less than rush requests —
+          up to double the price for 24-hour turnaround.</p>
         </div>
 
         <div class="included-card">
-          <div class="included-icon">📚</div>
-          <h3>Citation Complexity</h3>
-          <p>Documents with extensive referencing take more time to
-          verify and correct.</p>
+          <div class="included-icon">🎓</div>
+          <h3>Education Level</h3>
+          <p>Undergraduate work is priced lower, Master's is our
+          standard rate, and PhD work costs more.</p>
         </div>
 
       </div>
-      <p style="margin-top:2rem;">
-        <button type="button" class="btn-primary" id="openQuoteModalBtn">Get a Personalised Quote →</button>
-      </p>
+
+      <!-- QUOTE CALCULATOR -->
+      <div class="quote-calculator" id="quoteCalculator">
+        <div class="quote-calc-header">
+          <h3>Get a Personalised Quote</h3>
+          <p>Adjust the options below to see an instant price estimate.</p>
+        </div>
+
+        <div class="quote-calc-body">
+          <div class="quote-form-col">
+            <div class="form-group">
+              <label for="quoteWordCount">Words Needed</label>
+              <input type="number" id="quoteWordCount" min="1" step="1" value="10000" />
+              <p class="thesis-form-hint">Priced per page, at 250 words per page.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="quoteDeadline">Deadline</label>
+              <select id="quoteDeadline">
+                <option value="1">30 Days (Standard)</option>
+                <option value="1.2">14 Days</option>
+                <option value="1.4">7 Days</option>
+                <option value="1.6">3 Days</option>
+                <option value="2">24 Hours</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="quoteLevel">Education Level</label>
+              <select id="quoteLevel">
+                <option value="0.5">Undergraduate / College</option>
+                <option value="1" selected>Master's</option>
+                <option value="1.5">PhD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="quote-price-col">
+            <span class="quote-price-label">Estimated Price</span>
+            <div class="quote-price-amount" id="quotePriceAmount">—</div>
+            <p class="quote-price-detail" id="quotePriceDetail"></p>
+
+            <div class="form-group">
+              <label for="quoteCurrency">Currency</label>
+              <select id="quoteCurrency">
+                <option value="RWF">RWF — Rwandan Franc</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="KES">KES — Kenyan Shilling</option>
+                <option value="UGX">UGX — Ugandan Shilling</option>
+                <option value="TZS">TZS — Tanzanian Shilling</option>
+                <option value="ZAR">ZAR — South African Rand</option>
+                <option value="NGN">NGN — Nigerian Naira</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="AUD">AUD — Australian Dollar</option>
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="CNY">CNY — Chinese Yuan</option>
+              </select>
+            </div>
+
+            <a href="thesis-request.html" class="quote-cta-btn">Edit My Document Now →</a>
+            <p class="quote-disclaimer" id="quoteDisclaimer">Estimate only — final price confirmed after we review your document.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
-
-  <!-- QUOTE CALCULATOR MODAL -->
-  <div class="quote-modal" id="quoteModal">
-    <div class="quote-modal-overlay" id="quoteModalOverlay"></div>
-    <button type="button" class="quote-modal-close" id="quoteModalClose" aria-label="Close quote calculator">✕</button>
-
-    <div class="quote-modal-content">
-      <div class="quote-modal-header">
-        <h3>Get a Personalised Quote</h3>
-        <p>Adjust the options below to see an instant price estimate.</p>
-      </div>
-
-      <div class="quote-modal-body">
-        <div class="quote-form-col">
-          <div class="form-group">
-            <label for="quoteWordCount">Words Needed</label>
-            <input type="number" id="quoteWordCount" min="1" step="1" value="10000" />
-            <p class="thesis-form-hint">Priced per page, at 250 words per page.</p>
-          </div>
-
-          <div class="form-group">
-            <label for="quoteDeadline">Deadline</label>
-            <select id="quoteDeadline">
-              <option value="1">30 Days (Standard)</option>
-              <option value="1.2">14 Days</option>
-              <option value="1.4">7 Days</option>
-              <option value="1.6">3 Days</option>
-              <option value="2">24 Hours</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="quoteLevel">Education Level</label>
-            <select id="quoteLevel">
-              <option value="0.5">Undergraduate / College</option>
-              <option value="1" selected>Master's</option>
-              <option value="1.5">PhD</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="quote-price-col">
-          <span class="quote-price-label">Estimated Price</span>
-          <div class="quote-price-amount" id="quotePriceAmount">—</div>
-          <p class="quote-price-detail" id="quotePriceDetail"></p>
-
-          <div class="form-group">
-            <label for="quoteCurrency">Currency</label>
-            <select id="quoteCurrency">
-              <option value="RWF">RWF — Rwandan Franc</option>
-              <option value="USD">USD — US Dollar</option>
-              <option value="EUR">EUR — Euro</option>
-              <option value="GBP">GBP — British Pound</option>
-              <option value="KES">KES — Kenyan Shilling</option>
-              <option value="UGX">UGX — Ugandan Shilling</option>
-              <option value="TZS">TZS — Tanzanian Shilling</option>
-              <option value="ZAR">ZAR — South African Rand</option>
-              <option value="NGN">NGN — Nigerian Naira</option>
-              <option value="CAD">CAD — Canadian Dollar</option>
-              <option value="AUD">AUD — Australian Dollar</option>
-              <option value="INR">INR — Indian Rupee</option>
-              <option value="CNY">CNY — Chinese Yuan</option>
-            </select>
-          </div>
-
-          <a href="thesis-request.html" class="quote-cta-btn">Edit My Document Now →</a>
-          <p class="quote-disclaimer" id="quoteDisclaimer">Estimate only — final price confirmed after we review your document.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- TESTIMONIALS -->
   <!-- Placeholder testimonials — swap in real client quotes when ready. -->
@@ -1021,16 +949,13 @@
     // 30-day turnaround. Undergraduate is half price, PhD is 1.5x.
     // Deadline multipliers: 30d=1, 14d=1.2, 7d=1.4, 3d=1.6, 24h=2.
     // Currency conversion uses live rates from a free, keyless API
-    // (base currency RWF) — fetched once, lazily, when the modal
-    // first opens.
+    // (base currency RWF) — fetched once on load, since the
+    // calculator is always visible in the Pricing section (not a
+    // modal that needs an explicit open trigger).
     const WORDS_PER_PAGE = 250;
     const PRICE_PER_PAGE_RWF = 8000;
     const ZERO_DECIMAL_CURRENCIES = new Set(['RWF', 'UGX', 'TZS']);
 
-    const quoteModal = document.getElementById('quoteModal');
-    const openQuoteModalBtn = document.getElementById('openQuoteModalBtn');
-    const quoteModalOverlay = document.getElementById('quoteModalOverlay');
-    const quoteModalClose = document.getElementById('quoteModalClose');
     const quoteWordCount = document.getElementById('quoteWordCount');
     const quoteDeadline = document.getElementById('quoteDeadline');
     const quoteLevel = document.getElementById('quoteLevel');
@@ -1092,31 +1017,13 @@
       }
     }
 
-    function openQuoteModal() {
-      quoteModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      calculateQuote();
-      fetchExchangeRates();
-    }
-
-    function closeQuoteModal() {
-      quoteModal.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    openQuoteModalBtn.addEventListener('click', openQuoteModal);
-    quoteModalOverlay.addEventListener('click', closeQuoteModal);
-    quoteModalClose.addEventListener('click', closeQuoteModal);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && quoteModal.classList.contains('open')) closeQuoteModal();
-    });
-
     [quoteWordCount, quoteDeadline, quoteLevel, quoteCurrency].forEach(el => {
       el.addEventListener('input', calculateQuote);
       el.addEventListener('change', calculateQuote);
     });
 
     calculateQuote();
+    fetchExchangeRates();
   </script>
 
 </body>
