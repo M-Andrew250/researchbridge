@@ -375,6 +375,175 @@
       color: var(--royal);
     }
 
+    /* CERTIFICATES */
+    .certificates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.2rem;
+    }
+
+    /* Locked teaser — greyscale certificate silhouette with a lock
+       overlay, shown while an online course is still in progress. */
+    .cert-locked-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .cert-locked-preview {
+      position: relative;
+      aspect-ratio: 10 / 7;
+      background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+      border-radius: 10px;
+      border: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .cert-locked-preview::before {
+      content: '🎓';
+      font-size: 2.6rem;
+      opacity: 0.35;
+      filter: grayscale(1);
+    }
+
+    .cert-locked-badge {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: rgba(10, 31, 68, 0.55);
+      color: var(--white);
+    }
+
+    .cert-locked-badge .lock-icon {
+      font-size: 1.8rem;
+    }
+
+    .cert-locked-name {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .cert-locked-progress-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Unlocked reveal — full certificate + congrats + actions. */
+    .cert-unlocked-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      grid-column: 1 / -1;
+    }
+
+    .cert-congrats {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 158, 232, 0.08));
+      border: 1.5px solid rgba(34, 197, 94, 0.3);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .cert-congrats h4 {
+      color: var(--navy);
+      font-size: 1.05rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .cert-congrats p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin: 0;
+    }
+
+    .cert-canvas-wrap {
+      max-width: 640px;
+      margin: 0 auto 1.2rem;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(10, 31, 68, 0.15);
+    }
+
+    .cert-canvas-wrap canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .cert-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .cert-download-btn {
+      background: var(--royal);
+      color: var(--white);
+      border: none;
+      padding: 0.75rem 1.6rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .cert-download-btn:hover {
+      background: var(--navy);
+      transform: translateY(-2px);
+    }
+
+    .cert-share-label {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .cert-share-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+    }
+
+    .cert-share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .cert-share-btn:hover {
+      border-color: var(--royal);
+      transform: translateY(-2px);
+    }
+
     /* RECENT ACTIVITY */
     .activity-list {
       display: flex;
@@ -547,6 +716,18 @@
         </div>
       </li>
       <li><a href="../index.html#contact">Contact</a></li>
+      <li class="nav-mobile-auth">
+        <div class="nav-mobile-auth-loggedout">
+          <a href="login.html">Log In</a>
+          <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
+        </div>
+        <div class="nav-mobile-auth-loggedin" style="display:none;">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
+        </div>
+      </li>
+
     </ul>
     <div class="nav-auth" id="navAuth">
       <div class="auth-logged-out" id="authLoggedOut">
@@ -665,12 +846,21 @@
                 </div>
               </div>
               <div class="dashboard-stat">
-                <div class="dashboard-stat-num">🎓</div>
+                <div class="dashboard-stat-num"
+                     id="statCertificates">0</div>
                 <div class="dashboard-stat-label">
                   Certificates
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- CERTIFICATES -->
+          <div id="certificatesSectionWrap" style="display:none;">
+            <div class="dashboard-section-title">
+              🎓 My Certificates
+            </div>
+            <div id="certificatesWrap" class="certificates-grid"></div>
           </div>
 
           <!-- ENROLLED COURSES -->
@@ -767,6 +957,106 @@
     const dashboardLocked = document.getElementById('dashboardLocked');
     const dashboardContent = document.getElementById('dashboardContent');
 
+    // Draws a certificate onto the given canvas — used both for the
+    // on-screen preview and as the source for the downloaded PNG
+    // (same canvas, so what you see is exactly what you download).
+    async function drawCertificate(canvas, { studentName, courseName, dateStr }) {
+      const width = 1000, height = 700;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      try {
+        await Promise.all([
+          document.fonts.load('700 46px "Playfair Display"'),
+          document.fonts.load('700 22px "Playfair Display"'),
+          document.fonts.load('italic 600 20px "Playfair Display"'),
+        ]);
+        await document.fonts.ready;
+      } catch (err) {}
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = '#0A1F44';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(20, 20, width - 40, height - 40);
+
+      ctx.strokeStyle = '#3B9EE8';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(34, 34, width - 68, height - 68);
+
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#1E5EBC';
+      ctx.font = '700 22px "Playfair Display", serif';
+      ctx.fillText('ResearchBridge Consulting', width / 2, 100);
+
+      ctx.fillStyle = '#0A1F44';
+      ctx.font = '700 46px "Playfair Display", serif';
+      ctx.fillText('Certificate of Completion', width / 2, 175);
+
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '400 18px Inter, sans-serif';
+      ctx.fillText('This certifies that', width / 2, 250);
+
+      ctx.fillStyle = '#0A1F44';
+      ctx.font = '700 42px "Playfair Display", serif';
+      ctx.fillText(studentName, width / 2, 315);
+
+      const nameWidth = ctx.measureText(studentName).width;
+      ctx.strokeStyle = '#3B9EE8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - nameWidth / 2 - 20, 335);
+      ctx.lineTo(width / 2 + nameWidth / 2 + 20, 335);
+      ctx.stroke();
+
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '400 18px Inter, sans-serif';
+      ctx.fillText('has successfully completed the online course', width / 2, 380);
+
+      ctx.fillStyle = '#1E5EBC';
+      ctx.font = '700 32px "Playfair Display", serif';
+      ctx.fillText(courseName, width / 2, 430);
+
+      // Seal
+      ctx.beginPath();
+      ctx.arc(width / 2, 495, 38, 0, Math.PI * 2);
+      ctx.fillStyle = '#F5A623';
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '30px sans-serif';
+      ctx.fillText('🎓', width / 2, 507);
+
+      // Date (left) and signature (right)
+      ctx.textAlign = 'left';
+      ctx.strokeStyle = '#C8D9EF';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(120, 580);
+      ctx.lineTo(320, 580);
+      ctx.stroke();
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '400 14px Inter, sans-serif';
+      ctx.fillText('Date of Completion', 120, 600);
+      ctx.fillStyle = '#0A1F44';
+      ctx.font = '600 17px Inter, sans-serif';
+      ctx.fillText(dateStr, 120, 622);
+
+      ctx.textAlign = 'right';
+      ctx.beginPath();
+      ctx.moveTo(width - 320, 580);
+      ctx.lineTo(width - 120, 580);
+      ctx.stroke();
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '400 14px Inter, sans-serif';
+      ctx.fillText('Authorized Signature', width - 120, 600);
+      ctx.fillStyle = '#0A1F44';
+      ctx.font = 'italic 600 20px "Playfair Display", serif';
+      ctx.fillText('ResearchBridge Consulting', width - 120, 624);
+    }
+
     (async () => {
     const supabase = await window.rbcSupabaseReady;
     const { data: { session } } = await supabase.auth.getSession();
@@ -838,6 +1128,120 @@
       )];
       document.getElementById('statCourses').textContent =
         uniqueCourses.length;
+
+      // ── CERTIFICATES ──
+      // Only online enrolments have real progress tracking, so only
+      // they can produce a certificate. Confirmed + 100% = unlocked
+      // (real, downloadable certificate); confirmed + in-progress =
+      // locked teaser; anything else (pending, in-person) is skipped
+      // entirely rather than shown half-broken.
+      const onlineTracked = myEnrolments.filter(e =>
+        e.mode === 'Online' && e.status === 'confirmed' && e.progressPercent !== null);
+      const completedEnrolments = onlineTracked.filter(e => e.progressPercent >= 100);
+      const inProgressEnrolments = onlineTracked.filter(e => e.progressPercent < 100);
+
+      document.getElementById('statCertificates').textContent = completedEnrolments.length;
+
+      const certificatesSectionWrap = document.getElementById('certificatesSectionWrap');
+      const certificatesWrap = document.getElementById('certificatesWrap');
+
+      if (onlineTracked.length > 0) {
+        certificatesSectionWrap.style.display = 'block';
+
+        const firstName = userName.split(' ')[0];
+
+        certificatesWrap.innerHTML = [
+          ...completedEnrolments.map(e => `
+            <div class="cert-unlocked-card" data-enrolment-id="${e.id}">
+              <div class="cert-congrats">
+                <h4>🎉 Congratulations, ${firstName}!</h4>
+                <p>You've completed <strong>${courseLabel(e.course_slug)}</strong> — your hard work paid off, and you're now equipped with real, practical skills. Download your certificate below and share the achievement!</p>
+              </div>
+              <div class="cert-canvas-wrap">
+                <canvas class="cert-canvas"></canvas>
+              </div>
+              <div class="cert-actions">
+                <button type="button" class="cert-download-btn" data-course="${courseLabel(e.course_slug)}">⬇ Download Certificate</button>
+              </div>
+              <p class="cert-share-label">Share your achievement</p>
+              <div class="cert-share-row" data-course-slug="${e.course_slug}" data-course-name="${courseLabel(e.course_slug)}"></div>
+            </div>
+          `),
+          ...inProgressEnrolments.map(e => `
+            <div class="cert-locked-card">
+              <div class="cert-locked-preview">
+                <div class="cert-locked-badge">
+                  <span class="lock-icon">🔒</span>
+                  <span>${e.progressPercent}% complete</span>
+                </div>
+              </div>
+              <div class="cert-locked-name">${courseLabel(e.course_slug)}</div>
+              <div class="cert-locked-progress-text">Finish the course to unlock your certificate</div>
+            </div>
+          `),
+        ].join('');
+
+        // Draw each unlocked certificate onto its canvas and wire up
+        // its download/share actions.
+        completedEnrolments.forEach(async (e) => {
+          const card = certificatesWrap.querySelector(`[data-enrolment-id="${e.id}"]`);
+          const canvas = card.querySelector('.cert-canvas');
+          const dateStr = new Date(e.completed_at || e.created_at).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric',
+          });
+
+          await drawCertificate(canvas, {
+            studentName: userName,
+            courseName: courseLabel(e.course_slug),
+            dateStr,
+          });
+
+          const downloadBtn = card.querySelector('.cert-download-btn');
+          downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `ResearchBridge-Certificate-${e.course_slug}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          });
+
+          const shareRow = card.querySelector('.cert-share-row');
+          const courseUrl = `${window.location.origin}/pages/courses/${e.course_slug}.html`;
+          const shareMessage = `I just completed ${courseLabel(e.course_slug)} with ResearchBridge Consulting! 🎓🎉`;
+          const encodedMsg = encodeURIComponent(shareMessage);
+          const encodedUrl = encodeURIComponent(courseUrl);
+
+          const shareLinks = [
+            { label: 'WhatsApp', icon: '💬', href: `https://wa.me/?text=${encodedMsg}%20${encodedUrl}` },
+            { label: 'Facebook', icon: '📘', href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedMsg}` },
+            { label: 'LinkedIn', icon: '💼', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+            { label: 'X', icon: '𝕏', href: `https://twitter.com/intent/tweet?text=${encodedMsg}&url=${encodedUrl}` },
+          ];
+
+          shareRow.innerHTML = shareLinks.map(s =>
+            `<a href="${s.href}" target="_blank" rel="noopener" class="cert-share-btn">${s.icon} ${s.label}</a>`
+          ).join('');
+
+          // Native share sheet (mobile browsers, some desktop) can
+          // attach the actual certificate image — the link-based
+          // buttons above are the reliable fallback everywhere else,
+          // since web share intents can't pre-attach a local image.
+          if (navigator.share) {
+            canvas.toBlob((blob) => {
+              const file = new File([blob], `ResearchBridge-Certificate-${e.course_slug}.png`, { type: 'image/png' });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                const nativeBtn = document.createElement('button');
+                nativeBtn.type = 'button';
+                nativeBtn.className = 'cert-share-btn';
+                nativeBtn.innerHTML = '📤 Share';
+                nativeBtn.addEventListener('click', () => {
+                  navigator.share({ files: [file], title: 'My ResearchBridge Certificate', text: shareMessage, url: courseUrl }).catch(() => {});
+                });
+                shareRow.appendChild(nativeBtn);
+              }
+            });
+          }
+        });
+      }
 
       // Show enrolled courses
       const enrolledWrap =

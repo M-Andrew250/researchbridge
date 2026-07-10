@@ -193,8 +193,11 @@ enrolmentsRouter.get('/me', requireAuth, async (req, res) => {
 
   const withProgress = await Promise.all(data.map(async (e) => {
     if (e.mode !== 'Online') return { ...e, progressPercent: null };
-    const { percent } = await getEnrolmentProgress(e.course_slug, req.user.id, e.id);
-    return { ...e, progressPercent: percent };
+    // completedAt reflects any stamp getEnrolmentProgress just made
+    // in this same call — e.completed_at above would still be the
+    // stale pre-update value fetched before that happened.
+    const { percent, completedAt } = await getEnrolmentProgress(e.course_slug, req.user.id, e.id);
+    return { ...e, progressPercent: percent, completed_at: completedAt };
   }));
 
   res.json(withProgress);
