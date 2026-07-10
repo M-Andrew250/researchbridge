@@ -889,8 +889,10 @@
                 <th>Name</th>
                 <th>Contact</th>
                 <th>Document</th>
-                <th>Citation / Words</th>
+                <th>Service</th>
+                <th>Citation / Words / Pages</th>
                 <th>Deadline</th>
+                <th>Payment</th>
                 <th>Files</th>
                 <th>Submitted</th>
                 <th>Status</th>
@@ -1313,8 +1315,10 @@
           <td>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
           <td>${escapeHtml(r.email)}<span class="admin-sub">${escapeHtml(r.phone)}</span></td>
           <td>${escapeHtml(r.document_type)}</td>
-          <td>${r.citation_style ? escapeHtml(r.citation_style) : '—'}${r.word_count ? `<span class="admin-sub">${r.word_count.toLocaleString()} words</span>` : ''}</td>
+          <td>${escapeHtml(r.service_type)}</td>
+          <td>${r.citation_style ? escapeHtml(r.citation_style) : '—'}${r.word_count ? `<span class="admin-sub">${r.word_count.toLocaleString()} words</span>` : ''}${r.page_count ? `<span class="admin-sub">${r.page_count.toLocaleString()} pages</span>` : ''}</td>
           <td>${r.deadline ? formatDate(r.deadline) : '—'}</td>
+          <td>${r.payment_method ? escapeHtml(r.payment_method) : '—'}</td>
           <td>${(r.files || []).map(f => f.url
             ? `<a href="${f.url}" target="_blank" rel="noopener" style="display:block; color:var(--royal); font-size:0.8rem;">${escapeHtml(f.name)}</a>`
             : `<span class="admin-sub" style="display:block;">${escapeHtml(f.name)}</span>`).join('') || '—'}</td>
@@ -1646,10 +1650,13 @@
         { header: 'Email', value: r => r.email },
         { header: 'Phone', value: r => r.phone },
         { header: 'Document Type', value: r => r.document_type },
+        { header: 'Service Type', value: r => r.service_type },
         { header: 'Word Count', value: r => r.word_count },
+        { header: 'Page Count', value: r => r.page_count },
         { header: 'Citation Style', value: r => r.citation_style },
         { header: 'Deadline', value: r => r.deadline },
         { header: 'Instructions', value: r => r.instructions },
+        { header: 'Payment Method', value: r => r.payment_method },
         { header: 'Status', value: r => r.status },
         { header: 'Submitted', value: r => r.created_at },
       ], filterThesisBySearch(latestThesisRequests));

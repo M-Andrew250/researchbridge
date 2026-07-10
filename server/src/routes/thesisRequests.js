@@ -10,6 +10,8 @@ import { strictLimiter } from '../middleware/rateLimiters.js';
 export const thesisRequestsRouter = Router();
 
 const DOCUMENT_TYPES = ["Bachelor's Dissertation", "Master's Thesis", 'PhD Thesis', 'Journal Article', 'Other'];
+const SERVICE_TYPES = ['Proofreading Only', 'Editing Only', 'Editing & Proofreading', 'Formatting & Referencing Only'];
+const PAYMENT_METHODS = ['Bank Transfer', 'Mobile Money', 'Other'];
 const UPLOAD_BUCKET = 'thesis-submissions';
 const ALLOWED_UPLOAD_TYPES = new Set([
   'application/pdf',
@@ -43,9 +45,12 @@ thesisRequestsRouter.post('/', strictLimiter, optionalAuth, (req, res, next) => 
     next();
   });
 }, async (req, res) => {
-  const { firstName, lastName, email, phone, documentType, wordCount, citationStyle, deadline, instructions } = req.body;
+  const {
+    firstName, lastName, email, phone, documentType, serviceType,
+    wordCount, pageCount, citationStyle, deadline, instructions, paymentMethod,
+  } = req.body;
 
-  const required = { firstName, lastName, email, phone, documentType };
+  const required = { firstName, lastName, email, phone, documentType, serviceType };
   const missing = Object.entries(required).filter(([, v]) => !v || !String(v).trim());
   if (missing.length > 0) {
     return res.status(400).json({
@@ -55,6 +60,12 @@ thesisRequestsRouter.post('/', strictLimiter, optionalAuth, (req, res, next) => 
 
   if (!DOCUMENT_TYPES.includes(documentType)) {
     return res.status(400).json({ error: 'Invalid document type.' });
+  }
+  if (!SERVICE_TYPES.includes(serviceType)) {
+    return res.status(400).json({ error: 'Invalid service type.' });
+  }
+  if (paymentMethod && !PAYMENT_METHODS.includes(paymentMethod)) {
+    return res.status(400).json({ error: 'Invalid payment method.' });
   }
 
   if (!req.files || req.files.length === 0) {
@@ -70,10 +81,13 @@ thesisRequestsRouter.post('/', strictLimiter, optionalAuth, (req, res, next) => 
       email,
       phone,
       document_type: documentType,
+      service_type: serviceType,
       word_count: wordCount ? Number(wordCount) : null,
+      page_count: pageCount ? Number(pageCount) : null,
       citation_style: citationStyle || null,
       deadline: deadline || null,
       instructions: instructions || null,
+      payment_method: paymentMethod || null,
     })
     .select()
     .single();
@@ -117,6 +131,7 @@ thesisRequestsRouter.post('/', strictLimiter, optionalAuth, (req, res, next) => 
     to: email,
     firstName,
     documentType,
+    serviceType,
     deadline: deadline || null,
     fileCount: filePaths.length,
   }).catch((err) => console.error('[email] thesis request confirmation failed:', err.message));
