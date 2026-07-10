@@ -668,20 +668,20 @@
             <div class="form-group">
               <label for="quoteDeadline">Deadline</label>
               <select id="quoteDeadline">
-                <option value="1">30 Days (Standard)</option>
-                <option value="1.2">14 Days</option>
-                <option value="1.4">7 Days</option>
-                <option value="1.6">3 Days</option>
-                <option value="2">24 Hours</option>
+                <option value="30">30 Days (Standard)</option>
+                <option value="14">14 Days</option>
+                <option value="7">7 Days</option>
+                <option value="3">3 Days</option>
+                <option value="24h">24 Hours</option>
               </select>
             </div>
 
             <div class="form-group">
               <label for="quoteLevel">Education Level</label>
               <select id="quoteLevel">
-                <option value="0.5">Undergraduate / College</option>
-                <option value="1" selected>Master's</option>
-                <option value="1.5">PhD</option>
+                <option value="undergrad">Undergraduate / College</option>
+                <option value="masters" selected>Master's</option>
+                <option value="phd">PhD</option>
               </select>
             </div>
           </div>
@@ -946,16 +946,24 @@
 
   <script>
     // ── QUOTE CALCULATOR ──
-    // Pricing: 8000 RWF/page (250 words/page) at Master's level and
-    // 30-day turnaround. Undergraduate is half price, PhD is 1.5x.
-    // Deadline multipliers: 30d=1, 14d=1.2, 7d=1.4, 3d=1.6, 24h=2.
-    // Currency conversion uses live rates from a free, keyless API
-    // (base currency RWF) — fetched once on load, since the
-    // calculator is always visible in the Pricing section (not a
-    // modal that needs an explicit open trigger).
+    // Rates (price per page, education-level and deadline
+    // multipliers) are admin-editable from the dashboard's Thesis
+    // Pricing tab, fetched here on load. If that fetch fails, these
+    // defaults keep the calculator working.
     const WORDS_PER_PAGE = 250;
-    const PRICE_PER_PAGE_RWF = 8000;
     const ZERO_DECIMAL_CURRENCIES = new Set(['RWF', 'UGX', 'TZS']);
+
+    let pricingConfig = {
+      price_per_page_rwf: 8000,
+      undergrad_multiplier: 0.5,
+      masters_multiplier: 1,
+      phd_multiplier: 1.5,
+      deadline_30_multiplier: 1,
+      deadline_14_multiplier: 1.2,
+      deadline_7_multiplier: 1.4,
+      deadline_3_multiplier: 1.6,
+      deadline_24h_multiplier: 2,
+    };
 
     const quoteWordCount = document.getElementById('quoteWordCount');
     const quoteDeadline = document.getElementById('quoteDeadline');
@@ -980,12 +988,30 @@
       }
     }
 
+    function getLevelMultiplier(key) {
+      return {
+        undergrad: pricingConfig.undergrad_multiplier,
+        masters: pricingConfig.masters_multiplier,
+        phd: pricingConfig.phd_multiplier,
+      }[key] ?? 1;
+    }
+
+    function getDeadlineMultiplier(key) {
+      return {
+        30: pricingConfig.deadline_30_multiplier,
+        14: pricingConfig.deadline_14_multiplier,
+        7: pricingConfig.deadline_7_multiplier,
+        3: pricingConfig.deadline_3_multiplier,
+        '24h': pricingConfig.deadline_24h_multiplier,
+      }[key] ?? 1;
+    }
+
     function calculateQuote() {
       const words = Math.max(0, Number(quoteWordCount.value) || 0);
       const pages = Math.ceil(words / WORDS_PER_PAGE);
-      const levelMultiplier = Number(quoteLevel.value);
-      const deadlineMultiplier = Number(quoteDeadline.value);
-      const priceRWF = pages * PRICE_PER_PAGE_RWF * levelMultiplier * deadlineMultiplier;
+      const levelMultiplier = getLevelMultiplier(quoteLevel.value);
+      const deadlineMultiplier = getDeadlineMultiplier(quoteDeadline.value);
+      const priceRWF = pages * pricingConfig.price_per_page_rwf * levelMultiplier * deadlineMultiplier;
 
       const currency = quoteCurrency.value;
       if (currency === 'RWF') {
@@ -997,6 +1023,18 @@
       }
 
       quotePriceDetail.textContent = `${pages} page${pages === 1 ? '' : 's'} (${words.toLocaleString()} words)`;
+    }
+
+    async function fetchPricingConfig() {
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/thesis-pricing`);
+        if (!res.ok) throw new Error('pricing lookup failed');
+        pricingConfig = await res.json();
+        calculateQuote();
+      } catch (err) {
+        // Keep the built-in defaults — the calculator still works,
+        // just potentially with stale rates until this succeeds.
+      }
     }
 
     async function fetchExchangeRates() {
@@ -1024,6 +1062,7 @@
     });
 
     calculateQuote();
+    fetchPricingConfig();
     fetchExchangeRates();
   </script>
 

@@ -175,6 +175,61 @@ adminRouter.patch('/thesis-requests/:id', async (req, res) => {
   res.json(data);
 });
 
+const THESIS_PRICING_FIELDS = [
+  'price_per_page_rwf', 'undergrad_multiplier', 'masters_multiplier', 'phd_multiplier',
+  'deadline_30_multiplier', 'deadline_14_multiplier', 'deadline_7_multiplier',
+  'deadline_3_multiplier', 'deadline_24h_multiplier',
+];
+
+// GET /api/admin/thesis-pricing — the current rates, for the admin
+// dashboard's Pricing tab to pre-fill its form.
+adminRouter.get('/thesis-pricing', async (req, res) => {
+  const { data, error } = await supabase
+    .from('thesis_pricing_settings')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.thesisPricing.get');
+  }
+
+  res.json(data);
+});
+
+// PATCH /api/admin/thesis-pricing — update any subset of the rate
+// fields. All are positive numbers; price_per_page_rwf is whole
+// RWF, the rest are multipliers applied on top of it.
+adminRouter.patch('/thesis-pricing', async (req, res) => {
+  const update = {};
+
+  for (const field of THESIS_PRICING_FIELDS) {
+    if (req.body[field] === undefined) continue;
+    const value = Number(req.body[field]);
+    if (!Number.isFinite(value) || value <= 0) {
+      return res.status(400).json({ error: `${field} must be a positive number.` });
+    }
+    update[field] = value;
+  }
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ error: 'Nothing to update.' });
+  }
+
+  const { data, error } = await supabase
+    .from('thesis_pricing_settings')
+    .update(update)
+    .eq('id', 1)
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.thesisPricing.update');
+  }
+
+  res.json(data);
+});
+
 const WORKSHOP_STATUSES = ['upcoming', 'closed'];
 const WORKSHOP_REQUIRED_FIELDS = ['course_slug', 'venue', 'start_date', 'trainer_name', 'fee'];
 

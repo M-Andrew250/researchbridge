@@ -566,6 +566,7 @@
         <button type="button" class="admin-tab" id="tabWorkshops">Workshops</button>
         <button type="button" class="admin-tab" id="tabContent">Course Content</button>
         <button type="button" class="admin-tab" id="tabThesis">Thesis Requests</button>
+        <button type="button" class="admin-tab" id="tabThesisPricing">Thesis Pricing</button>
       </div>
 
       <div id="enrolmentsSection">
@@ -906,6 +907,65 @@
           </p>
         </div>
       </div>
+
+      <div id="thesisPricingSection" style="display:none;">
+        <form class="admin-form visible" id="thesisPricingForm">
+          <h3>Quote Calculator Rates</h3>
+          <p class="admin-form-note">These rates drive the live price estimate on the Thesis Editing page. Changes apply immediately.</p>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label for="pricePerPage">Price Per Page (RWF)</label>
+              <input type="number" id="pricePerPage" min="1" step="1" required />
+            </div>
+          </div>
+
+          <h3 style="margin-top:1.5rem;">Education Level Multipliers</h3>
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label for="undergradMultiplier">Undergraduate / College</label>
+              <input type="number" id="undergradMultiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="mastersMultiplier">Master's</label>
+              <input type="number" id="mastersMultiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="phdMultiplier">PhD</label>
+              <input type="number" id="phdMultiplier" min="0.01" step="0.01" required />
+            </div>
+          </div>
+
+          <h3 style="margin-top:1.5rem;">Deadline Multipliers</h3>
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label for="deadline30Multiplier">30 Days (Standard)</label>
+              <input type="number" id="deadline30Multiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="deadline14Multiplier">14 Days</label>
+              <input type="number" id="deadline14Multiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="deadline7Multiplier">7 Days</label>
+              <input type="number" id="deadline7Multiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="deadline3Multiplier">3 Days</label>
+              <input type="number" id="deadline3Multiplier" min="0.01" step="0.01" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="deadline24hMultiplier">24 Hours</label>
+              <input type="number" id="deadline24hMultiplier" min="0.01" step="0.01" required />
+            </div>
+          </div>
+
+          <div class="admin-form-actions">
+            <button type="submit" class="btn-primary" id="thesisPricingSaveBtn">Save Rates</button>
+            <span id="thesisPricingStatus" style="align-self:center; font-size:0.85rem;"></span>
+          </div>
+        </form>
+      </div>
     </section>
 
   </div>
@@ -939,10 +999,12 @@
     const tabMessages = document.getElementById('tabMessages');
     const tabWorkshops = document.getElementById('tabWorkshops');
     const tabThesis = document.getElementById('tabThesis');
+    const tabThesisPricing = document.getElementById('tabThesisPricing');
     const enrolmentsSection = document.getElementById('enrolmentsSection');
     const messagesSection = document.getElementById('messagesSection');
     const workshopsSection = document.getElementById('workshopsSection');
     const thesisSection = document.getElementById('thesisSection');
+    const thesisPricingSection = document.getElementById('thesisPricingSection');
     const messagesTableBody = document.getElementById('messagesTableBody');
     const messagesEmptyState = document.getElementById('messagesEmptyState');
     const messagesResultCount = document.getElementById('messagesResultCount');
@@ -1050,6 +1112,7 @@
     let messagesLoaded = false;
     let workshopsLoaded = false;
     let thesisLoaded = false;
+    let thesisPricingLoaded = false;
 
     Object.entries(courseNames).forEach(([slug, name]) => {
       filterWorkshopCourse.insertAdjacentHTML('beforeend', `<option value="${slug}">${escapeHtml(name)}</option>`);
@@ -1420,6 +1483,86 @@
 
     filterThesisStatus.addEventListener('change', loadThesisRequests);
     filterThesisSearch.addEventListener('input', () => renderThesisRows(filterThesisBySearch(latestThesisRequests)));
+
+    const thesisPricingForm = document.getElementById('thesisPricingForm');
+    const thesisPricingSaveBtn = document.getElementById('thesisPricingSaveBtn');
+    const thesisPricingStatus = document.getElementById('thesisPricingStatus');
+    const pricePerPage = document.getElementById('pricePerPage');
+    const undergradMultiplier = document.getElementById('undergradMultiplier');
+    const mastersMultiplier = document.getElementById('mastersMultiplier');
+    const phdMultiplier = document.getElementById('phdMultiplier');
+    const deadline30Multiplier = document.getElementById('deadline30Multiplier');
+    const deadline14Multiplier = document.getElementById('deadline14Multiplier');
+    const deadline7Multiplier = document.getElementById('deadline7Multiplier');
+    const deadline3Multiplier = document.getElementById('deadline3Multiplier');
+    const deadline24hMultiplier = document.getElementById('deadline24hMultiplier');
+
+    async function loadThesisPricing() {
+      thesisPricingStatus.textContent = 'Loading…';
+      thesisPricingStatus.style.color = 'var(--muted)';
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/thesis-pricing`, { headers: authHeader });
+        if (!res.ok) {
+          thesisPricingStatus.textContent = 'Could not load current rates.';
+          thesisPricingStatus.style.color = '#b91c1c';
+          return;
+        }
+        const data = await res.json();
+        pricePerPage.value = data.price_per_page_rwf;
+        undergradMultiplier.value = data.undergrad_multiplier;
+        mastersMultiplier.value = data.masters_multiplier;
+        phdMultiplier.value = data.phd_multiplier;
+        deadline30Multiplier.value = data.deadline_30_multiplier;
+        deadline14Multiplier.value = data.deadline_14_multiplier;
+        deadline7Multiplier.value = data.deadline_7_multiplier;
+        deadline3Multiplier.value = data.deadline_3_multiplier;
+        deadline24hMultiplier.value = data.deadline_24h_multiplier;
+        thesisPricingStatus.textContent = '';
+      } catch (err) {
+        thesisPricingStatus.textContent = 'Could not reach the server.';
+        thesisPricingStatus.style.color = '#b91c1c';
+      }
+    }
+
+    thesisPricingForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      thesisPricingSaveBtn.disabled = true;
+      thesisPricingStatus.textContent = 'Saving…';
+      thesisPricingStatus.style.color = 'var(--muted)';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/thesis-pricing`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({
+            price_per_page_rwf: pricePerPage.value,
+            undergrad_multiplier: undergradMultiplier.value,
+            masters_multiplier: mastersMultiplier.value,
+            phd_multiplier: phdMultiplier.value,
+            deadline_30_multiplier: deadline30Multiplier.value,
+            deadline_14_multiplier: deadline14Multiplier.value,
+            deadline_7_multiplier: deadline7Multiplier.value,
+            deadline_3_multiplier: deadline3Multiplier.value,
+            deadline_24h_multiplier: deadline24hMultiplier.value,
+          }),
+        });
+
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({}));
+          thesisPricingStatus.textContent = error || 'Could not save rates.';
+          thesisPricingStatus.style.color = '#b91c1c';
+          thesisPricingSaveBtn.disabled = false;
+          return;
+        }
+
+        thesisPricingStatus.textContent = 'Saved ✓';
+        thesisPricingStatus.style.color = '#1a7a4c';
+      } catch (err) {
+        thesisPricingStatus.textContent = 'Could not reach the server.';
+        thesisPricingStatus.style.color = '#b91c1c';
+      }
+      thesisPricingSaveBtn.disabled = false;
+    });
 
     function renderWorkshopRows(workshops) {
       if (workshops.length === 0) {
@@ -2462,6 +2605,7 @@
       { tab: tabWorkshops, section: workshopsSection, onShow: () => { if (!workshopsLoaded) { workshopsLoaded = true; loadWorkshops(); } } },
       { tab: tabContent, section: contentSection, onShow: null },
       { tab: tabThesis, section: thesisSection, onShow: () => { if (!thesisLoaded) { thesisLoaded = true; loadThesisRequests(); } } },
+      { tab: tabThesisPricing, section: thesisPricingSection, onShow: () => { if (!thesisPricingLoaded) { thesisPricingLoaded = true; loadThesisPricing(); } } },
     ];
 
     tabs.forEach(({ tab, section, onShow }) => {
