@@ -109,6 +109,72 @@ adminRouter.patch('/contact-messages/:id/status', async (req, res) => {
   res.json(data);
 });
 
+const THESIS_STATUSES = ['new', 'in_progress', 'completed', 'cancelled'];
+const THESIS_SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
+
+// GET /api/admin/thesis-requests — every thesis editing/proofreading
+// request, with signed download URLs for its uploaded file(s).
+// Optional ?status= filter; unfiltered = everything, newest first.
+adminRouter.get('/thesis-requests', async (req, res) => {
+  const { status } = req.query;
+
+  let query = supabase
+    .from('thesis_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+
+  if (error) {
+    return sendServerError(res, error, 'admin.thesisRequests.list');
+  }
+
+  const withFiles = await Promise.all(data.map(async (r) => {
+    const files = await Promise.all((r.file_paths || []).map(async (path) => {
+      const { data: signed, error: signError } = await supabase.storage
+        .from('thesis-submissions')
+        .createSignedUrl(path, THESIS_SIGNED_URL_TTL_SECONDS);
+      return { path, name: path.split('/').pop(), url: signError ? null : signed.signedUrl };
+    }));
+    return { ...r, files };
+  }));
+
+  res.json(withFiles);
+});
+
+// PATCH /api/admin/thesis-requests/:id — update status and/or private
+// admin notes on a request. body: { status?, adminNotes? }
+adminRouter.patch('/thesis-requests/:id', async (req, res) => {
+  const { status, adminNotes } = req.body;
+
+  if (status !== undefined && !THESIS_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Status must be one of: ${THESIS_STATUSES.join(', ')}` });
+  }
+
+  const update = {};
+  if (status !== undefined) update.status = status;
+  if (adminNotes !== undefined) update.admin_notes = adminNotes;
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ error: 'Nothing to update.' });
+  }
+
+  const { data, error } = await supabase
+    .from('thesis_requests')
+    .update(update)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Thesis request not found.' });
+  }
+
+  res.json(data);
+});
+
 const WORKSHOP_STATUSES = ['upcoming', 'closed'];
 const WORKSHOP_REQUIRED_FIELDS = ['course_slug', 'venue', 'start_date', 'trainer_name', 'fee'];
 

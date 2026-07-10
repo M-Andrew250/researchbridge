@@ -188,6 +188,16 @@
       color: #1a7a4c;
     }
 
+    .admin-status-in_progress {
+      background: #fff7e6;
+      color: #b8860b;
+    }
+
+    .admin-status-completed {
+      background: #e6f7ee;
+      color: #1a7a4c;
+    }
+
     .admin-status-select {
       background: var(--light-bg);
       border: 1.5px solid var(--border);
@@ -555,6 +565,7 @@
         <button type="button" class="admin-tab" id="tabMessages">Messages</button>
         <button type="button" class="admin-tab" id="tabWorkshops">Workshops</button>
         <button type="button" class="admin-tab" id="tabContent">Course Content</button>
+        <button type="button" class="admin-tab" id="tabThesis">Thesis Requests</button>
       </div>
 
       <div id="enrolmentsSection">
@@ -856,6 +867,43 @@
           Select a course to manage its content.
         </p>
       </div>
+
+      <div id="thesisSection" style="display:none;">
+        <div class="admin-filters">
+          <input type="text" id="filterThesisSearch" placeholder="Search name or email…" />
+          <select id="filterThesisStatus">
+            <option value="">All Statuses</option>
+            <option value="new">New</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <span class="admin-result-count" id="thesisResultCount"></span>
+          <button type="button" class="admin-outline-btn" id="exportThesisBtn">Download CSV</button>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Document</th>
+                <th>Citation / Words</th>
+                <th>Deadline</th>
+                <th>Files</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="thesisTableBody"></tbody>
+          </table>
+          <p id="thesisEmptyState" style="display:none; text-align:center; color:var(--muted); padding:2rem;">
+            No thesis requests match these filters.
+          </p>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -888,14 +936,22 @@
     const tabEnrolments = document.getElementById('tabEnrolments');
     const tabMessages = document.getElementById('tabMessages');
     const tabWorkshops = document.getElementById('tabWorkshops');
+    const tabThesis = document.getElementById('tabThesis');
     const enrolmentsSection = document.getElementById('enrolmentsSection');
     const messagesSection = document.getElementById('messagesSection');
     const workshopsSection = document.getElementById('workshopsSection');
+    const thesisSection = document.getElementById('thesisSection');
     const messagesTableBody = document.getElementById('messagesTableBody');
     const messagesEmptyState = document.getElementById('messagesEmptyState');
     const messagesResultCount = document.getElementById('messagesResultCount');
     const filterMessageStatus = document.getElementById('filterMessageStatus');
     const filterMessageSearch = document.getElementById('filterMessageSearch');
+
+    const thesisTableBody = document.getElementById('thesisTableBody');
+    const thesisEmptyState = document.getElementById('thesisEmptyState');
+    const thesisResultCount = document.getElementById('thesisResultCount');
+    const filterThesisStatus = document.getElementById('filterThesisStatus');
+    const filterThesisSearch = document.getElementById('filterThesisSearch');
 
     const workshopsTableBody = document.getElementById('workshopsTableBody');
     const workshopsEmptyState = document.getElementById('workshopsEmptyState');
@@ -916,6 +972,7 @@
     const workshopStatus = document.getElementById('workshopStatus');
     const exportEnrolmentsBtn = document.getElementById('exportEnrolmentsBtn');
     const exportMessagesBtn = document.getElementById('exportMessagesBtn');
+    const exportThesisBtn = document.getElementById('exportThesisBtn');
     const exportWorkshopsBtn = document.getElementById('exportWorkshopsBtn');
 
     const tabContent = document.getElementById('tabContent');
@@ -983,12 +1040,14 @@
     let latestModules = [];
     let latestQuestions = [];
     let latestMaterials = [];
+    let latestThesisRequests = [];
     let currentCourseSlug = '';
     let currentQuestionsLessonId = null;
     let currentMaterialsLessonId = null;
     const expandedModuleIds = new Set();
     let messagesLoaded = false;
     let workshopsLoaded = false;
+    let thesisLoaded = false;
 
     Object.entries(courseNames).forEach(([slug, name]) => {
       filterWorkshopCourse.insertAdjacentHTML('beforeend', `<option value="${slug}">${escapeHtml(name)}</option>`);
@@ -1224,6 +1283,140 @@
     filterMessageStatus.addEventListener('change', loadMessages);
     filterMessageSearch.addEventListener('input', () => renderMessageRows(filterMessagesBySearch(latestMessages)));
 
+    function filterThesisBySearch(requests) {
+      const term = filterThesisSearch.value.trim().toLowerCase();
+      if (!term) return requests;
+      return requests.filter(r => {
+        const haystack = `${r.first_name} ${r.last_name} ${r.email}`.toLowerCase();
+        return haystack.includes(term);
+      });
+    }
+
+    const THESIS_STATUS_LABELS = { new: 'New', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled' };
+
+    function renderThesisRows(requests) {
+      if (requests.length === 0) {
+        thesisTableBody.innerHTML = '';
+        thesisEmptyState.textContent = filterThesisSearch.value.trim()
+          ? 'No thesis requests match this search.'
+          : 'No thesis requests match these filters.';
+        thesisEmptyState.style.display = 'block';
+        thesisResultCount.textContent = '0 requests';
+        return;
+      }
+
+      thesisEmptyState.style.display = 'none';
+      thesisResultCount.textContent = `${requests.length} request${requests.length === 1 ? '' : 's'}`;
+
+      thesisTableBody.innerHTML = requests.map(r => `
+        <tr>
+          <td>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
+          <td>${escapeHtml(r.email)}<span class="admin-sub">${escapeHtml(r.phone)}</span></td>
+          <td>${escapeHtml(r.document_type)}</td>
+          <td>${r.citation_style ? escapeHtml(r.citation_style) : '—'}${r.word_count ? `<span class="admin-sub">${r.word_count.toLocaleString()} words</span>` : ''}</td>
+          <td>${r.deadline ? formatDate(r.deadline) : '—'}</td>
+          <td>${(r.files || []).map(f => f.url
+            ? `<a href="${f.url}" target="_blank" rel="noopener" style="display:block; color:var(--royal); font-size:0.8rem;">${escapeHtml(f.name)}</a>`
+            : `<span class="admin-sub" style="display:block;">${escapeHtml(f.name)}</span>`).join('') || '—'}</td>
+          <td>${formatDate(r.created_at)}</td>
+          <td>
+            <select class="admin-status-select thesis-status-select" data-id="${r.id}">
+              ${Object.entries(THESIS_STATUS_LABELS).map(([value, label]) =>
+                `<option value="${value}" ${r.status === value ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <textarea class="thesis-notes-input" data-id="${r.id}" rows="2" placeholder="Private notes…" style="width:160px; font-family:'Inter',sans-serif; font-size:0.8rem; padding:0.4rem; border:1.5px solid var(--border); border-radius:6px; resize:vertical;">${escapeHtml(r.admin_notes || '')}</textarea>
+            <button type="button" class="admin-outline-btn thesis-notes-save" data-id="${r.id}" style="display:none; margin-top:0.3rem; font-size:0.75rem; padding:0.3rem 0.6rem;">Save</button>
+          </td>
+        </tr>
+      `).join('');
+
+      thesisTableBody.querySelectorAll('.thesis-status-select').forEach(select => {
+        select.addEventListener('change', async () => {
+          const id = select.dataset.id;
+          const newStatus = select.value;
+          select.disabled = true;
+
+          try {
+            const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/thesis-requests/${id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', ...authHeader },
+              body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!res.ok) {
+              alert('Could not update status. Please try again.');
+              select.disabled = false;
+              return;
+            }
+
+            await loadThesisRequests();
+          } catch (err) {
+            alert('Could not reach the server. Please check your connection.');
+            select.disabled = false;
+          }
+        });
+      });
+
+      thesisTableBody.querySelectorAll('.thesis-notes-input').forEach(textarea => {
+        const saveBtn = thesisTableBody.querySelector(`.thesis-notes-save[data-id="${textarea.dataset.id}"]`);
+        const original = textarea.value;
+        textarea.addEventListener('input', () => {
+          saveBtn.style.display = textarea.value !== original ? 'inline-block' : 'none';
+        });
+        saveBtn.addEventListener('click', async () => {
+          saveBtn.disabled = true;
+          try {
+            const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/thesis-requests/${textarea.dataset.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', ...authHeader },
+              body: JSON.stringify({ adminNotes: textarea.value }),
+            });
+
+            if (!res.ok) {
+              alert('Could not save notes. Please try again.');
+              saveBtn.disabled = false;
+              return;
+            }
+
+            await loadThesisRequests();
+          } catch (err) {
+            alert('Could not reach the server. Please check your connection.');
+            saveBtn.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadThesisRequests() {
+      const params = new URLSearchParams();
+      if (filterThesisStatus.value) params.set('status', filterThesisStatus.value);
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/thesis-requests?${params}`, {
+          headers: authHeader,
+        });
+
+        if (!res.ok) {
+          thesisTableBody.innerHTML = '';
+          thesisEmptyState.textContent = 'Could not load thesis requests.';
+          thesisEmptyState.style.display = 'block';
+          return;
+        }
+
+        latestThesisRequests = await res.json();
+        renderThesisRows(filterThesisBySearch(latestThesisRequests));
+      } catch (err) {
+        thesisTableBody.innerHTML = '';
+        thesisEmptyState.textContent = 'Could not reach the server.';
+        thesisEmptyState.style.display = 'block';
+      }
+    }
+
+    filterThesisStatus.addEventListener('change', loadThesisRequests);
+    filterThesisSearch.addEventListener('input', () => renderThesisRows(filterThesisBySearch(latestThesisRequests)));
+
     function renderWorkshopRows(workshops) {
       if (workshops.length === 0) {
         workshopsTableBody.innerHTML = '';
@@ -1444,6 +1637,22 @@
         { header: 'Fee', value: w => w.fee },
         { header: 'Status', value: w => w.status },
       ], latestWorkshops);
+    });
+
+    exportThesisBtn.addEventListener('click', () => {
+      downloadCsv('thesis-requests.csv', [
+        { header: 'First Name', value: r => r.first_name },
+        { header: 'Last Name', value: r => r.last_name },
+        { header: 'Email', value: r => r.email },
+        { header: 'Phone', value: r => r.phone },
+        { header: 'Document Type', value: r => r.document_type },
+        { header: 'Word Count', value: r => r.word_count },
+        { header: 'Citation Style', value: r => r.citation_style },
+        { header: 'Deadline', value: r => r.deadline },
+        { header: 'Instructions', value: r => r.instructions },
+        { header: 'Status', value: r => r.status },
+        { header: 'Submitted', value: r => r.created_at },
+      ], filterThesisBySearch(latestThesisRequests));
     });
 
     function renderModules() {
@@ -2245,6 +2454,7 @@
       { tab: tabMessages, section: messagesSection, onShow: () => { if (!messagesLoaded) { messagesLoaded = true; loadMessages(); } } },
       { tab: tabWorkshops, section: workshopsSection, onShow: () => { if (!workshopsLoaded) { workshopsLoaded = true; loadWorkshops(); } } },
       { tab: tabContent, section: contentSection, onShow: null },
+      { tab: tabThesis, section: thesisSection, onShow: () => { if (!thesisLoaded) { thesisLoaded = true; loadThesisRequests(); } } },
     ];
 
     tabs.forEach(({ tab, section, onShow }) => {

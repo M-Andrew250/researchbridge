@@ -93,6 +93,23 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
   });
 }
 
+export async function sendThesisRequestConfirmationEmail({ to, firstName, documentType, deadline, fileCount }) {
+  await sendEmail({
+    to,
+    subject: 'We’ve received your document — ResearchBridge Editing',
+    html: wrap(`
+      <h2 style="color:#0A1F44;">Thanks, ${firstName}! Your document is with us. ✅</h2>
+      <p>We've received your submission for editing and proofreading. Here's a summary:</p>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+        <tr><td style="padding:6px 0; color:#5A6A85;">Document Type</td><td style="padding:6px 0; font-weight:600;">${documentType}</td></tr>
+        <tr><td style="padding:6px 0; color:#5A6A85;">File(s) Received</td><td style="padding:6px 0; font-weight:600;">${fileCount}</td></tr>
+        ${deadline ? `<tr><td style="padding:6px 0; color:#5A6A85;">Your Deadline</td><td style="padding:6px 0; font-weight:600;">${new Date(deadline).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>` : ''}
+      </table>
+      <p>Our editing team will review your document and reach out with a quote and turnaround time shortly.</p>
+    `),
+  });
+}
+
 export async function sendMotivationalEmail({ to, firstName, courseName, progressPercent }) {
   await sendEmail({
     to,

@@ -21,6 +21,167 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/service-page.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
+
+  <style>
+    /* ── THESIS SUBMISSION FORM ── */
+    .thesis-submit-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 680px;
+      margin: 0 auto;
+      box-shadow: 0 4px 32px rgba(10, 31, 68, 0.1);
+      border: 1.5px solid var(--border);
+    }
+
+    .thesis-submit-card h2 {
+      font-size: 1.4rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .thesis-submit-card > p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .thesis-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .thesis-form .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .thesis-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .thesis-form label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+      letter-spacing: 0.03em;
+    }
+
+    .thesis-form input,
+    .thesis-form select,
+    .thesis-form textarea {
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .thesis-form input:focus,
+    .thesis-form select:focus,
+    .thesis-form textarea:focus {
+      border-color: var(--royal);
+      background: var(--white);
+    }
+
+    .thesis-form textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .thesis-form input[type="file"] {
+      padding: 0.6rem;
+      cursor: pointer;
+    }
+
+    .thesis-form-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: -0.2rem;
+    }
+
+    .thesis-submit-btn {
+      background: var(--royal);
+      color: var(--white);
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .thesis-submit-btn:hover {
+      background: var(--navy);
+      transform: translateY(-2px);
+    }
+
+    .thesis-submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .thesis-form-error {
+      display: none;
+      background: #fdeaea;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .thesis-success {
+      display: none;
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .thesis-success.visible {
+      display: block;
+    }
+
+    .thesis-success .success-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .thesis-success h2 {
+      color: var(--navy);
+      margin-bottom: 0.8rem;
+    }
+
+    .thesis-success p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 420px;
+      margin: 0 auto 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .thesis-form .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .thesis-submit-card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -202,6 +363,112 @@
     </div>
   </section>
 
+  <!-- SUBMIT YOUR DOCUMENT -->
+  <section class="service-section" id="submit">
+    <div class="service-section-inner">
+      <p class="section-label">Get Started</p>
+      <h2>Submit Your Document</h2>
+
+      <div class="thesis-submit-card">
+
+        <!-- FORM STATE -->
+        <div id="thesisFormWrap">
+          <h2>Tell Us About Your Document</h2>
+          <p>Fill in your details and attach your document below. Our
+          team will review it and get back to you with a quote and
+          turnaround time.</p>
+
+          <form class="thesis-form" id="thesisForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="thesisFirstName">First Name *</label>
+                <input type="text" id="thesisFirstName" required />
+              </div>
+              <div class="form-group">
+                <label for="thesisLastName">Last Name *</label>
+                <input type="text" id="thesisLastName" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="thesisEmail">Email *</label>
+                <input type="email" id="thesisEmail" required />
+              </div>
+              <div class="form-group">
+                <label for="thesisPhone">Phone *</label>
+                <input type="tel" id="thesisPhone" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="thesisDocumentType">Document Type *</label>
+                <select id="thesisDocumentType" required>
+                  <option value="">Select…</option>
+                  <option>Bachelor's Dissertation</option>
+                  <option>Master's Thesis</option>
+                  <option>PhD Thesis</option>
+                  <option>Journal Article</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="thesisCitationStyle">Citation Style</label>
+                <select id="thesisCitationStyle">
+                  <option value="">Not sure / Other</option>
+                  <option>APA</option>
+                  <option>Harvard</option>
+                  <option>Chicago</option>
+                  <option>MLA</option>
+                  <option>Vancouver</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="thesisWordCount">Approx. Word Count</label>
+                <input type="number" id="thesisWordCount" min="0" placeholder="e.g. 12000" />
+              </div>
+              <div class="form-group">
+                <label for="thesisDeadline">Your Deadline</label>
+                <input type="date" id="thesisDeadline" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="thesisInstructions">Formatting Guidelines / Instructions</label>
+              <textarea id="thesisInstructions" placeholder="University formatting requirements, areas you'd like us to focus on, etc."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="thesisFiles">Attach Document(s) *</label>
+              <input type="file" id="thesisFiles" accept=".pdf,.doc,.docx" multiple required />
+              <p class="thesis-form-hint">PDF or Word, up to 20MB each, up to 5 files.</p>
+            </div>
+
+            <p class="thesis-form-error" id="thesisFormError"></p>
+
+            <button type="submit" class="thesis-submit-btn" id="thesisSubmitBtn">Submit Document →</button>
+          </form>
+        </div>
+
+        <!-- SUCCESS STATE -->
+        <div class="thesis-success" id="thesisSuccess">
+          <div class="success-icon">✅</div>
+          <h2>Document Received!</h2>
+          <p>Thanks, <span id="thesisSuccessName"></span> — we've received
+          your document and sent a confirmation to
+          <strong id="thesisSuccessEmail"></strong>. Our editing team
+          will be in touch shortly with a quote and turnaround time.</p>
+          <a href="../index.html" class="btn-primary">Back to Home →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- WHO IT'S FOR -->
   <section class="service-section">
     <div class="service-section-inner two-col">
@@ -228,8 +495,9 @@
             <div class="step-num">1</div>
             <div class="step-text">
               <strong>Submit Your Document</strong>
-              <p>Send us your thesis via email or WhatsApp
-              along with your formatting guidelines.</p>
+              <p>Use the <a href="#submit">form on this page</a> to
+              upload your thesis along with your formatting
+              guidelines.</p>
             </div>
           </div>
           <div class="step">
@@ -335,9 +603,10 @@
             <span class="faq-toggle">+</span>
           </div>
           <div class="faq-answer">
-            <p>Send your thesis or dissertation to us via email or
-            WhatsApp, along with any formatting guidelines from your
-            institution.</p>
+            <p>Use the <a href="#submit">submission form</a> on this
+            page to upload your thesis or dissertation, along with
+            any formatting guidelines from your institution. You can
+            also reach us via email or WhatsApp if you'd prefer.</p>
           </div>
         </div>
 
@@ -348,8 +617,8 @@
   <!-- CTA -->
   <section class="service-cta">
     <h2>Ready to Get Started?</h2>
-    <p>Contact us today and let's discuss your thesis editing needs.</p>
-    <a href="../index.html#contact" class="btn-primary">Get in Touch →</a>
+    <p>Submit your document today and let's discuss your thesis editing needs.</p>
+    <a href="#submit" class="btn-primary">Submit Your Document →</a>
   </section>
 
   <!-- FOOTER -->
@@ -405,6 +674,95 @@
   <a href="https://wa.me/250789452479?text=Hello%20ResearchBridge%2C%20I%20am%20interested%20in%20the%20Thesis%20Editing%20%26%20Proofreading%20service.%20Please%20send%20me%20more%20details." class="whatsapp-btn" target="_blank" rel="noopener" title="Chat with us on WhatsApp"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
 
   <script src="../js/main.js"></script>
+
+  <script>
+    const thesisForm = document.getElementById('thesisForm');
+    const thesisFormWrap = document.getElementById('thesisFormWrap');
+    const thesisSuccess = document.getElementById('thesisSuccess');
+    const thesisFormError = document.getElementById('thesisFormError');
+    const thesisSubmitBtn = document.getElementById('thesisSubmitBtn');
+
+    thesisForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const firstName = document.getElementById('thesisFirstName').value.trim();
+      const lastName = document.getElementById('thesisLastName').value.trim();
+      const email = document.getElementById('thesisEmail').value.trim();
+      const phone = document.getElementById('thesisPhone').value.trim();
+      const documentType = document.getElementById('thesisDocumentType').value;
+      const citationStyle = document.getElementById('thesisCitationStyle').value;
+      const wordCount = document.getElementById('thesisWordCount').value;
+      const deadline = document.getElementById('thesisDeadline').value;
+      const instructions = document.getElementById('thesisInstructions').value.trim();
+      const files = document.getElementById('thesisFiles').files;
+
+      if (!firstName || !lastName || !email || !phone || !documentType) {
+        thesisFormError.textContent = 'Please fill in all required fields.';
+        thesisFormError.style.display = 'block';
+        return;
+      }
+
+      if (files.length === 0) {
+        thesisFormError.textContent = 'Please attach at least one document.';
+        thesisFormError.style.display = 'block';
+        return;
+      }
+
+      thesisFormError.style.display = 'none';
+      thesisSubmitBtn.disabled = true;
+      thesisSubmitBtn.textContent = 'Submitting…';
+
+      const formData = new FormData();
+      formData.append('firstName', firstName);
+      formData.append('lastName', lastName);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('documentType', documentType);
+      if (citationStyle) formData.append('citationStyle', citationStyle);
+      if (wordCount) formData.append('wordCount', wordCount);
+      if (deadline) formData.append('deadline', deadline);
+      if (instructions) formData.append('instructions', instructions);
+      for (const file of files) formData.append('files', file);
+
+      // If the visitor is logged in, link the request to their
+      // profile by sending their session token; guests submit with
+      // no Authorization header at all (same pattern as enrol.html).
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      let response;
+      try {
+        response = await fetch(`${window.rbcApiBaseUrl}/api/thesis-requests`, {
+          method: 'POST',
+          headers: {
+            ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: formData,
+        });
+      } catch (err) {
+        thesisFormError.textContent = 'Could not reach the server. Please check your connection and try again.';
+        thesisFormError.style.display = 'block';
+        thesisSubmitBtn.disabled = false;
+        thesisSubmitBtn.textContent = 'Submit Document →';
+        return;
+      }
+
+      if (!response.ok) {
+        const { error } = await response.json().catch(() => ({}));
+        thesisFormError.textContent = error || 'Something went wrong. Please try again.';
+        thesisFormError.style.display = 'block';
+        thesisSubmitBtn.disabled = false;
+        thesisSubmitBtn.textContent = 'Submit Document →';
+        return;
+      }
+
+      document.getElementById('thesisSuccessName').textContent = firstName;
+      document.getElementById('thesisSuccessEmail').textContent = email;
+
+      thesisFormWrap.style.display = 'none';
+      thesisSuccess.classList.add('visible');
+    });
+  </script>
 
 </body>
 </html>
