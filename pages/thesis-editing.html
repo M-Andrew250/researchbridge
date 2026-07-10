@@ -23,84 +23,11 @@
   <link rel="icon" type="image/png" href="../images/logo.png" />
 
   <style>
-    /* ── STICKY SERVICE SUB-NAV ── */
-    .service-subnav {
-      position: sticky;
-      top: 68px;
-      z-index: 90;
-      background: var(--white);
-      border-bottom: 1.5px solid var(--border);
-      box-shadow: 0 2px 12px rgba(10, 31, 68, 0.06);
-    }
-
-    .service-subnav-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 5%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      overflow-x: auto;
-    }
-
-    .service-subnav-tabs {
-      display: flex;
-      gap: 0.2rem;
-    }
-
-    .service-subnav-tab {
-      padding: 1rem 0.9rem;
-      font-size: 0.86rem;
-      font-weight: 600;
-      color: var(--muted);
-      white-space: nowrap;
-      border-bottom: 3px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-    }
-
-    .service-subnav-tab:hover {
-      color: var(--navy);
-    }
-
-    .service-subnav-tab.active {
-      color: var(--royal);
-      border-bottom-color: var(--royal);
-    }
-
-    .service-subnav-cta {
-      flex-shrink: 0;
-      background: var(--royal);
-      color: var(--white);
-      padding: 0.6rem 1.3rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: background 0.2s, transform 0.2s;
-    }
-
-    .service-subnav-cta:hover {
-      background: var(--navy);
-      transform: translateY(-2px);
-    }
-
     #how-it-works,
     #editors,
     #pricing,
     #testimonials {
-      scroll-margin-top: 130px;
-    }
-
-    @media (max-width: 768px) {
-      .service-subnav-inner {
-        padding: 0 4%;
-      }
-
-      .service-subnav-tab {
-        padding: 0.9rem 0.6rem;
-        font-size: 0.8rem;
-      }
+      scroll-margin-top: 118px;
     }
 
     /* ── EDITORS ── */
@@ -204,6 +131,230 @@
       border-radius: 999px;
       white-space: nowrap;
     }
+
+    /* ── QUOTE CALCULATOR MODAL ── */
+    .quote-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .quote-modal.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .quote-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 15, 34, 0.85);
+      backdrop-filter: blur(6px);
+    }
+
+    .quote-modal-close {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+      z-index: 2;
+    }
+
+    .quote-modal-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.08);
+    }
+
+    .quote-modal-content {
+      position: relative;
+      z-index: 1;
+      background: var(--white);
+      border-radius: 16px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 2rem;
+    }
+
+    .quote-modal.open .quote-modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .quote-modal-header h3 {
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 0.3rem;
+    }
+
+    .quote-modal-header p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quote-modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .quote-form-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .quote-form-col .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .quote-form-col label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .quote-form-col input,
+    .quote-form-col select {
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .quote-form-col input:focus,
+    .quote-form-col select:focus {
+      border-color: var(--royal);
+      background: var(--white);
+    }
+
+    .quote-price-col {
+      background: linear-gradient(160deg, var(--royal) 0%, var(--navy) 100%);
+      border-radius: 14px;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.5rem;
+    }
+
+    .quote-price-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .quote-price-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .quote-price-detail {
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 0.8rem;
+    }
+
+    .quote-price-col .form-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      text-align: left;
+      margin-bottom: 0.5rem;
+    }
+
+    .quote-price-col label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .quote-price-col select {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--white);
+      outline: none;
+    }
+
+    .quote-price-col select option {
+      color: var(--text);
+    }
+
+    .quote-cta-btn {
+      display: block;
+      width: 100%;
+      background: var(--white);
+      color: var(--royal);
+      text-align: center;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: background 0.2s, transform 0.2s;
+      margin-top: 0.3rem;
+    }
+
+    .quote-cta-btn:hover {
+      background: var(--sky);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+
+    .quote-disclaimer {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.6rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .quote-modal-body {
+        grid-template-columns: 1fr;
+      }
+
+      .quote-modal-content {
+        padding: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -306,19 +457,6 @@
     </div>
   </nav>
 
-  <!-- STICKY SERVICE SUB-NAV -->
-  <nav class="service-subnav" id="serviceSubnav">
-    <div class="service-subnav-inner">
-      <div class="service-subnav-tabs">
-        <a href="#how-it-works" class="service-subnav-tab">How It Works</a>
-        <a href="#editors" class="service-subnav-tab">Editors</a>
-        <a href="#pricing" class="service-subnav-tab">Pricing</a>
-        <a href="#testimonials" class="service-subnav-tab">Testimonials</a>
-      </div>
-      <a href="thesis-request.html" class="service-subnav-cta">Request This Service →</a>
-    </div>
-  </nav>
-
   <!-- HERO BANNER -->
   <section class="service-hero">
     <div class="service-hero-content">
@@ -342,6 +480,23 @@
       </div>
     </div>
   </section>
+
+  <!-- STICKY SECTION INDICATOR -->
+  <div class="section-indicator" id="serviceSubnav">
+    <div class="section-indicator-inner">
+      <span class="indicator-label">Currently viewing:</span>
+      <span class="indicator-current" id="thesisIndicatorCurrent">How It Works</span>
+    </div>
+
+    <div class="indicator-nav">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#editors">Editors</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#testimonials">Testimonials</a>
+    </div>
+
+    <a href="thesis-request.html" class="indicator-cta">Request This Service →</a>
+  </div>
 
   <!-- WHAT IT IS -->
   <section class="service-section">
@@ -558,10 +713,81 @@
 
       </div>
       <p style="margin-top:2rem;">
-        <a href="thesis-request.html" class="btn-primary">Get a Personalised Quote →</a>
+        <button type="button" class="btn-primary" id="openQuoteModalBtn">Get a Personalised Quote →</button>
       </p>
     </div>
   </section>
+
+  <!-- QUOTE CALCULATOR MODAL -->
+  <div class="quote-modal" id="quoteModal">
+    <div class="quote-modal-overlay" id="quoteModalOverlay"></div>
+    <button type="button" class="quote-modal-close" id="quoteModalClose" aria-label="Close quote calculator">✕</button>
+
+    <div class="quote-modal-content">
+      <div class="quote-modal-header">
+        <h3>Get a Personalised Quote</h3>
+        <p>Adjust the options below to see an instant price estimate.</p>
+      </div>
+
+      <div class="quote-modal-body">
+        <div class="quote-form-col">
+          <div class="form-group">
+            <label for="quoteWordCount">Words Needed</label>
+            <input type="number" id="quoteWordCount" min="1" step="1" value="10000" />
+            <p class="thesis-form-hint">Priced per page, at 250 words per page.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="quoteDeadline">Deadline</label>
+            <select id="quoteDeadline">
+              <option value="1">30 Days (Standard)</option>
+              <option value="1.2">14 Days</option>
+              <option value="1.4">7 Days</option>
+              <option value="1.6">3 Days</option>
+              <option value="2">24 Hours</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="quoteLevel">Education Level</label>
+            <select id="quoteLevel">
+              <option value="0.5">Undergraduate / College</option>
+              <option value="1" selected>Master's</option>
+              <option value="1.5">PhD</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quote-price-col">
+          <span class="quote-price-label">Estimated Price</span>
+          <div class="quote-price-amount" id="quotePriceAmount">—</div>
+          <p class="quote-price-detail" id="quotePriceDetail"></p>
+
+          <div class="form-group">
+            <label for="quoteCurrency">Currency</label>
+            <select id="quoteCurrency">
+              <option value="RWF">RWF — Rwandan Franc</option>
+              <option value="USD">USD — US Dollar</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="KES">KES — Kenyan Shilling</option>
+              <option value="UGX">UGX — Ugandan Shilling</option>
+              <option value="TZS">TZS — Tanzanian Shilling</option>
+              <option value="ZAR">ZAR — South African Rand</option>
+              <option value="NGN">NGN — Nigerian Naira</option>
+              <option value="CAD">CAD — Canadian Dollar</option>
+              <option value="AUD">AUD — Australian Dollar</option>
+              <option value="INR">INR — Indian Rupee</option>
+              <option value="CNY">CNY — Chinese Yuan</option>
+            </select>
+          </div>
+
+          <a href="thesis-request.html" class="quote-cta-btn">Edit My Document Now →</a>
+          <p class="quote-disclaimer" id="quoteDisclaimer">Estimate only — final price confirmed after we review your document.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- TESTIMONIALS -->
   <!-- Placeholder testimonials — swap in real client quotes when ready. -->
@@ -763,25 +989,134 @@
   <script src="../js/main.js"></script>
 
   <script>
-    // Highlights the sub-nav tab matching whichever tracked section
-    // is currently in view, so the "frozen" tab bar behaves like a
-    // real tab strip as the visitor scrolls.
-    const subnavTabs = [...document.querySelectorAll('.service-subnav-tab')];
-    const trackedSections = subnavTabs
-      .map(tab => document.getElementById(tab.getAttribute('href').slice(1)))
+    // Highlights the indicator-nav pill matching whichever tracked
+    // section is currently in view, and updates the "Currently
+    // viewing" label — same scrollspy pattern as course pages'
+    // section indicator, just self-contained here rather than
+    // wired into main.js's course-specific section list.
+    const subnavLinks = [...document.querySelectorAll('.indicator-nav a')];
+    const thesisIndicatorCurrent = document.getElementById('thesisIndicatorCurrent');
+    const trackedSections = subnavLinks
+      .map(link => document.getElementById(link.getAttribute('href').slice(1)))
       .filter(Boolean);
 
     const subnavObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         const activeId = entry.target.id;
-        subnavTabs.forEach(tab => {
-          tab.classList.toggle('active', tab.getAttribute('href') === `#${activeId}`);
+        subnavLinks.forEach(link => {
+          const isActive = link.getAttribute('href') === `#${activeId}`;
+          link.classList.toggle('active', isActive);
+          if (isActive && thesisIndicatorCurrent) thesisIndicatorCurrent.textContent = link.textContent;
         });
       });
-    }, { rootMargin: '-140px 0px -70% 0px' });
+    }, { rootMargin: '-120px 0px -70% 0px' });
 
     trackedSections.forEach(section => subnavObserver.observe(section));
+  </script>
+
+  <script>
+    // ── QUOTE CALCULATOR ──
+    // Pricing: 8000 RWF/page (250 words/page) at Master's level and
+    // 30-day turnaround. Undergraduate is half price, PhD is 1.5x.
+    // Deadline multipliers: 30d=1, 14d=1.2, 7d=1.4, 3d=1.6, 24h=2.
+    // Currency conversion uses live rates from a free, keyless API
+    // (base currency RWF) — fetched once, lazily, when the modal
+    // first opens.
+    const WORDS_PER_PAGE = 250;
+    const PRICE_PER_PAGE_RWF = 8000;
+    const ZERO_DECIMAL_CURRENCIES = new Set(['RWF', 'UGX', 'TZS']);
+
+    const quoteModal = document.getElementById('quoteModal');
+    const openQuoteModalBtn = document.getElementById('openQuoteModalBtn');
+    const quoteModalOverlay = document.getElementById('quoteModalOverlay');
+    const quoteModalClose = document.getElementById('quoteModalClose');
+    const quoteWordCount = document.getElementById('quoteWordCount');
+    const quoteDeadline = document.getElementById('quoteDeadline');
+    const quoteLevel = document.getElementById('quoteLevel');
+    const quoteCurrency = document.getElementById('quoteCurrency');
+    const quotePriceAmount = document.getElementById('quotePriceAmount');
+    const quotePriceDetail = document.getElementById('quotePriceDetail');
+    const quoteDisclaimer = document.getElementById('quoteDisclaimer');
+
+    let exchangeRates = null; // { USD: 0.00068, EUR: ..., ... } relative to RWF
+    let ratesFetchStarted = false;
+
+    function formatCurrency(amount, code) {
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: code,
+          maximumFractionDigits: ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 2,
+        }).format(amount);
+      } catch (err) {
+        return `${code} ${amount.toFixed(2)}`;
+      }
+    }
+
+    function calculateQuote() {
+      const words = Math.max(0, Number(quoteWordCount.value) || 0);
+      const pages = Math.ceil(words / WORDS_PER_PAGE);
+      const levelMultiplier = Number(quoteLevel.value);
+      const deadlineMultiplier = Number(quoteDeadline.value);
+      const priceRWF = pages * PRICE_PER_PAGE_RWF * levelMultiplier * deadlineMultiplier;
+
+      const currency = quoteCurrency.value;
+      if (currency === 'RWF') {
+        quotePriceAmount.textContent = formatCurrency(priceRWF, 'RWF');
+      } else if (exchangeRates && exchangeRates[currency]) {
+        quotePriceAmount.textContent = formatCurrency(priceRWF * exchangeRates[currency], currency);
+      } else {
+        quotePriceAmount.textContent = ratesFetchStarted ? 'Loading rates…' : formatCurrency(priceRWF, 'RWF');
+      }
+
+      quotePriceDetail.textContent = `${pages} page${pages === 1 ? '' : 's'} (${words.toLocaleString()} words)`;
+    }
+
+    async function fetchExchangeRates() {
+      if (ratesFetchStarted) return;
+      ratesFetchStarted = true;
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/RWF');
+        const data = await res.json();
+        if (data.result === 'success') {
+          exchangeRates = data.rates;
+          calculateQuote();
+        } else {
+          throw new Error('rate lookup failed');
+        }
+      } catch (err) {
+        quoteDisclaimer.textContent = 'Live currency conversion is unavailable right now — showing RWF. Estimate only, final price confirmed after we review your document.';
+        quoteCurrency.value = 'RWF';
+        calculateQuote();
+      }
+    }
+
+    function openQuoteModal() {
+      quoteModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      calculateQuote();
+      fetchExchangeRates();
+    }
+
+    function closeQuoteModal() {
+      quoteModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    openQuoteModalBtn.addEventListener('click', openQuoteModal);
+    quoteModalOverlay.addEventListener('click', closeQuoteModal);
+    quoteModalClose.addEventListener('click', closeQuoteModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && quoteModal.classList.contains('open')) closeQuoteModal();
+    });
+
+    [quoteWordCount, quoteDeadline, quoteLevel, quoteCurrency].forEach(el => {
+      el.addEventListener('input', calculateQuote);
+      el.addEventListener('change', calculateQuote);
+    });
+
+    calculateQuote();
   </script>
 
 </body>

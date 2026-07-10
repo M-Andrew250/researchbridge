@@ -617,6 +617,123 @@ section {
 
 }
 
+/* ── STICKY SECTION INDICATOR ──
+   Originally course-page-only; also used by thesis-editing.html
+   (and any future service page) for its sticky sub-nav below the
+   hero, so it lives here rather than in course-page.css. */
+.section-indicator {
+  position: sticky;
+  top: 68px;
+  z-index: 90;
+  background: var(--white);
+  border-bottom: 2px solid var(--light-bg);
+  box-shadow: 0 2px 12px rgba(10, 31, 68, 0.07);
+  padding: 0 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 48px;
+  transition: background 0.3s;
+}
+
+.section-indicator-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.indicator-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.indicator-current {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--royal);
+  white-space: nowrap;
+}
+
+.indicator-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.6rem 0;
+}
+
+.indicator-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.indicator-nav a {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+
+.indicator-nav a:hover {
+  background: var(--light-bg);
+  color: var(--navy);
+}
+
+.indicator-nav a.active {
+  background: var(--royal);
+  color: var(--white);
+}
+
+.indicator-cta {
+  flex-shrink: 0;
+  background: var(--royal);
+  color: var(--white);
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.indicator-cta:hover {
+  background: var(--navy);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+
+  .section-indicator {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.6rem 1.2rem;
+    gap: 0.4rem;
+    top: 60px;
+  }
+
+  .section-indicator-inner {
+    font-size: 0.78rem;
+  }
+
+  .indicator-nav {
+    width: 100%;
+    padding: 0.3rem 0;
+  }
+
+  .indicator-nav a {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+  }
+}
+
 
 /* ── 5d. NAV AUTH BUTTONS ──
    Login/Sign Up links (logged-out state) and welcome/logout
