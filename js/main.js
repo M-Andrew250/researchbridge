@@ -355,6 +355,13 @@ async function updateAuthState() {
   const authLogout = document.getElementById('authLogout');
   const accountTrigger = document.getElementById('accountTrigger');
 
+  // Mobile hamburger-menu counterparts — .nav-auth is hidden below
+  // 480px with no other way to reach Login/Sign Up/Dashboard/Log Out,
+  // so these mirror the same state inside the mobile #navLinks panel.
+  const mobileAuthLoggedOut = document.querySelector('.nav-mobile-auth-loggedout');
+  const mobileAuthLoggedIn = document.querySelector('.nav-mobile-auth-loggedin');
+  const mobileLogout = document.querySelector('.nav-mobile-logout');
+
   if (!authLoggedOut || !authLoggedIn) return;
 
   const supabase = await window.rbcSupabaseReady;
@@ -362,16 +369,20 @@ async function updateAuthState() {
 
   const applySessionToNav = (session) => {
     if (session) {
+      authLoggedOut.style.display = 'none';
+      authLoggedIn.style.display = 'flex';
+      if (mobileAuthLoggedOut) mobileAuthLoggedOut.style.display = 'none';
+      if (mobileAuthLoggedIn) mobileAuthLoggedIn.style.display = 'flex';
       const fullName = session.user.user_metadata?.full_name || session.user.email;
       const nameParts = fullName.trim().split(/\s+/);
       const lastName = nameParts[nameParts.length - 1];
-      authLoggedOut.style.display = 'none';
-      authLoggedIn.style.display = 'flex';
       if (authWelcome) authWelcome.textContent = 'Logged in as ' + lastName;
     } else {
       authLoggedOut.style.display = 'flex';
       authLoggedIn.style.display = 'none';
       authLoggedIn.classList.remove('open');
+      if (mobileAuthLoggedOut) mobileAuthLoggedOut.style.display = 'flex';
+      if (mobileAuthLoggedIn) mobileAuthLoggedIn.style.display = 'none';
     }
   };
 
@@ -418,31 +429,33 @@ async function updateAuthState() {
     }
   });
 
-  // Logout
-  if (authLogout) {
-    authLogout.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (!confirm('Are you sure you want to log out?')) return;
+  // Logout — shared by the desktop account dropdown and the mobile
+  // hamburger-menu counterpart, both wired to the same handler.
+  const handleLogoutClick = async (e) => {
+    e.preventDefault();
+    if (!confirm('Are you sure you want to log out?')) return;
 
-      // Check for incomplete online courses and send an encouragement
-      // email before actually signing out — best-effort, don't let a
-      // slow/failed request delay logging out. Re-fetch the session
-      // here rather than reusing the one from page load, since the
-      // access token may have refreshed since then.
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (currentSession) {
-          await fetch(`${window.rbcApiBaseUrl}/api/notifications/check-progress`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${currentSession.access_token}` },
-          });
-        }
-      } catch (err) {}
+    // Check for incomplete online courses and send an encouragement
+    // email before actually signing out — best-effort, don't let a
+    // slow/failed request delay logging out. Re-fetch the session
+    // here rather than reusing the one from page load, since the
+    // access token may have refreshed since then.
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession) {
+        await fetch(`${window.rbcApiBaseUrl}/api/notifications/check-progress`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${currentSession.access_token}` },
+        });
+      }
+    } catch (err) {}
 
-      await supabase.auth.signOut();
-      window.location.reload();
-    });
-  }
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
+  if (authLogout) authLogout.addEventListener('click', handleLogoutClick);
+  if (mobileLogout) mobileLogout.addEventListener('click', handleLogoutClick);
 }
 
 updateAuthState();

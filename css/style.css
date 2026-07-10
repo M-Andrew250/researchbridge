@@ -617,6 +617,48 @@ section {
 
 }
 
+/* ── MOBILE-MENU AUTH LINKS ──
+   .nav-auth (Login/Sign Up, or the account dropdown) is hidden below
+   480px to keep the closed navbar from overflowing — this is the
+   fallback inside the hamburger panel so there's still a way to log
+   in/out or reach Dashboard/Profile on a phone. Desktop-hidden by
+   default since .nav-auth already covers that width. */
+.nav-mobile-auth {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .nav-mobile-auth {
+    display: block;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .nav-mobile-auth-loggedout,
+  .nav-mobile-auth-loggedin {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-mobile-auth a {
+    display: block;
+    padding: 0.85rem 1.5rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .nav-mobile-auth a:hover {
+    color: var(--sky);
+  }
+
+  .nav-mobile-auth a.nav-mobile-signup {
+    color: var(--sky);
+    font-weight: 700;
+  }
+}
+
 /* ── STICKY SECTION INDICATOR ──
    Originally course-page-only; also used by thesis-editing.html
    (and any future service page) for its sticky sub-nav below the

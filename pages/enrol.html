@@ -208,7 +208,36 @@
       <li><a href="../index.html#services">Services</a></li>
       <li><a href="../index.html#courses">Courses</a></li>
       <li><a href="../index.html#contact" class="nav-cta">Contact Us</a></li>
+      <li class="nav-mobile-auth">
+        <div class="nav-mobile-auth-loggedout">
+          <a href="login.html">Log In</a>
+          <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
+        </div>
+        <div class="nav-mobile-auth-loggedin" style="display:none;">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
+        </div>
+      </li>
     </ul>
+
+    <div class="nav-auth" id="navAuth">
+      <div class="auth-logged-out" id="authLoggedOut">
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+      </div>
+      <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
+        <button type="button" class="account-trigger" id="accountTrigger">
+          <span id="authWelcome">Logged in as User</span>
+          <span class="dropdown-arrow">›</span>
+        </button>
+        <div class="nav-dropdown" id="accountMenu">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
+        </div>
+      </div>
+    </div>
   </nav>
 
   <!-- HERO -->

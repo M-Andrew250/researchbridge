@@ -61,9 +61,11 @@
 
     .request-tabs {
       display: flex;
+      gap: 0.3rem;
       overflow-x: auto;
       border-bottom: 1.5px solid var(--border);
       background: var(--light-bg);
+      padding: 0 0.3rem;
     }
 
     .request-tab {
@@ -79,6 +81,8 @@
       color: var(--muted);
       cursor: pointer;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
       transition: color 0.2s, border-color 0.2s, background 0.2s;
     }
 
@@ -370,9 +374,32 @@
         margin: 0 1.2rem 1.5rem;
       }
 
+      .request-tabs {
+        gap: 0.4rem;
+        padding: 0.4rem;
+        justify-content: space-between;
+      }
+
       .request-tab {
-        min-width: 100px;
-        font-size: 0.76rem;
+        flex: 0 0 auto;
+        min-width: 0;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border-bottom: none;
+        justify-content: center;
+      }
+
+      .request-tab.active {
+        background: var(--white);
+        box-shadow: 0 1px 4px rgba(10, 31, 68, 0.15);
+      }
+
+      .request-tab .tab-label {
+        display: none;
+      }
+
+      .request-tab .tab-num {
+        margin-right: 0;
       }
     }
   </style>
@@ -450,6 +477,18 @@
       </li>
 
       <li><a href="../index.html#contact" class="nav-cta">Contact Us</a></li>
+      <li class="nav-mobile-auth">
+        <div class="nav-mobile-auth-loggedout">
+          <a href="../pages/login.html">Log In</a>
+          <a href="../pages/signup.html" class="nav-mobile-signup">Sign Up</a>
+        </div>
+        <div class="nav-mobile-auth-loggedin" style="display:none;">
+          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
+        </div>
+      </li>
+
     </ul>
 
     <div class="nav-auth" id="navAuth">
@@ -486,11 +525,11 @@
 
       <div id="requestFormWrap">
         <div class="request-tabs" role="tablist">
-          <button type="button" class="request-tab active" data-tab="0"><span class="tab-num">1</span>Upload Document</button>
-          <button type="button" class="request-tab" data-tab="1"><span class="tab-num">2</span>Your Info</button>
-          <button type="button" class="request-tab" data-tab="2"><span class="tab-num">3</span>Pages &amp; Services</button>
-          <button type="button" class="request-tab" data-tab="3"><span class="tab-num">4</span>Important Info</button>
-          <button type="button" class="request-tab" data-tab="4"><span class="tab-num">5</span>Payment</button>
+          <button type="button" class="request-tab active" data-tab="0"><span class="tab-num">1</span><span class="tab-label">Upload Document</span></button>
+          <button type="button" class="request-tab" data-tab="1"><span class="tab-num">2</span><span class="tab-label">Your Info</span></button>
+          <button type="button" class="request-tab" data-tab="2"><span class="tab-num">3</span><span class="tab-label">Pages &amp; Services</span></button>
+          <button type="button" class="request-tab" data-tab="3"><span class="tab-num">4</span><span class="tab-label">Important Info</span></button>
+          <button type="button" class="request-tab" data-tab="4"><span class="tab-num">5</span><span class="tab-label">Payment</span></button>
         </div>
 
         <p class="request-error" id="requestError"></p>
