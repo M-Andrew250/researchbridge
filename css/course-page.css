@@ -1745,86 +1745,9 @@
   }
 }
 
-/* ── HAMBURGER BUTTON ── */
-.nav-hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  z-index: 101;
-}
-
-.nav-hamburger span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: var(--white);
-  border-radius: 2px;
-  transition: transform 0.3s, opacity 0.3s;
-}
-
-/* Animate to X when open */
-.nav-hamburger.open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-
-.nav-hamburger.open span:nth-child(2) {
-  opacity: 0;
-}
-
-.nav-hamburger.open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-@media (max-width: 768px) {
-
-  .nav-hamburger {
-    display: flex;
-  }
-
-  .nav-links {
-    position: fixed;
-    top: 68px;
-    left: 0;
-    right: 0;
-    background: var(--navy);
-    flex-direction: column;
-    gap: 0;
-    padding: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.35s ease;
-    z-index: 99;
-    box-shadow: 0 8px 24px rgba(10, 31, 68, 0.3);
-  }
-
-  .nav-links.open {
-    max-height: 300px;
-    padding: 0.5rem 0 1rem;
-  }
-
-  .nav-links li {
-    width: 100%;
-  }
-
-  .nav-links a {
-    display: block;
-    padding: 0.85rem 1.5rem;
-    font-size: 0.95rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .nav-links .nav-cta {
-    margin: 0.8rem 1.5rem 0;
-    text-align: center;
-    border-radius: 6px;
-    border-bottom: none;
-  }
-
-}
+/* .nav-hamburger / mobile .nav-links collapse now live in the
+   shared style.css, since every page needs them, not just course
+   pages — see that file's "HAMBURGER BUTTON" section. */
 
 
 @media (max-width: 768px) {

@@ -156,6 +156,54 @@
       color: var(--muted);
       line-height: 1.6;
     }
+
+    /* ── HERO REFINEMENT (this page only) ── */
+    .service-hero {
+      background:
+        radial-gradient(ellipse at top, rgba(59, 158, 232, 0.18), transparent 60%),
+        linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+      padding: 90px 5% 70px;
+    }
+
+    .service-hero-icon {
+      width: 84px;
+      height: 84px;
+      font-size: 2.4rem;
+      margin: 0 auto 1.2rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 2rem;
+    }
+
+    .hero-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -166,6 +214,12 @@
       <img src="../images/logo.png" alt="ResearchBridge Consulting" class="logo-img" />
       <span class="logo-text">Research<span>Bridge</span></span>
     </a>
+
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
     <button class="nav-search-btn" id="navSearchBtn"
           aria-label="Search">
@@ -274,6 +328,18 @@
       <p>Professional academic editing that strengthens your argument,
       polishes your language, and ensures your thesis meets the highest
       scholarly standards.</p>
+
+      <div class="hero-cta-row">
+        <a href="thesis-request.html" class="btn-primary">Request This Service →</a>
+        <a href="#how-it-works" class="btn-outline">See How It Works</a>
+      </div>
+
+      <div class="hero-badges">
+        <span class="hero-badge">🔒 Confidential &amp; Secure</span>
+        <span class="hero-badge">📚 APA · Harvard · Chicago · Vancouver</span>
+        <span class="hero-badge">📄 PDF &amp; Word Accepted</span>
+        <span class="hero-badge">💬 Tracked-Changes Feedback</span>
+      </div>
     </div>
   </section>
 

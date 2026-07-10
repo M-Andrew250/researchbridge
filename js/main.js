@@ -255,8 +255,11 @@ if (navHamburger && navLinks) {
     navLinks.classList.toggle('open');
   });
 
-  // Close menu when a link is clicked
-  navLinks.querySelectorAll('a').forEach(link => {
+  // Close menu when a real link is clicked — but not a dropdown
+  // trigger, which only toggles its own submenu (see the
+  // .nav-dropdown-trigger handler below) and shouldn't collapse
+  // the whole panel out from under it.
+  navLinks.querySelectorAll('a:not(.nav-dropdown-trigger)').forEach(link => {
     link.addEventListener('click', () => {
       navHamburger.classList.remove('open');
       navLinks.classList.remove('open');
