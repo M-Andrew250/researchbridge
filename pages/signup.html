@@ -89,7 +89,8 @@
       color: var(--navy);
     }
 
-    .auth-form input {
+    .auth-form input,
+    .auth-form select {
       background: var(--light-bg);
       border: 1.5px solid var(--border);
       border-radius: 8px;
@@ -102,9 +103,56 @@
       width: 100%;
     }
 
-    .auth-form input:focus {
+    .auth-form input:focus,
+    .auth-form select:focus {
       border-color: var(--royal);
       background: var(--white);
+    }
+
+    .phone-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .phone-dial-code {
+      flex-shrink: 0;
+      width: 74px;
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .auth-checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+
+    .auth-checkbox-row input[type="checkbox"] {
+      margin-top: 0.15rem;
+      width: auto;
+      flex-shrink: 0;
+      accent-color: var(--royal);
+      cursor: pointer;
+    }
+
+    .auth-checkbox-row label {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    .auth-checkbox-row a {
+      color: var(--royal);
+      font-weight: 600;
     }
 
     .auth-error {
@@ -296,9 +344,19 @@
           </div>
 
           <div class="form-group">
-            <label>Phone / WhatsApp — start with your country code</label>
-            <input type="tel" id="signupPhone"
-                   placeholder="e.g. +250 788 123 456" />
+            <label>Country *</label>
+            <select id="signupCountry">
+              <option value="">Select your country…</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Phone / WhatsApp * — enter your number without the country code</label>
+            <div class="phone-group">
+              <div class="phone-dial-code" id="signupDialCode">+—</div>
+              <input type="tel" id="signupPhone"
+                     placeholder="e.g. 788123456" />
+            </div>
           </div>
 
           <div class="auth-divider">
@@ -322,6 +380,16 @@
             <label>Confirm Password *</label>
             <input type="password" id="signupConfirm"
                    placeholder="Repeat your password" />
+          </div>
+
+          <div class="auth-checkbox-row">
+            <input type="checkbox" id="signupConsent" />
+            <label for="signupConsent">I agree to ResearchBridge's <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
+          </div>
+
+          <div class="auth-checkbox-row">
+            <input type="checkbox" id="signupMarketing" />
+            <label for="signupMarketing">Keep me updated with ResearchBridge news, courses, and announcements.</label>
           </div>
 
           <div class="auth-error" id="signupError"></div>
@@ -357,7 +425,17 @@
   </div>
 
   <script src="../js/main.js"></script>
+  <script src="../js/countries.js"></script>
   <script>
+    // ── COUNTRY / DIAL CODE ──
+    // Rwanda pre-selected since most signups are local, but any
+    // country can be chosen — the dial code box stays in sync.
+    rbcWireCountryPhone(
+      document.getElementById('signupCountry'),
+      document.getElementById('signupDialCode'),
+      'RW'
+    );
+
     // ── PASSWORD STRENGTH ──
     const passwordInput = document.getElementById('signupPassword');
     const strengthBar = document.getElementById('strengthBar');
@@ -406,12 +484,16 @@
     signupSubmit.addEventListener('click', async () => {
       const name = document.getElementById('signupName').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
-      const phone = document.getElementById('signupPhone').value.trim();
+      const countrySelect = document.getElementById('signupCountry');
+      const country = countrySelect.value;
+      const phoneRaw = document.getElementById('signupPhone').value.trim();
       const password = document.getElementById('signupPassword').value;
       const confirm = document.getElementById('signupConfirm').value;
+      const consentAccepted = document.getElementById('signupConsent').checked;
+      const marketingOptIn = document.getElementById('signupMarketing').checked;
 
       // Validate
-      if (!name || !email || !password || !confirm) {
+      if (!name || !email || !country || !password || !confirm) {
         signupError.textContent = 'Please fill in all required fields.';
         signupError.classList.add('visible');
         return;
@@ -434,6 +516,19 @@
         signupError.classList.add('visible');
         return;
       }
+
+      if (!consentAccepted) {
+        signupError.textContent = 'Please agree to the Terms & Privacy policy to continue.';
+        signupError.classList.add('visible');
+        return;
+      }
+
+      // Combine the auto-filled dial code with the number the visitor
+      // typed (without a country code, per the field's instructions).
+      // A single leading 0 on the local number is dropped, matching
+      // the standard +<dial code><number> international format.
+      const dialCode = window.rbcDialCodeFor(countrySelect);
+      const phone = phoneRaw ? dialCode + phoneRaw.replace(/^0/, '') : '';
 
       // Email duplicates are caught by signUp() itself further down
       // (email is the unique identity on auth.users). Phone has no
@@ -477,7 +572,11 @@
         options: {
           // Picked up by the handle_new_user() DB trigger to populate
           // the profiles table automatically on signup.
-          data: { full_name: name, phone },
+          data: {
+            full_name: name, phone, country,
+            marketing_opt_in: marketingOptIn,
+            consent_accepted_at: new Date().toISOString(),
+          },
           // Where the confirmation link lands. Computed from the
           // current origin so this works in local dev (whatever port
           // Live Server happens to use) and after deployment alike,

@@ -126,6 +126,53 @@
       min-height: 100px;
     }
 
+    .phone-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .phone-dial-code {
+      flex-shrink: 0;
+      width: 74px;
+      background: var(--light-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .auth-checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+
+    .auth-checkbox-row input[type="checkbox"] {
+      margin-top: 0.15rem;
+      width: auto;
+      flex-shrink: 0;
+      accent-color: var(--royal);
+      cursor: pointer;
+    }
+
+    .auth-checkbox-row label {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1.5;
+      letter-spacing: normal;
+    }
+
+    .auth-checkbox-row a {
+      color: var(--royal);
+      font-weight: 600;
+    }
+
     .enrol-submit {
       background: var(--royal);
       color: var(--white);
@@ -207,7 +254,7 @@
       <li><a href="../index.html#about">About</a></li>
       <li><a href="../index.html#services">Services</a></li>
       <li><a href="../index.html#courses">Courses</a></li>
-      <li><a href="../index.html#contact" class="nav-cta">Contact Us</a></li>
+      <li><a href="contact.html" class="nav-cta">Contact Us</a></li>
       <li class="nav-mobile-auth">
         <div class="nav-mobile-auth-loggedout">
           <a href="login.html">Log In</a>
@@ -288,9 +335,19 @@
           </div>
 
           <div class="form-group">
-            <label>Phone / WhatsApp * — start with your country code</label>
-            <input type="tel" id="phone"
-                   placeholder="e.g. +250 788 123 456" required />
+            <label>Country *</label>
+            <select id="country" required>
+              <option value="">Select your country…</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Phone / WhatsApp * — enter your number without the country code</label>
+            <div class="phone-group">
+              <div class="phone-dial-code" id="phoneDialCode">+—</div>
+              <input type="tel" id="phone"
+                     placeholder="e.g. 788123456" required />
+            </div>
           </div>
 
           <div class="form-group">
@@ -355,6 +412,16 @@
             <textarea id="comments"
               placeholder="Any questions or special requirements?">
             </textarea>
+          </div>
+
+          <div class="auth-checkbox-row">
+            <input type="checkbox" id="enrolConsent" />
+            <label for="enrolConsent">I agree to ResearchBridge's <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
+          </div>
+
+          <div class="auth-checkbox-row">
+            <input type="checkbox" id="enrolMarketing" />
+            <label for="enrolMarketing">Keep me updated with ResearchBridge news, courses, and announcements.</label>
           </div>
 
           <p id="enrolError" style="color:red; font-size:0.85rem;
@@ -426,7 +493,7 @@
           <li><a href="../index.html#about">About</a></li>
           <li><a href="../index.html#services">Services</a></li>
           <li><a href="../index.html#courses">Courses</a></li>
-          <li><a href="../index.html#contact">Contact</a></li>
+          <li><a href="contact.html">Contact</a></li>
         </ul>
       </div>
       <div class="footer-links">
@@ -447,7 +514,15 @@
   </footer>
 
   <script src="../js/main.js"></script>
+  <script src="../js/countries.js"></script>
   <script>
+    // ── COUNTRY / DIAL CODE ──
+    rbcWireCountryPhone(
+      document.getElementById('country'),
+      document.getElementById('phoneDialCode'),
+      'RW'
+    );
+
     // ── COURSE CATALOG ──
     // Maps the ?course= URL slug (matching each course page's filename)
     // to the display name/emoji shown on this enrolment page.
@@ -514,14 +589,26 @@
         });
         if (!res.ok) return;
 
-        const { fullName, phone } = await res.json();
+        const { fullName, phone, country } = await res.json();
         const nameParts = (fullName || '').trim().split(/\s+/).filter(Boolean);
         if (nameParts.length > 0) {
           document.getElementById('firstName').value = nameParts[0];
           document.getElementById('lastName').value = nameParts.slice(1).join(' ');
         }
+
+        const countrySelect = document.getElementById('country');
+        if (country) {
+          countrySelect.value = country;
+          countrySelect.dispatchEvent(new Event('change'));
+        }
+
+        // Stored phone is the full dial-code-prefixed number — strip
+        // the matching dial code back off so it lands correctly in
+        // the "without country code" field, not double-prefixed.
         if (phone) {
-          document.getElementById('phone').value = phone;
+          const dialCode = window.rbcDialCodeFor(countrySelect);
+          document.getElementById('phone').value =
+            dialCode && phone.startsWith(dialCode) ? phone.slice(dialCode.length) : phone;
         }
       } catch (err) {
         // Pre-fill is a convenience, not required for the form to work.
@@ -608,18 +695,28 @@
       const firstName = document.getElementById('firstName').value.trim();
       const lastName = document.getElementById('lastName').value.trim();
       const email = document.getElementById('email').value.trim();
-      const phone = document.getElementById('phone').value.trim();
+      const countrySelect = document.getElementById('country');
+      const country = countrySelect.value;
+      const phoneRaw = document.getElementById('phone').value.trim();
       const category = document.getElementById('category').value;
       const mode = document.getElementById('mode').value;
       const level = document.getElementById('level').value;
       const organisation = document.getElementById('organisation').value.trim();
       const comments = document.getElementById('comments').value.trim();
       const workshopId = mode === 'In-Person' ? workshopSelect.value : null;
+      const consentAccepted = document.getElementById('enrolConsent').checked;
+      const marketingOptIn = document.getElementById('enrolMarketing').checked;
 
       // Validate required fields
-      if (!firstName || !lastName || !email ||
-          !phone || !category || !mode || !level) {
+      if (!firstName || !lastName || !email || !country ||
+          !phoneRaw || !category || !mode || !level) {
         enrolError.textContent = 'Please fill in all required fields.';
+        enrolError.style.display = 'block';
+        return;
+      }
+
+      if (!consentAccepted) {
+        enrolError.textContent = 'Please agree to the Terms & Privacy policy to continue.';
         enrolError.style.display = 'block';
         return;
       }
@@ -629,6 +726,12 @@
         enrolError.style.display = 'block';
         return;
       }
+
+      // Combine the auto-filled dial code with the number entered
+      // (without a country code, per the field's instructions). A
+      // single leading 0 on the local number is dropped, matching
+      // the standard +<dial code><number> international format.
+      const phone = window.rbcDialCodeFor(countrySelect) + phoneRaw.replace(/^0/, '');
 
       // If the visitor is logged in, link the enrolment to their
       // profile by sending their session token; guests submit with
@@ -662,8 +765,9 @@
           },
           body: JSON.stringify({
             courseSlug: courseSlug || 'general',
-            firstName, lastName, email, phone,
+            firstName, lastName, email, phone, country,
             organisation, category, mode, level, comments, workshopId,
+            marketingOptIn, consentAccepted,
           }),
         });
       } catch (err) {
