@@ -3,6 +3,12 @@ import { Resend } from 'resend';
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'ResearchBridge Consulting <onboarding@resend.dev>';
 
+// Base URL for links inside emails (dashboard, course pages, etc.).
+// Emails have no notion of "current origin" the way a browser page
+// does, so this has to be an absolute, configured URL rather than
+// the relative paths used elsewhere on the site.
+const SITE_URL = (process.env.SITE_URL || 'https://researchbridgeconsulting.com').replace(/\/$/, '');
+
 // Shared wrapper so every call site handles a missing/misconfigured
 // API key or a delivery failure the same way: log it, never throw.
 // Email is a nice-to-have on top of an already-successful action
@@ -58,7 +64,7 @@ export async function sendWelcomeEmail({ to, fullName }) {
       <p>You've successfully logged in to your ResearchBridge account. We're glad to have you here.</p>
       <p>From your dashboard you can enrol in courses, track your learning progress, and manage your training applications — all in one place.</p>
       <p style="margin-top:24px;">
-        <a href="#" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
+        <a href="${SITE_URL}/pages/dashboard.html" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
           Go to My Dashboard
         </a>
       </p>
@@ -67,12 +73,25 @@ export async function sendWelcomeEmail({ to, fullName }) {
   });
 }
 
-export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName, mode, category, level, workshop }) {
+export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName, mode, category, level, workshop, nextWorkshop }) {
   const workshopBlock = workshop ? `
     <tr><td style="padding:6px 0; color:#5A6A85;">Venue</td><td style="padding:6px 0; font-weight:600;">${workshop.venue}</td></tr>
     <tr><td style="padding:6px 0; color:#5A6A85;">Date</td><td style="padding:6px 0; font-weight:600;">${new Date(workshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>
     <tr><td style="padding:6px 0; color:#5A6A85;">Trainer</td><td style="padding:6px 0; font-weight:600;">${workshop.trainer_name}</td></tr>
     <tr><td style="padding:6px 0; color:#5A6A85;">Fee</td><td style="padding:6px 0; font-weight:600;">${workshop.fee}</td></tr>
+  ` : '';
+
+  const nextWorkshopBlock = nextWorkshop ? `
+    <div style="margin-top:28px; padding:20px; background:#F0F6FF; border-radius:10px; border:1px solid #C8D9EF;">
+      <p style="margin:0 0 10px; font-weight:700; color:#0A1F44;">📅 Next In-Person Training</p>
+      <p style="margin:0 0 4px; font-weight:600;">${nextWorkshop.courseName}</p>
+      <p style="margin:0 0 16px; color:#5A6A85; font-size:14px;">
+        ${new Date(nextWorkshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} · ${nextWorkshop.venue}
+      </p>
+      <a href="${SITE_URL}/pages/enrol.html?course=${nextWorkshop.courseSlug}&mode=In-Person&workshop=${nextWorkshop.id}" style="background:#3B9EE8; color:#ffffff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+        Reserve Your Seat →
+      </a>
+    </div>
   ` : '';
 
   await sendEmail({
@@ -89,6 +108,12 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
         ${workshopBlock}
       </table>
       <p>Our team will review your enrolment and confirm it shortly. You'll be able to see its status any time from your dashboard.</p>
+      <p style="margin-top:24px;">
+        <a href="${SITE_URL}/index.html#courses" style="background:#ffffff; color:#1E5EBC; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; border:1.5px solid #3B9EE8; display:inline-block;">
+          Explore Other Courses
+        </a>
+      </p>
+      ${nextWorkshopBlock}
     `),
   });
 }
@@ -111,7 +136,7 @@ export async function sendThesisRequestConfirmationEmail({ to, firstName, docume
   });
 }
 
-export async function sendMotivationalEmail({ to, firstName, courseName, progressPercent }) {
+export async function sendMotivationalEmail({ to, firstName, courseName, progressPercent, enrolmentId }) {
   await sendEmail({
     to,
     subject: `Keep going, ${firstName} — you're ${progressPercent}% through ${courseName}!`,
@@ -120,7 +145,7 @@ export async function sendMotivationalEmail({ to, firstName, courseName, progres
       <p>Hi ${firstName}, you're currently <strong>${progressPercent}%</strong> of the way through <strong>${courseName}</strong>.</p>
       <p>Every lesson you complete brings you closer to finishing the course. Why not pick up where you left off today?</p>
       <p style="margin-top:24px;">
-        <a href="#" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
+        <a href="${SITE_URL}/pages/learn.html?enrolment=${enrolmentId}" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
           Continue Learning
         </a>
       </p>

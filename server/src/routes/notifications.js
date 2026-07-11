@@ -68,6 +68,7 @@ notificationsRouter.post('/check-progress', requireAuth, async (req, res) => {
         firstName,
         courseName: courseNames[e.course_slug] || e.course_slug,
         progressPercent: percent,
+        enrolmentId: e.id,
       });
       notified.push({ courseSlug: e.course_slug, percent });
     }

@@ -25,16 +25,21 @@ const ENROLMENT_SELECT = '*, workshop:workshops(*)';
 // reference a real, upcoming workshop for that course.
 enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
   const {
-    courseSlug, firstName, lastName, email, phone,
+    courseSlug, firstName, lastName, email, phone, country,
     organisation, category, mode, level, comments, workshopId,
+    marketingOptIn, consentAccepted,
   } = req.body;
 
-  const required = { courseSlug, firstName, lastName, email, phone, category, mode, level };
+  const required = { courseSlug, firstName, lastName, email, phone, country, category, mode, level };
   const missing = Object.entries(required).filter(([, v]) => !v || !String(v).trim());
   if (missing.length > 0) {
     return res.status(400).json({
       error: `Missing required field(s): ${missing.map(([k]) => k).join(', ')}`,
     });
+  }
+
+  if (!consentAccepted) {
+    return res.status(400).json({ error: 'Please agree to the ResearchBridge Terms & Privacy policy to continue.' });
   }
 
   if (!CATEGORIES.includes(category)) {
@@ -126,12 +131,15 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
       last_name: lastName,
       email,
       phone,
+      country,
       organisation: organisation || null,
       category,
       mode,
       level,
       comments: comments || null,
       workshop_id: validatedWorkshopId,
+      marketing_opt_in: !!marketingOptIn,
+      consent_accepted_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -141,16 +149,37 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
   }
 
   // Don't let an email hiccup block the response — the enrolment
-  // itself already succeeded by this point.
-  sendEnrolmentConfirmationEmail({
-    to: email,
-    firstName,
-    courseName: courseNames[courseSlug] || courseSlug,
-    mode,
-    category,
-    level,
-    workshop: validatedWorkshop,
-  }).catch((err) => console.error('[email] enrolment confirmation failed:', err.message));
+  // itself already succeeded by this point. Cross-sells the soonest
+  // upcoming in-person workshop, skipping the one just booked (if
+  // any) so we're never recommending the session they already have.
+  supabase
+    .from('workshops')
+    .select('*')
+    .eq('status', 'upcoming')
+    .order('start_date', { ascending: true })
+    .limit(3)
+    .then(({ data: upcoming }) => {
+      const candidate = (upcoming || []).find((w) => w.id !== validatedWorkshopId);
+      const nextWorkshop = candidate ? {
+        id: candidate.id,
+        courseSlug: candidate.course_slug,
+        courseName: courseNames[candidate.course_slug] || candidate.course_slug,
+        venue: candidate.venue,
+        start_date: candidate.start_date,
+      } : null;
+
+      return sendEnrolmentConfirmationEmail({
+        to: email,
+        firstName,
+        courseName: courseNames[courseSlug] || courseSlug,
+        mode,
+        category,
+        level,
+        workshop: validatedWorkshop,
+        nextWorkshop,
+      });
+    })
+    .catch((err) => console.error('[email] enrolment confirmation failed:', err.message));
 
   res.status(201).json(data);
 });

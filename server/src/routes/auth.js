@@ -38,7 +38,7 @@ authRouter.get('/check-phone', strictLimiter, async (req, res) => {
 authRouter.get('/me', requireAuth, async (req, res) => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('full_name, phone, avatar_url, is_admin')
+    .select('full_name, phone, avatar_url, is_admin, country')
     .eq('id', req.user.id)
     .single();
 
@@ -51,6 +51,7 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     phone: data.phone,
     avatarUrl: data.avatar_url,
     isAdmin: data.is_admin,
+    country: data.country,
   });
 });
 
