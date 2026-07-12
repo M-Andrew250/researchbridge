@@ -232,13 +232,23 @@ section {
   color: var(--sky);
 }
 
+/* Top-level tabs only (About, Services, Courses, Contact Us) — not
+   the dropdown submenu links nested inside them. */
+.nav-links > li > a {
+  transition: color 0.2s, transform 0.2s;
+}
+
+.nav-links > li > a:hover {
+  transform: scale(1.08);
+}
+
 .nav-cta {
   background: var(--sky);
   color: var(--white) !important;
   padding: 0.45rem 1.2rem;
   border-radius: 6px;
   font-weight: 600 !important;
-  transition: background 0.2s !important;
+  transition: background 0.2s, transform 0.2s !important;
 }
 
 .nav-cta:hover {
