@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Applied before any CSS renders, so the page never flashes the
+    // wrong theme on load. The click handler that sets this value
+    // lives in js/main.js — this is only the "read it back" half.
+    (function () {
+      if (localStorage.getItem('rbc-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="robots" content="noindex, nofollow" />
@@ -23,7 +34,7 @@
     }
 
     .auth-card {
-      background: var(--white);
+      background: var(--surface);
       border-radius: 16px;
       padding: 2.5rem;
       width: 100%;
@@ -50,7 +61,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 1.15rem;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--heading);
     }
 
     .auth-logo-text span {
@@ -59,7 +70,7 @@
 
     .auth-card h2 {
       text-align: center;
-      color: var(--navy);
+      color: var(--heading);
       font-size: 1.4rem;
       margin-bottom: 0.4rem;
     }
@@ -86,7 +97,7 @@
     .auth-form label {
       font-size: 0.82rem;
       font-weight: 600;
-      color: var(--navy);
+      color: var(--heading);
     }
 
     .auth-form input,
@@ -106,7 +117,7 @@
     .auth-form input:focus,
     .auth-form select:focus {
       border-color: var(--royal);
-      background: var(--white);
+      background: var(--surface);
     }
 
     .phone-group {
@@ -123,7 +134,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--navy);
+      color: var(--heading);
       font-weight: 700;
       font-size: 0.9rem;
     }
@@ -171,7 +182,7 @@
 
     .auth-submit {
       background: var(--royal);
-      color: var(--white);
+      color: var(--on-dark);
       border: none;
       padding: 0.9rem;
       border-radius: 8px;
@@ -244,7 +255,7 @@
     }
 
     .auth-success h3 {
-      color: var(--navy);
+      color: var(--heading);
       margin-bottom: 0.5rem;
     }
 
@@ -291,6 +302,10 @@
            class="logo-img" />
       <span class="logo-text">Research<span>Bridge</span></span>
     </a>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+    </button>
     <div class="nav-auth">
       <div class="auth-logged-out" id="authLoggedOut">
         <a href="login.html" class="auth-btn-login">Log In</a>
@@ -302,7 +317,7 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="profile.html"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>

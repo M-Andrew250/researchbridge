@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Applied before any CSS renders, so the page never flashes the
+    // wrong theme on load. The click handler that sets this value
+    // lives in js/main.js — this is only the "read it back" half.
+    (function () {
+      if (localStorage.getItem('rbc-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ResearchBridge Consulting empowers students, professionals, NGOs, and institutions with research support, data analysis training, and academic services. Courses in Excel, Python, Stata, SPSS, R, NVivo, Power BI, and KoBoToolbox — online or in-person in Kigali, Rwanda." />
@@ -53,19 +64,19 @@
                 </a>
                 <div class="nav-dropdown">
                     <a href="pages/thesis-editing.html">
-                        <span>✏️</span> Thesis Editing &amp; Proofreading
+                        <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Thesis Editing &amp; Proofreading
                     </a>
                     <a href="pages/data-analysis.html">
-                        <span>📊</span> Data Collection &amp; Analysis
+                        <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Data Collection &amp; Analysis
                     </a>
                     <a href="pages/research-design.html">
-                        <span>🔬</span> Research Project Design
+                        <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></span> Research Project Design
                     </a>
                     <a href="pages/literature-review.html">
                         <span>📚</span> Literature Review Support
                     </a>
                     <a href="pages/capacity-building.html">
-                        <span>🎓</span> Capacity Building &amp; Training
+                        <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></span> Capacity Building &amp; Training
                     </a>
                 </div>
             </li>
@@ -165,7 +176,7 @@
           <a href="pages/signup.html" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
-          <a href="pages/dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="pages/dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="pages/profile.html"><span>👤</span> Profile</a>
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
@@ -176,7 +187,11 @@
 
 
           <!-- AUTH BUTTONS -->
-        <div class="nav-auth" id="navAuth">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+    </button>
+    <div class="nav-auth" id="navAuth">
             <!-- Logged out state -->
             <div class="auth-logged-out" id="authLoggedOut">
                 <a href="pages/login.html" class="auth-btn-login">Log In</a>
@@ -189,7 +204,7 @@
                     <span class="dropdown-arrow">›</span>
                 </button>
                 <div class="nav-dropdown" id="accountMenu">
-                    <a href="pages/dashboard.html"><span>📊</span> Dashboard</a>
+                    <a href="pages/dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
                     <a href="pages/profile.html"><span>👤</span> Profile</a>
                     <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
                 </div>
@@ -208,20 +223,11 @@
     <!-- HERO SECTION -->
     <section id="hero">
 
-        <!-- VIDEO BACKGROUND — src is intentionally left off the
-             <source> tag; js/main.js only assigns it (and starts
-             playback) on wider screens, so phones/slow connections
-             never download the 4MB+ file. Below that width, the
-             section's own CSS gradient shows instead. -->
-        <video
-          class="hero-bg-video"
-          id="heroVideo"
-          muted
-          loop
-          playsinline
-          preload="none">
-            <source data-src="videos/Research.mp4" type="video/mp4" />
-        </video>
+        <!-- ANIMATED BACKGROUND — a lightweight canvas-drawn network
+             graph (see the script near the end of this file) instead
+             of a video file, so there's no download at all and it
+             scales cleanly to any screen. -->
+        <canvas class="hero-bg-canvas" id="heroCanvas" aria-hidden="true"></canvas>
 
         <div class="hero-content">
 
@@ -439,28 +445,28 @@
         <div class="services-grid">
 
             <a href="pages/thesis-editing.html" class="service-card">
-                <div class="service-icon">✏️</div>
+                <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
                 <h3>Thesis Editing &amp; Proofreading</h3>
                 <p>Professional editing for academic theses — covering structure,
                 argument clarity, language, citations, and formatting standards.</p>
             </a>
 
             <a href="pages/data-analysis.html" class="service-card">
-                <div class="service-icon">📊</div>
+                <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></div>
                 <h3>Data Collection &amp; Analysis</h3>
                 <p>End-to-end support for data collection, cleaning, and statistical
                 analysis using industry-standard tools.</p>
             </a>
 
             <a href="pages/research-design.html" class="service-card">
-                <div class="service-icon">🔬</div>
+                <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></div>
                 <h3>Research Project Design</h3>
                 <p>Methodology design, sampling strategy, and full research framework
                 development for academic and applied projects.</p>
             </a>
 
             <a href="pages/capacity-building.html" class="service-card">
-                <div class="service-icon">🎓</div>
+                <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></div>
                 <h3>Capacity Building &amp; Training</h3>
                 <p>Tailored workshops for teams and organisations looking to
                 strengthen their internal research capacity.</p>
@@ -685,23 +691,96 @@
     </a>
     <script src="js/main.js"></script>
     <script>
-      // ── HERO VIDEO: SKIP ON MOBILE / DATA SAVER ──
-      // The <source> tag only carries data-src, not src, so nothing
-      // downloads until this runs. Above the 768px breakpoint (and
-      // only if the browser isn't flagging a "Data Saver" preference),
-      // we assign the real src and start playback; js/main.js's
-      // existing canplay/scroll listeners (shared with the course
-      // pages) take it from there. Below that, the video element is
-      // left empty and the section's own CSS gradient shows instead.
+      // ── HERO NETWORK GRAPH ──
+      // A small set of drifting nodes with connecting lines that fade
+      // by distance — a lightweight canvas draw (no file to download)
+      // standing in for the old hero video. Density scales with the
+      // canvas area; motion is skipped for prefers-reduced-motion in
+      // favour of a single static frame.
       (function () {
-        const saveData = navigator.connection && navigator.connection.saveData;
-        if (window.innerWidth <= 768 || saveData) return;
-        const heroVideo = document.getElementById('heroVideo');
-        const source = heroVideo && heroVideo.querySelector('source[data-src]');
-        if (!source) return;
-        source.src = source.dataset.src;
-        heroVideo.load();
-        heroVideo.play().catch(() => {});
+        const canvas = document.getElementById('heroCanvas');
+        if (!canvas || !canvas.getContext) return;
+        const ctx = canvas.getContext('2d');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const LINK_DIST = 190;
+        let width = 0, height = 0, dpr = 1;
+        let nodes = [];
+        let rafId = null;
+
+        function seedNodes() {
+          const count = Math.max(24, Math.min(60, Math.round((width * height) / 22000)));
+          nodes = Array.from({ length: count }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.18,
+            vy: (Math.random() - 0.5) * 0.18,
+            r: 1.4 + Math.random() * 1.8,
+          }));
+        }
+
+        function resize() {
+          const rect = canvas.getBoundingClientRect();
+          width = rect.width;
+          height = rect.height;
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = width * dpr;
+          canvas.height = height * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          seedNodes();
+        }
+
+        function step() {
+          ctx.clearRect(0, 0, width, height);
+
+          for (const n of nodes) {
+            n.x += n.vx;
+            n.y += n.vy;
+            if (n.x < 0 || n.x > width) n.vx *= -1;
+            if (n.y < 0 || n.y > height) n.vy *= -1;
+          }
+
+          for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+              const a = nodes[i], b = nodes[j];
+              const dx = a.x - b.x, dy = a.y - b.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist > LINK_DIST) continue;
+              ctx.strokeStyle = `rgba(130, 195, 250, ${0.55 * (1 - dist / LINK_DIST)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+
+          for (const n of nodes) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(200, 230, 255, 0.85)';
+            ctx.fill();
+          }
+
+          if (!reduceMotion) rafId = requestAnimationFrame(step);
+        }
+
+        resize();
+        step();
+
+        window.addEventListener('resize', () => {
+          cancelAnimationFrame(rafId);
+          resize();
+          step();
+        }, { passive: true });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            cancelAnimationFrame(rafId);
+          } else if (!reduceMotion) {
+            step();
+          }
+        });
       })();
 
     </script>
@@ -770,7 +849,12 @@
             });
           }
         } catch (err) {
-          inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">Could not load upcoming training dates.</p>`;
+          // Same friendly copy as the "genuinely no workshops" case —
+          // a visitor can't tell (and shouldn't need to care) whether
+          // this is an empty schedule or a dropped request.
+          inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">
+            No in-person trainings are scheduled right now — check back soon,
+            or explore our self-paced online courses.</p>`;
         }
 
         document.getElementById('onlinePromoCta').addEventListener('click', (e) => {

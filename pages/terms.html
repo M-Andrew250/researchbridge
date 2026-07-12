@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Applied before any CSS renders, so the page never flashes the
+    // wrong theme on load. The click handler that sets this value
+    // lives in js/main.js — this is only the "read it back" half.
+    (function () {
+      if (localStorage.getItem('rbc-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="ResearchBridge Consulting's Terms of Use and Privacy Policy — what information we collect, how we use it, and your rights." />
@@ -68,13 +79,17 @@
           <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
-          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="profile.html"><span>👤</span> Profile</a>
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
       </li>
     </ul>
 
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+    </button>
     <div class="nav-auth" id="navAuth">
       <div class="auth-logged-out" id="authLoggedOut">
         <a href="login.html" class="auth-btn-login">Log In</a>
@@ -86,7 +101,7 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="profile.html"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>

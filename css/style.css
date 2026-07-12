@@ -35,7 +35,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 /* ── CSS VARIABLES ──
-   Central brand palette. Change a value here to re-theme the whole site. */
+   Central brand palette. Change a value here to re-theme the whole site.
+
+   --navy/--royal/--sky stay constant across themes — they're the brand
+   accent colors and already double as the (already-dark) nav/hero/footer
+   background, so dark mode doesn't need to touch them.
+
+   --heading, --surface, and --on-dark exist because --navy and --white
+   were each doing two jobs: --navy was both "dark background" and
+   "heading text on a light background"; --white was both "card/page
+   background" and "text sitting on an already-dark section". Splitting
+   those out is what lets dark mode redefine "text on light background"
+   and "card background" without also relighting the navbar/hero. */
 :root {
   --navy:     #0A1F44;
   --royal:    #1E5EBC;
@@ -45,6 +56,26 @@
   --text:     #1A1A2E;
   --muted:    #5A6A85;
   --border:   #C8D9EF;
+
+  --heading:  var(--navy);
+  --surface:  var(--white);
+  --on-dark:  var(--white);
+}
+
+:root[data-theme="dark"] {
+  /* --white is deliberately left untouched here — see the note above.
+     Any usage of it we didn't get to below still resolves to plain
+     white, which is right for "text on an already-dark section" and
+     merely a minor light-card if it turns out to be a missed
+     background instead, not an invisible-content bug either way. */
+  --light-bg: #17203a;
+  --text:     #C7D2E3;
+  --muted:    #8A9BB5;
+  --border:   #2A3B5C;
+
+  --heading:  #EAF1FB;
+  --surface:  #101a30;
+  --on-dark:  #FFFFFF;
 }
 
 
@@ -67,13 +98,27 @@ html {
 body {
   font-family: 'Inter', sans-serif;
   color: var(--text);
-  background: var(--white);
+  background: var(--surface);
   line-height: 1.6;
+}
+
+/* ── PAGE-LOAD FADE ──
+   A soft fade so navigating between pages feels like one continuous
+   app rather than a hard cut between static files. */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    animation: rbcPageFadeIn 0.35s ease both;
+  }
+}
+
+@keyframes rbcPageFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 h1, h2, h3 {
   font-family: 'Playfair Display', serif;
-  color: var(--navy);
+  color: var(--heading);
   line-height: 1.25;
 }
 
@@ -140,7 +185,7 @@ section {
 
 .btn-primary {
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   padding: 0.8rem 2rem;
   border-radius: 8px;
   font-weight: 600;
@@ -151,28 +196,29 @@ section {
 
 .btn-primary:hover {
   background: #2a8fd4;
-  transform: translateY(-2px);
+  transform: scale(1.04) translateY(-2px);
 }
 
 .btn-outline {
   border: 2px solid rgba(255, 255, 255, 0.35);
-  color: var(--white);
+  color: var(--on-dark);
   padding: 0.8rem 2rem;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.95rem;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
   display: inline-block;
 }
 
 .btn-outline:hover {
   border-color: var(--sky);
   background: rgba(59, 158, 232, 0.1);
+  transform: scale(1.04) translateY(-2px);
 }
 
 .btn-submit {
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   border: none;
   padding: 0.9rem 2rem;
   border-radius: 8px;
@@ -186,7 +232,7 @@ section {
 
 .btn-submit:hover {
   background: #2a8fd4;
-  transform: translateY(-2px);
+  transform: scale(1.04) translateY(-2px);
 }
 
 @media (max-width: 520px) {
@@ -244,12 +290,45 @@ section {
 
 .nav-cta {
   background: var(--sky);
-  color: var(--white) !important;
+  color: var(--on-dark) !important;
   padding: 0.45rem 1.2rem;
   border-radius: 6px;
   font-weight: 600 !important;
   transition: background 0.2s, transform 0.2s !important;
 }
+
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: var(--on-dark);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--sky);
+  transform: scale(1.08);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.theme-icon-sun { display: none; }
+.theme-icon-moon { display: block; }
+
+[data-theme="dark"] .theme-icon-sun { display: block; }
+[data-theme="dark"] .theme-icon-moon { display: none; }
 
 .nav-cta:hover {
   background: var(--royal) !important;
@@ -278,7 +357,7 @@ section {
   font-family: 'Playfair Display', serif;
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .logo-img {
@@ -288,7 +367,7 @@ section {
   border-radius: 50%;
   /* White background so the circular
      logo looks clean on dark navbar */
-  background: var(--white);
+  background: var(--surface);
   padding: 2px;
   flex-shrink: 0;
 }
@@ -297,7 +376,7 @@ section {
   font-family: 'Playfair Display', serif;
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-dark);
   line-height: 1.2;
 }
 
@@ -354,7 +433,7 @@ section {
   position: absolute;
   top: 100%;
   left: 50%;
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-top: 3px solid var(--royal);
   border-radius: 0 0 12px 12px;
@@ -372,6 +451,45 @@ section {
   opacity: 1;
   pointer-events: all;
   transform: translateX(-50%) translateY(0);
+}
+
+/* ── SERVICE ICON SET ──
+   Replaces the ✏️ 📊 🔬 🎓 emoji used for the four core services
+   (Thesis Editing, Data Analysis, Research Design, Capacity Building)
+   with inline SVG line icons. Each hosting element still sets its own
+   font-size as before; the icon just reads that via `1em` instead of
+   rendering as an emoji glyph. */
+.icon-inline svg,
+.service-icon svg,
+.service-hero-icon svg,
+.included-icon svg,
+.summary-icon svg,
+.app-icon svg,
+.badge-icon {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+
+.icon-inline {
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-icon {
+  display: inline-block;
+  vertical-align: -0.15em;
+  margin-right: 0.3em;
+}
+
+.service-icon,
+.included-icon,
+.app-icon {
+  color: var(--sky);
+}
+
+.service-hero-icon {
+  color: var(--on-dark);
 }
 
 .nav-dropdown a {
@@ -401,6 +519,69 @@ section {
   flex-shrink: 0;
 }
 
+/* ── COURSES DROPDOWN: TWO-COLUMN MINI-GRID ──
+   Used on every page except the homepage, which keeps its richer
+   per-row hover panel (training date + online CTA) — a plain grid
+   would fight that panel's left:100% flyout positioning. */
+.nav-dropdown-courses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem;
+  padding: 0.6rem;
+  min-width: 420px;
+}
+
+.nav-course-grid-item {
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.6rem !important;
+  border-bottom: none !important;
+  border-radius: 8px;
+}
+
+.nav-course-grid-item:hover {
+  background: var(--light-bg);
+}
+
+.nav-course-grid-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--light-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-course-grid-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.nav-course-grid-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nav-course-grid-text strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--heading);
+  white-space: nowrap;
+}
+
+.nav-course-grid-text span {
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── COURSES DROPDOWN: HOVERABLE ROWS ──
    Each row in the navbar's Courses flyout is still a plain link
    (.nav-course-row) so it keeps working normally on touch (see the
@@ -427,7 +608,7 @@ section {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--royal);
   border-radius: 12px;
   box-shadow: 0 16px 44px rgba(10, 31, 68, 0.28);
@@ -537,6 +718,32 @@ section {
     width: 100%;
   }
 
+  /* Collapse the courses mini-grid back to a single column so it
+     reads as a normal expandable list in the mobile menu. */
+  .nav-dropdown-courses {
+    display: block;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .nav-course-grid-item {
+    border-radius: 0 !important;
+    padding: 0.65rem 2rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .nav-course-grid-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-course-grid-icon {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-course-grid-text strong {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
 }
 
 /* ── HAMBURGER BUTTON ──
@@ -558,7 +765,7 @@ section {
   display: block;
   width: 24px;
   height: 2px;
-  background: var(--white);
+  background: var(--surface);
   border-radius: 2px;
   transition: transform 0.3s, opacity 0.3s;
 }
@@ -673,7 +880,7 @@ section {
   position: sticky;
   top: 68px;
   z-index: 90;
-  background: var(--white);
+  background: var(--surface);
   border-bottom: 2px solid var(--light-bg);
   box-shadow: 0 2px 12px rgba(10, 31, 68, 0.07);
   padding: 0 5%;
@@ -732,18 +939,18 @@ section {
 
 .indicator-nav a:hover {
   background: var(--light-bg);
-  color: var(--navy);
+  color: var(--heading);
 }
 
 .indicator-nav a.active {
   background: var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .indicator-cta {
   flex-shrink: 0;
   background: var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
   padding: 0.5rem 1.1rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -823,7 +1030,7 @@ section {
 
 .auth-btn-signup {
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
@@ -846,7 +1053,7 @@ a.auth-welcome {
 }
 
 a.auth-welcome:hover {
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .auth-btn-logout {
@@ -897,7 +1104,7 @@ a.auth-welcome:hover {
 }
 
 .account-trigger:hover {
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .account-dropdown.open .account-trigger .dropdown-arrow {
@@ -947,7 +1154,7 @@ a.auth-welcome:hover {
 
 .announcement-badge {
   background: rgba(255, 255, 255, 0.2);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -958,19 +1165,19 @@ a.auth-welcome:hover {
 }
 
 .announcement-content p {
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.85rem;
   margin: 0;
   line-height: 1.5;
 }
 
 .announcement-content strong {
-  color: var(--white);
+  color: var(--on-dark);
   font-weight: 600;
 }
 
 .announcement-link {
-  color: var(--white);
+  color: var(--on-dark);
   font-weight: 700;
   text-decoration: underline;
   white-space: nowrap;
@@ -985,7 +1192,7 @@ a.auth-welcome:hover {
 .announcement-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  color: var(--white);
+  color: var(--on-dark);
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -1031,27 +1238,24 @@ a.auth-welcome:hover {
   padding: 80px 5% 130px;
 }
 
-/* VIDEO BACKGROUND */
-.hero-bg-video {
+/* ANIMATED NETWORK-GRAPH BACKGROUND */
+.hero-bg-canvas {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 0;
-  opacity: 0;
-  transition: opacity 1.5s ease;
 }
 
-.hero-bg-video.loaded {
-  opacity: 1;
+@media (max-width: 768px) {
+  /* Skip the animation on small screens to save battery/CPU — the
+     section's own CSS gradient shows underneath either way. */
+  .hero-bg-canvas {
+    display: none;
+  }
 }
 
-/* DARK OVERLAY — keeps hero text/marquee legible over the video */
+/* DARK OVERLAY — keeps hero text/marquee legible over the animation */
 #hero::after {
   content: '';
   position: absolute;
@@ -1086,7 +1290,7 @@ a.auth-welcome:hover {
 }
 
 #hero h1 {
-  color: var(--white);
+  color: var(--on-dark);
   margin-bottom: 1.2rem;
 }
 
@@ -1204,7 +1408,7 @@ a.auth-welcome:hover {
   transform: translateX(-50%);
   margin-top: 0;
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.7rem;
   font-weight: 700;
   white-space: nowrap;
@@ -1250,7 +1454,7 @@ a.auth-welcome:hover {
    ─────────────────────────────────────────────────────────────────────── */
 
 #trainingPromo {
-  background: var(--white);
+  background: var(--surface);
 }
 
 .promo-grid {
@@ -1303,7 +1507,7 @@ a.auth-welcome:hover {
 }
 
 .promo-workshop-detail-value {
-  color: var(--navy);
+  color: var(--heading);
   font-weight: 600;
 }
 
@@ -1333,14 +1537,14 @@ a.auth-welcome:hover {
   background: linear-gradient(135deg, var(--royal), var(--navy));
   border-radius: 16px;
   padding: 3rem 2.5rem;
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .about-card p {
   font-size: 1.15rem;
   line-height: 1.75;
   font-weight: 300;
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .about-card cite {
@@ -1363,7 +1567,7 @@ a.auth-welcome:hover {
 .serve-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--navy);
+  color: var(--heading);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-top: 1.5rem;
@@ -1407,7 +1611,7 @@ a.auth-welcome:hover {
    ─────────────────────────────────────────────────────────────────────── */
 
 #services {
-  background: var(--white);
+  background: var(--surface);
 }
 
 .services-header {
@@ -1439,7 +1643,7 @@ a.auth-welcome:hover {
 }
 
 .service-card h3 {
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.6rem;
 }
 
@@ -1486,7 +1690,7 @@ a.service-card {
 }
 
 .course-pill {
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 1.2rem 1rem;
@@ -1502,7 +1706,7 @@ a.service-card {
 
 .course-pill:hover .pill-name,
 .course-pill:hover .pill-sub {
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 /* Inline logo icons (e.g. the official Python logo) used in place of
@@ -1524,7 +1728,7 @@ a.service-card {
 .pill-name {
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--navy);
+  color: var(--heading);
   transition: color 0.2s;
 }
 
@@ -1544,7 +1748,7 @@ a.service-card {
   top: 0;
   left: -18px;
   right: -18px;
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--royal);
   border-radius: 12px;
   padding: 1.2rem 1.1rem;
@@ -1624,7 +1828,7 @@ a.service-card {
   width: 100%;
   text-align: center;
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   border: none;
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
@@ -1680,13 +1884,13 @@ a.service-card {
 }
 
 .badge {
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 8px;
   padding: 0.6rem 1.2rem;
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--heading);
 }
 
 
@@ -1703,7 +1907,7 @@ a.service-card {
 }
 
 #contact h2 {
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 #contact .section-intro {
@@ -1731,7 +1935,7 @@ a.service-card {
 
 .contact-item-text strong {
   display: block;
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.9rem;
   margin-bottom: 0.2rem;
 }
@@ -1774,7 +1978,7 @@ a.service-card {
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  color: var(--white);
+  color: var(--on-dark);
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
   outline: none;
@@ -1783,7 +1987,7 @@ a.service-card {
 
 .form-group select option {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .form-group input:focus,
@@ -1871,12 +2075,12 @@ footer {
 
 .social-icon:hover {
   background: var(--sky);
-  color: var(--white);
+  color: var(--on-dark);
   transform: translateY(-2px);
 }
 
 .footer-heading {
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -1920,7 +2124,7 @@ footer {
 }
 
 .footer-bottom a:hover {
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 @media (max-width: 768px) {
@@ -2012,7 +2216,7 @@ footer {
   border-radius: 50%;
   background: var(--navy);
   border: 2px solid var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 1.1rem;
   cursor: pointer;
   display: flex;
@@ -2096,7 +2300,7 @@ footer {
 
 .cookie-text strong {
   display: block;
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.95rem;
   margin-bottom: 0.3rem;
 }
@@ -2132,13 +2336,13 @@ footer {
 
 .cookie-btn-decline:hover {
   border-color: rgba(255, 255, 255, 0.5);
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .cookie-btn-accept {
   background: var(--sky);
   border: none;
-  color: var(--white);
+  color: var(--on-dark);
   padding: 0.6rem 1.4rem;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;

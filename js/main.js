@@ -60,6 +60,25 @@ window.rbcSupabaseReady = new Promise((resolve, reject) => {
   document.head.appendChild(script);
 });
 
+// ── DARK MODE TOGGLE ──
+// The initial theme (read from localStorage) is already applied by a
+// blocking inline script in <head>, before this file even loads, so
+// there's no flash of the wrong theme. This just wires up the click.
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('rbc-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('rbc-theme', 'dark');
+    }
+  });
+}
+
+
 // ── FOOTER COPYRIGHT YEAR ──
 // Every footer's "&copy; <year>" uses <span id="copyrightYear">
 // instead of a hardcoded year, so it never goes stale again.

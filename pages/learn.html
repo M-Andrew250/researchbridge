@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Applied before any CSS renders, so the page never flashes the
+    // wrong theme on load. The click handler that sets this value
+    // lives in js/main.js — this is only the "read it back" half.
+    (function () {
+      if (localStorage.getItem('rbc-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="robots" content="noindex, nofollow" />
@@ -20,7 +31,7 @@
     }
 
     .learn-hero-text h1 {
-      color: var(--white);
+      color: var(--on-dark);
       font-size: 1.5rem;
       margin-bottom: 0.3rem;
     }
@@ -63,7 +74,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--white);
+      color: var(--on-dark);
       font-weight: 700;
       font-size: 1.05rem;
       font-family: 'Playfair Display', serif;
@@ -86,7 +97,7 @@
 
     /* SIDEBAR */
     .learn-sidebar {
-      background: var(--white);
+      background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: 14px;
       padding: 1rem;
@@ -152,7 +163,7 @@
 
     /* MAIN CONTENT */
     .learn-main {
-      background: var(--white);
+      background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: 14px;
       padding: 2rem;
@@ -209,7 +220,7 @@
 
     .quiz-question-text {
       font-weight: 600;
-      color: var(--navy);
+      color: var(--heading);
       margin-bottom: 0.8rem;
     }
 
@@ -264,7 +275,7 @@
     }
 
     .quiz-check-btn {
-      background: var(--white);
+      background: var(--surface);
       color: var(--royal);
       border: 1.5px solid var(--royal);
       border-radius: 8px;
@@ -357,16 +368,16 @@
         </a>
         <div class="nav-dropdown">
           <a href="thesis-editing.html">
-            <span>✏️</span> Thesis Editing &amp; Proofreading
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Thesis Editing &amp; Proofreading
           </a>
           <a href="data-analysis.html">
-            <span>📊</span> Data Collection &amp; Analysis
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Data Collection &amp; Analysis
           </a>
           <a href="research-design.html">
-            <span>🔬</span> Research Project Design
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></span> Research Project Design
           </a>
           <a href="Capacity-building.html">
-            <span>🎓</span> Capacity Building &amp; Training
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></span> Capacity Building &amp; Training
           </a>
         </div>
       </li>
@@ -374,30 +385,62 @@
         <a href="../index.html#courses" class="nav-dropdown-trigger">
           Courses <span class="dropdown-arrow">›</span>
         </a>
-        <div class="nav-dropdown">
-          <a href="courses/excel.html">
-            <span><img src="../images/excel.png" alt="" class="icon-img" /></span> Excel for Data &amp; Analysis
+        <div class="nav-dropdown nav-dropdown-courses">
+          <a href="courses/excel.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/excel.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Excel</strong>
+              <span>Spreadsheets & dashboards</span>
+            </span>
           </a>
-          <a href="courses/python.html">
-            <span><img src="../images/python-logo.svg" alt="" class="icon-img" /></span> Python for Data Science
+          <a href="courses/python.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/python-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Python</strong>
+              <span>Data science & ML</span>
+            </span>
           </a>
-          <a href="courses/stata.html">
-            <span><img src="../images/stata-logo.png" alt="" class="icon-img" /></span> Stata for Econometrics
+          <a href="courses/stata.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/stata-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Stata</strong>
+              <span>Econometrics</span>
+            </span>
           </a>
-          <a href="courses/spss.html">
-            <span><img src="../images/spss-logo.png" alt="" class="icon-img" /></span> SPSS for Statistical Analysis
+          <a href="courses/spss.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/spss-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>SPSS</strong>
+              <span>Statistical analysis</span>
+            </span>
           </a>
-          <a href="courses/r.html">
-            <span><img src="../images/r-logo.svg" alt="" class="icon-img" /></span> R for Statistical Computing
+          <a href="courses/r.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/r-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>R</strong>
+              <span>Statistical computing</span>
+            </span>
           </a>
-          <a href="courses/nvivo.html">
-            <span><img src="../images/nvivo-logo.jpg" alt="" class="icon-img" /></span> NVivo for Qualitative Research
+          <a href="courses/nvivo.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/nvivo-logo.jpg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>NVivo</strong>
+              <span>Qualitative research</span>
+            </span>
           </a>
-          <a href="courses/powerbi.html">
-            <span><img src="../images/powerbi-logo.svg" alt="" class="icon-img" /></span> Power BI for Data Visualization
+          <a href="courses/powerbi.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/powerbi-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Power BI</strong>
+              <span>Data visualization</span>
+            </span>
           </a>
-          <a href="courses/kobo.html">
-            <span><img src="../images/kobo-logo.png" alt="" class="icon-img" /></span> KoBoToolbox for Data Collection
+          <a href="courses/kobo.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../images/kobo-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>KoBoToolbox</strong>
+              <span>Field data collection</span>
+            </span>
           </a>
         </div>
       </li>
@@ -408,13 +451,17 @@
           <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
-          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="profile.html"><span>👤</span> Profile</a>
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
       </li>
 
     </ul>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+    </button>
     <div class="nav-auth" id="navAuth">
       <div class="auth-logged-out" id="authLoggedOut">
         <a href="login.html" class="auth-btn-login">Log In</a>
@@ -426,7 +473,7 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="profile.html"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>
@@ -827,7 +874,7 @@
 
         materials.forEach(material => {
           if (material.title) {
-            html += `<h3 style="margin:1.5rem 0 0.6rem; color:var(--navy); font-size:1.05rem;">${material.title}</h3>`;
+            html += `<h3 style="margin:1.5rem 0 0.6rem; color: var(--heading); font-size:1.05rem;">${material.title}</h3>`;
           }
 
           if (material.type === 'video' && material.contentUrl) {

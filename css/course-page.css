@@ -84,7 +84,7 @@
 }
 
 .course-hero h1 {
-  color: var(--white);
+  color: var(--on-dark);
   margin-bottom: 1rem;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .outcome-card {
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 1.4rem;
@@ -208,7 +208,7 @@
 
 .module-num {
   background: var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.78rem;
   font-weight: 700;
   padding: 0.25rem 0.65rem;
@@ -218,7 +218,7 @@
 
 .module-title {
   font-weight: 600;
-  color: var(--navy);
+  color: var(--heading);
   font-size: 0.97rem;
   flex: 1;
 }
@@ -278,7 +278,7 @@
 
 .pricing-table th {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-dark);
   padding: 1rem 1.5rem;
   text-align: left;
   font-size: 0.88rem;
@@ -311,7 +311,7 @@
 
 .pricing-table td:first-child {
   font-weight: 600;
-  color: var(--navy);
+  color: var(--heading);
 }
 
 .price-note {
@@ -331,7 +331,7 @@
 }
 
 .enrolment-section h2 {
-  color: var(--white);
+  color: var(--on-dark);
   margin-bottom: 0.5rem;
 }
 
@@ -373,7 +373,7 @@
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  color: var(--white);
+  color: var(--on-dark);
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
   outline: none;
@@ -382,7 +382,7 @@
 
 .enrolment-form select option {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 .enrolment-form input:focus,
@@ -587,7 +587,7 @@
 
 /* ── SUMMARY BANNER ── */
 .summary-banner {
-  background: var(--white);
+  background: var(--surface);
   border-bottom: 2px solid var(--light-bg);
   padding: 1.5rem 5%;
   display: flex;
@@ -610,7 +610,7 @@
 .summary-item strong {
   display: block;
   font-size: 0.92rem;
-  color: var(--navy);
+  color: var(--heading);
   font-weight: 600;
 }
 
@@ -642,7 +642,7 @@
   bottom: 7rem;
   right: 2rem;
   background: var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
   padding: 0.75rem 1.4rem;
   border-radius: 8px;
   font-weight: 600;
@@ -669,7 +669,7 @@
 
 .sticky-enrol:hover {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-dark);
 }
 
 
@@ -679,7 +679,7 @@
   display: flex;
   gap: 2rem;
   align-items: flex-start;
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 16px;
   padding: 2rem;
@@ -699,7 +699,7 @@
 }
 
 .instructor-info h3 {
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.3rem;
 }
 
@@ -774,7 +774,7 @@
 
 .application-card h3 {
   font-size: 1rem;
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.5rem;
 }
 
@@ -856,7 +856,7 @@
   font-size: 1.8rem;
   width: 44px;
   height: 44px;
-  background: var(--white);
+  background: var(--surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -867,7 +867,7 @@
 .testimonial-author strong {
   display: block;
   font-size: 0.9rem;
-  color: var(--navy);
+  color: var(--heading);
 }
 
 .testimonial-author span {
@@ -885,7 +885,7 @@
 }
 
 .faq-item {
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
@@ -899,7 +899,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--navy);
+  color: var(--heading);
   user-select: none;
   gap: 1rem;
 }
@@ -966,7 +966,7 @@
 
 .related-card h3 {
   font-size: 1rem;
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.3rem;
 }
 
@@ -997,7 +997,7 @@
 
 /* ── SUMMARY BANNER ── */
 .summary-banner {
-  background: var(--white);
+  background: var(--surface);
   border-bottom: 2px solid var(--light-bg);
   padding: 0 5%;
   display: flex;
@@ -1051,7 +1051,7 @@
 .summary-item strong {
   display: block;
   font-size: 0.88rem;
-  color: var(--navy);
+  color: var(--heading);
   font-weight: 600;
   white-space: nowrap;
   transition: color 0.2s;
@@ -1087,7 +1087,7 @@
   top: 100%;
   left: 0;
   min-width: 240px;
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-top: 3px solid var(--royal);
   border-radius: 0 0 10px 10px;
@@ -1161,7 +1161,7 @@
 }
 
 .enrolment-right h2 {
-  color: var(--white);
+  color: var(--on-dark);
   margin-bottom: 0.8rem;
 }
 
@@ -1226,7 +1226,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--heading);
   letter-spacing: 0.04em;
 }
 
@@ -1294,7 +1294,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--heading);
   border-bottom: 1.5px solid rgba(180, 145, 60, 0.35);
   display: inline-block;
   padding-bottom: 0.3rem;
@@ -1337,7 +1337,7 @@
 .cert-signature {
   font-family: 'Playfair Display', serif;
   font-size: 1rem;
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.3rem;
   letter-spacing: 0.1em;
 }
@@ -1345,14 +1345,14 @@
 .cert-date {
   font-family: 'Playfair Display', serif;
   font-size: 0.85rem;
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: 0.3rem;
 }
 
 .cert-footer-label {
   font-size: 0.65rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--heading);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1427,7 +1427,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: var(--royal);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 0.78rem;
   font-weight: 600;
   padding: 0.4rem 1rem;
@@ -1497,7 +1497,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: 1.5px solid rgba(255, 255, 255, 0.2);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 1rem;
   cursor: pointer;
   display: flex;

@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Applied before any CSS renders, so the page never flashes the
+    // wrong theme on load. The click handler that sets this value
+    // lives in js/main.js — this is only the "read it back" half.
+    (function () {
+      if (localStorage.getItem('rbc-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Learn KoBoToolbox for digital data collection — design surveys, collect field data, and manage research or M&E data. Online or in-person in Kigali." />
@@ -21,6 +32,12 @@
   <link rel="stylesheet" href="../../css/style.css" />
   <link rel="stylesheet" href="../../css/course-page.css" />
   <link rel="icon" type="image/png" href="../../images/logo.png" />
+  <style>
+    /* Accent thread pulled from this tool's own logo color,
+       applied narrowly to the module badges so each course page
+       reads as distinct without leaving the site's color system. */
+    .module-num { background: #1a70c0; }
+  </style>
 </head>
 <body>
 
@@ -48,16 +65,16 @@
         </a>
         <div class="nav-dropdown">
           <a href="../../pages/thesis-editing.html">
-            <span>✏️</span> Thesis Editing &amp; Proofreading
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Thesis Editing &amp; Proofreading
           </a>
           <a href="../../pages/data-analysis.html">
-            <span>📊</span> Data Collection &amp; Analysis
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Data Collection &amp; Analysis
           </a>
           <a href="../../pages/research-design.html">
-            <span>🔬</span> Research Project Design
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></span> Research Project Design
           </a>
           <a href="../../pages/capacity-building.html">
-            <span>🎓</span> Capacity Building &amp; Training
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></span> Capacity Building &amp; Training
           </a>
         </div>
       </li>
@@ -66,30 +83,62 @@
         <a href="../../index.html#courses" class="nav-dropdown-trigger">
           Courses <span class="dropdown-arrow">›</span>
         </a>
-        <div class="nav-dropdown">
-          <a href="../../pages/courses/excel.html">
-            <span><img src="../../images/excel.png" alt="" class="icon-img" /></span> Excel for Data &amp; Analysis
+        <div class="nav-dropdown nav-dropdown-courses">
+          <a href="../../pages/courses/excel.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/excel.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Excel</strong>
+              <span>Spreadsheets & dashboards</span>
+            </span>
           </a>
-          <a href="../../pages/courses/python.html">
-            <span><img src="../../images/python-logo.svg" alt="" class="icon-img" /></span> Python for Data Science
+          <a href="../../pages/courses/python.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/python-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Python</strong>
+              <span>Data science & ML</span>
+            </span>
           </a>
-          <a href="../../pages/courses/stata.html">
-            <span><img src="../../images/stata-logo.png" alt="" class="icon-img" /></span> Stata for Econometrics
+          <a href="../../pages/courses/stata.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/stata-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Stata</strong>
+              <span>Econometrics</span>
+            </span>
           </a>
-          <a href="../../pages/courses/spss.html">
-            <span><img src="../../images/spss-logo.png" alt="" class="icon-img" /></span> SPSS for Statistical Analysis
+          <a href="../../pages/courses/spss.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/spss-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>SPSS</strong>
+              <span>Statistical analysis</span>
+            </span>
           </a>
-          <a href="../../pages/courses/r.html">
-            <span><img src="../../images/r-logo.svg" alt="" class="icon-img" /></span> R for Statistical Computing
+          <a href="../../pages/courses/r.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/r-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>R</strong>
+              <span>Statistical computing</span>
+            </span>
           </a>
-          <a href="../../pages/courses/nvivo.html">
-            <span><img src="../../images/nvivo-logo.jpg" alt="" class="icon-img" /></span> NVivo for Qualitative Research
+          <a href="../../pages/courses/nvivo.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/nvivo-logo.jpg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>NVivo</strong>
+              <span>Qualitative research</span>
+            </span>
           </a>
-          <a href="../../pages/courses/powerbi.html">
-            <span><img src="../../images/powerbi-logo.svg" alt="" class="icon-img" /></span> Power BI for Data Visualization
+          <a href="../../pages/courses/powerbi.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/powerbi-logo.svg" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>Power BI</strong>
+              <span>Data visualization</span>
+            </span>
           </a>
-          <a href="../../pages/courses/kobo.html">
-            <span><img src="../../images/kobo-logo.png" alt="" class="icon-img" /></span> KoBoToolbox for Data Collection
+          <a href="../../pages/courses/kobo.html" class="nav-course-grid-item">
+            <span class="nav-course-grid-icon"><img src="../../images/kobo-logo.png" alt="" /></span>
+            <span class="nav-course-grid-text">
+              <strong>KoBoToolbox</strong>
+              <span>Field data collection</span>
+            </span>
           </a>
         </div>
       </li>
@@ -101,7 +150,7 @@
           <a href="../../pages/signup.html" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
-          <a href="../../pages/dashboard.html"><span>📊</span> Dashboard</a>
+          <a href="../../pages/dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
           <a href="../../pages/profile.html"><span>👤</span> Profile</a>
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
@@ -109,6 +158,10 @@
 
     </ul>
 
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+    </button>
     <div class="nav-auth" id="navAuth">
       <!-- Logged out state -->
       <div class="auth-logged-out" id="authLoggedOut">
@@ -122,7 +175,7 @@
               <span class="dropdown-arrow">›</span>
           </button>
           <div class="nav-dropdown" id="accountMenu">
-              <a href="../../pages/dashboard.html"><span>📊</span> Dashboard</a>
+              <a href="../../pages/dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
               <a href="../../pages/profile.html"><span>👤</span> Profile</a>
               <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
           </div>
@@ -207,7 +260,7 @@
 
     <div class="summary-item">
       <div class="summary-item-top">
-        <span class="summary-icon">🎓</span>
+        <span class="summary-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></span>
         <div>
           <strong>Certificate Included</strong>
           <p>Upon Completion</p>
@@ -399,7 +452,7 @@
           and donor reporting.</p>
         </div>
         <div class="application-card">
-          <div class="app-icon">🎓</div>
+          <div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></div>
           <h3>Academic Research</h3>
           <p>Collect primary data for dissertations and
           research projects — online or through field
