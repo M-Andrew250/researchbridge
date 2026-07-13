@@ -55,7 +55,7 @@
             <span></span>
         </button>
         <ul class="nav-links" id="navLinks">
-            <li><a href="#about">About</a></li>
+            <li><a href="pages/about.html">About</a></li>
 
             <!-- SERVICES DROPDOWN -->
             <li class="nav-dropdown-item">
@@ -352,6 +352,20 @@
 
     </section>
 
+    <!-- ANNOUNCEMENT BAR -->
+    <div class="announcement-bar" id="announcementBar">
+        <div class="announcement-content">
+            <span class="announcement-badge">🏛️ In-Person</span>
+            <div class="announcement-marquee">
+                <div class="announcement-track" id="announcementTrack">
+                    <p id="announcementText">Loading upcoming training dates…</p>
+                    <p aria-hidden="true" id="announcementTextDupe">Loading upcoming training dates…</p>
+                </div>
+            </div>
+        </div>
+        <button class="announcement-close" id="announcementClose">✕</button>
+    </div>
+
     <!-- GUEST TRAINING PROMO -->
     <section id="trainingPromo" class="reveal">
         <p class="section-label" style="text-align:center;">Get Started</p>
@@ -366,7 +380,7 @@
                 </div>
             </div>
 
-            <div class="promo-card">
+            <div class="promo-card" id="onlinePromoCard">
                 <div class="promo-card-icon">💻</div>
                 <h3>Self-Paced Online Learning</h3>
                 <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1.5rem;">
@@ -378,56 +392,6 @@
             </div>
 
         </div>
-    </section>
-
-                        <!-- ANNOUNCEMENT BAR -->
-    <div class="announcement-bar" id="announcementBar">
-        <div class="announcement-content">
-            <span class="announcement-badge">🆕 New</span>
-            <p>
-                <strong>Python for Data Science</strong> — Next cohort
-                starts <strong>15 July 2025</strong>. Limited seats available!
-                <a href="pages/enrol.html" class="announcement-link">
-                    Enrol Now →
-                </a>
-            </p>
-        </div>
-        <button class="announcement-close" id="announcementClose">✕</button>
-    </div>
-        <!-- ABOUT -->
-    <section id="about" class="reveal">
-
-        <div class="about-grid">
-
-            <div class="about-card">
-                <p>"Good research doesn't just answer questions — it builds
-                the foundations for better decisions, stronger policies,
-                and meaningful progress."</p>
-                <cite>— ResearchBridge Consulting</cite>
-            </div>
-
-            <div class="about-text">
-                <p class="section-label">Who We Are</p>
-                <h2>Your Partner in Research Excellence</h2>
-                <p>ResearchBridge Consulting is a dedicated research support
-                and training firm committed to making rigorous, evidence-based
-                work accessible to everyone — from Masters students writing
-                their first thesis to NGOs designing impact evaluations.</p>
-                <p>We combine deep methodological expertise with practical,
-                hands-on training to help individuals and organisations turn
-                raw data into meaningful insight.</p>
-
-                <p class="serve-title">We serve</p>
-                <ul class="serve-list">
-                    <li>Undergraduate &amp; Masters Students</li>
-                    <li>Working Professionals &amp; Employees</li>
-                    <li>NGOs &amp; Non-Profit Organisations</li>
-                    <li>Public Institutions &amp; Government Bodies</li>
-                </ul>
-            </div>
-
-        </div>
-
     </section>
 
 
@@ -603,9 +567,14 @@
         </div>
 
         <div class="delivery-badges">
-            <div class="badge">💻 Online — Live &amp; Self-paced</div>
-            <div class="badge">🏫 Physical — In-person Sessions</div>
-            <div class="badge">👥 Group &amp; Individual Options</div>
+            <a href="#onlinePromoCard" class="badge">
+                <span class="badge-fill" aria-hidden="true"></span>
+                <span class="badge-label">💻 Online — Live &amp; Self-paced</span>
+            </a>
+            <a href="#inPersonPromoCard" class="badge">
+                <span class="badge-fill" aria-hidden="true"></span>
+                <span class="badge-label">🏫 Physical — In-person Sessions</span>
+            </a>
         </div>
 
     </section>
@@ -642,7 +611,7 @@
             <div class="footer-links">
                 <p class="footer-heading">Quick Links</p>
                 <ul>
-                    <li><a href="#about">About</a></li>
+                    <li><a href="pages/about.html">About</a></li>
                     <li><a href="#services">Services</a></li>
                     <li><a href="#courses">Courses</a></li>
                     <li><a href="pages/contact.html">Contact</a></li>
@@ -812,14 +781,34 @@
         };
 
         const inPersonBody = document.getElementById('inPersonPromoBody');
+        const announcementText = document.getElementById('announcementText');
+        const announcementTextDupe = document.getElementById('announcementTextDupe');
+        const announcementBadge = document.querySelector('#announcementBar .announcement-badge');
+
+        function setAnnouncement(html) {
+          if (announcementText) announcementText.innerHTML = html;
+          if (announcementTextDupe) announcementTextDupe.innerHTML = html;
+        }
+
+        const NO_TRAINING_MSG = 'No in-person trainings are scheduled right now — check back soon, ' +
+          'or explore our self-paced online courses.';
+
+        document.getElementById('announcementTrack')?.addEventListener('click', (e) => {
+          const cta = e.target.closest('.announcement-cta');
+          if (!cta) return;
+          e.preventDefault();
+          const enrolQuery = cta.dataset.enrolQuery;
+          goTo(`pages/enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
+        });
+
         try {
           const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops/next`);
           const workshop = res.ok ? await res.json() : null;
 
           if (!workshop) {
-            inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">
-              No in-person trainings are scheduled right now — check back soon,
-              or explore our self-paced online courses.</p>`;
+            inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">${NO_TRAINING_MSG}</p>`;
+            if (announcementBadge) announcementBadge.textContent = '📚 Online';
+            setAnnouncement(`No in-person trainings are scheduled right now — <a href="#courses" class="announcement-link">explore our self-paced online courses →</a>`);
           } else {
             const course = courseCatalog[workshop.course_slug] || { emoji: '📚', name: workshop.course_slug };
             const dateLabel = new Date(workshop.start_date).toLocaleDateString(undefined, {
@@ -847,14 +836,20 @@
               e.preventDefault();
               goTo(`pages/enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
             });
+
+            setAnnouncement(
+              `<strong>${course.name}</strong> — Next in-person training on ` +
+              `<strong>${dateLabel}</strong> in ${workshop.venue}. ` +
+              `<a href="#" class="announcement-link announcement-cta" data-enrol-query="${enrolQuery}">Apply Now →</a>`
+            );
           }
         } catch (err) {
           // Same friendly copy as the "genuinely no workshops" case —
           // a visitor can't tell (and shouldn't need to care) whether
           // this is an empty schedule or a dropped request.
-          inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">
-            No in-person trainings are scheduled right now — check back soon,
-            or explore our self-paced online courses.</p>`;
+          inPersonBody.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">${NO_TRAINING_MSG}</p>`;
+          if (announcementBadge) announcementBadge.textContent = '📚 Online';
+          setAnnouncement(`No in-person trainings are scheduled right now — <a href="#courses" class="announcement-link">explore our self-paced online courses →</a>`);
         }
 
         document.getElementById('onlinePromoCta').addEventListener('click', (e) => {

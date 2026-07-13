@@ -1088,6 +1088,31 @@ a.auth-welcome:hover {
   position: relative;
 }
 
+/* Invisible bridge between trigger and dropdown, same trick used by
+   the Services/Courses nav dropdowns, so the hover state survives the
+   gap between the trigger and the menu below it. */
+.account-dropdown::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 12px;
+  background: transparent;
+}
+
+.account-dropdown:hover .nav-dropdown,
+.account-dropdown:focus-within .nav-dropdown {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.account-dropdown:hover .account-trigger .dropdown-arrow,
+.account-dropdown:focus-within .account-trigger .dropdown-arrow {
+  transform: rotate(90deg);
+}
+
 .account-trigger {
   display: flex;
   align-items: center;
@@ -1132,7 +1157,8 @@ a.auth-welcome:hover {
 
 
 /* ── 5f. ANNOUNCEMENT BAR ──
-   Dismissible strip above the navbar for site-wide announcements. */
+   Dismissible strip below the hero, stuck under the navbar while
+   scrolling so it stays visible whichever way the page is scrolled. */
 .announcement-bar {
   background: linear-gradient(90deg, var(--royal), var(--sky));
   padding: 0.65rem 5%;
@@ -1140,8 +1166,9 @@ a.auth-welcome:hover {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  position: relative;
-  z-index: 101;
+  position: sticky;
+  top: 68px;
+  z-index: 99;
 }
 
 .announcement-content {
@@ -1149,7 +1176,53 @@ a.auth-welcome:hover {
   align-items: center;
   gap: 0.8rem;
   flex: 1;
-  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.announcement-marquee {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.announcement-track {
+  display: flex;
+  width: max-content;
+  animation: rbcAnnouncementScroll 16s linear infinite;
+}
+
+.announcement-track:hover,
+.announcement-track:focus-within {
+  animation-play-state: paused;
+}
+
+.announcement-track p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  margin: 0;
+  padding-right: 5rem;
+}
+
+@keyframes rbcAnnouncementScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-track {
+    animation: none;
+  }
+
+  .announcement-track p[aria-hidden="true"] {
+    display: none;
+  }
+
+  .announcement-track p {
+    white-space: normal;
+    padding-right: 0;
+  }
 }
 
 .announcement-badge {
@@ -1210,7 +1283,7 @@ a.auth-welcome:hover {
 }
 
 .announcement-bar.hidden {
-  display: yes;
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -1471,6 +1544,8 @@ a.auth-welcome:hover {
   padding: 2.2rem;
   text-align: center;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  /* Clears the sticky navbar + announcement bar when jumped to via #anchor. */
+  scroll-margin-top: 130px;
 }
 
 .promo-card:hover {
@@ -1625,32 +1700,64 @@ a.auth-welcome:hover {
 }
 
 .service-card {
+  position: relative;
+  overflow: hidden;
   border: 1.5px solid var(--border);
   border-radius: 14px;
   padding: 2rem 1.8rem;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--royal), var(--sky));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+  z-index: 0;
+}
+
 .service-card:hover {
-  border-color: var(--sky);
+  border-color: transparent;
   box-shadow: 0 8px 32px rgba(30, 94, 188, 0.1);
   transform: translateY(-4px);
 }
 
+.service-card:hover::before {
+  transform: scaleX(1);
+}
+
 .service-icon {
+  position: relative;
+  z-index: 1;
   font-size: 2rem;
   margin-bottom: 1.2rem;
+  transition: color 0.3s ease;
 }
 
 .service-card h3 {
+  position: relative;
+  z-index: 1;
   color: var(--heading);
   margin-bottom: 0.6rem;
+  transition: color 0.3s ease;
 }
 
 .service-card p {
+  position: relative;
+  z-index: 1;
   font-size: 0.9rem;
   color: var(--muted);
   line-height: 1.65;
+  transition: color 0.3s ease;
+}
+
+.service-card:hover .service-icon,
+.service-card:hover h3,
+.service-card:hover p {
+  color: var(--on-dark);
 }
 
 a.service-card {
@@ -1884,13 +1991,53 @@ a.service-card {
 }
 
 .badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 8px;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.88rem;
-  font-weight: 500;
+  padding: 0.9rem 1.7rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--heading);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.badge-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--royal), var(--sky));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+  z-index: 0;
+}
+
+.badge-label {
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.badge:hover,
+.badge:focus-visible {
+  transform: scale(1.06) translateY(-2px);
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(30, 94, 188, 0.25);
+}
+
+.badge:hover .badge-fill,
+.badge:focus-visible .badge-fill {
+  transform: scaleX(1);
+}
+
+.badge:hover .badge-label,
+.badge:focus-visible .badge-label {
+  color: var(--on-dark);
 }
 
 

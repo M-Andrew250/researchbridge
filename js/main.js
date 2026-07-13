@@ -407,10 +407,9 @@ async function updateAuthState() {
 
   applySessionToNav(session);
 
-  // Account dropdown: click to open/close, click outside to close.
-  // Deliberately click-based rather than the hover behaviour used by
-  // the Services/Courses nav dropdowns, since a stray mouseover
-  // shouldn't reveal a Log Out control.
+  // Account dropdown: opens on hover (CSS, matching the Services/Courses
+  // nav dropdowns) and also toggles on click for keyboard/touch users
+  // who can't hover, with a click-outside to close it again.
   if (accountTrigger) {
     accountTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
