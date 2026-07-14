@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>
@@ -14,24 +14,133 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Research project design consulting — methodology, study design, and proposal development support for students, professionals, and institutions." />
-  <title>Research Project Design | ResearchBridge Consulting</title>
+  <meta name="description" content="Verify a ResearchBridge Consulting course-completion certificate by its certificate ID." />
+  <title>Verify a Certificate | ResearchBridge Consulting</title>
 
   <!-- Social sharing preview (Open Graph / Twitter) for the live site. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="ResearchBridge Consulting" />
-  <meta property="og:title" content="Research Project Design | ResearchBridge Consulting" />
-  <meta property="og:description" content="Research project design consulting — methodology, study design, and proposal development support for students, professionals, and institutions." />
-  <meta property="og:url" content="https://researchbridgeconsulting.com/pages/research-design.html" />
+  <meta property="og:title" content="Verify a Certificate | ResearchBridge Consulting" />
+  <meta property="og:description" content="Verify a ResearchBridge Consulting course-completion certificate by its certificate ID." />
+  <meta property="og:url" content="https://researchbridgeconsulting.com/pages/verify-certificate.html" />
   <meta property="og:image" content="https://researchbridgeconsulting.com/images/ResearchBridge%20Banner.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Research Project Design | ResearchBridge Consulting" />
-  <meta name="twitter:description" content="Research project design consulting — methodology, study design, and proposal development support for students, professionals, and institutions." />
+  <meta name="twitter:title" content="Verify a Certificate | ResearchBridge Consulting" />
+  <meta name="twitter:description" content="Verify a ResearchBridge Consulting course-completion certificate by its certificate ID." />
   <meta name="twitter:image" content="https://researchbridgeconsulting.com/images/ResearchBridge%20Banner.png" />
 
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/service-page.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
+
+  <style>
+    .verify-box {
+      max-width: 560px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 2.2rem;
+      box-shadow: 0 4px 32px rgba(10, 31, 68, 0.08);
+    }
+
+    .verify-box label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 0.5rem;
+    }
+
+    .verify-input-row {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    .verify-input-row input {
+      flex: 1;
+      min-width: 220px;
+      padding: 0.8rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+    }
+
+    .verify-input-row input:focus {
+      outline: none;
+      border-color: var(--royal);
+    }
+
+    #verifyResult {
+      margin-top: 1.5rem;
+    }
+
+    .verify-loading {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .verify-result {
+      border-radius: 12px;
+      padding: 1.4rem;
+      text-align: center;
+    }
+
+    .verify-result-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .verify-result h3 {
+      margin-bottom: 0.6rem;
+    }
+
+    .verify-result-valid {
+      background: rgba(34, 197, 94, 0.08);
+      border: 1.5px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .verify-result-valid h3 {
+      color: #16a34a;
+    }
+
+    .verify-result-invalid {
+      background: rgba(220, 38, 38, 0.06);
+      border: 1.5px solid rgba(220, 38, 38, 0.3);
+    }
+
+    .verify-result-invalid h3 {
+      color: #dc2626;
+    }
+
+    .verify-result-invalid p {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .verify-result-detail {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      text-align: left;
+      padding: 0.6rem 0;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .verify-result-detail span {
+      color: var(--muted);
+    }
+
+    .verify-result-detail strong {
+      color: var(--heading);
+    }
+  </style>
 </head>
 <body>
 
@@ -57,17 +166,17 @@
           Services <span class="dropdown-arrow">›</span>
         </a>
         <div class="nav-dropdown">
-          <a href="../pages/thesis-editing.html">
+          <a href="thesis-editing.html">
             <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Thesis Editing &amp; Proofreading
           </a>
-          <a href="../pages/data-analysis.html">
+          <a href="data-analysis.html">
             <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Data Collection &amp; Analysis
           </a>
-          <a href="../pages/research-design.html">
+          <a href="research-design.html">
             <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></span> Research Project Design
           </a>
-          <a href="../pages/capacity-building.html">
-            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></span> Capacity Building &amp; Training
+          <a href="capacity-building.html">
+            <span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg></span> Capacity Building &amp; Training
           </a>
         </div>
       </li>
@@ -77,56 +186,56 @@
           Courses <span class="dropdown-arrow">›</span>
         </a>
         <div class="nav-dropdown nav-dropdown-courses">
-          <a href="../pages/courses/excel.html" class="nav-course-grid-item">
+          <a href="courses/excel.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/excel.png" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>Excel</strong>
               <span>Spreadsheets & dashboards</span>
             </span>
           </a>
-          <a href="../pages/courses/python.html" class="nav-course-grid-item">
+          <a href="courses/python.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/python-logo.svg" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>Python</strong>
               <span>Data science & ML</span>
             </span>
           </a>
-          <a href="../pages/courses/stata.html" class="nav-course-grid-item">
+          <a href="courses/stata.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/stata-logo.png" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>Stata</strong>
               <span>Econometrics</span>
             </span>
           </a>
-          <a href="../pages/courses/spss.html" class="nav-course-grid-item">
+          <a href="courses/spss.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/spss-logo.png" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>SPSS</strong>
               <span>Statistical analysis</span>
             </span>
           </a>
-          <a href="../pages/courses/r.html" class="nav-course-grid-item">
+          <a href="courses/r.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/r-logo.svg" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>R</strong>
               <span>Statistical computing</span>
             </span>
           </a>
-          <a href="../pages/courses/nvivo.html" class="nav-course-grid-item">
+          <a href="courses/nvivo.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/nvivo-logo.jpg" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>NVivo</strong>
               <span>Qualitative research</span>
             </span>
           </a>
-          <a href="../pages/courses/powerbi.html" class="nav-course-grid-item">
+          <a href="courses/powerbi.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/powerbi-logo.svg" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>Power BI</strong>
               <span>Data visualization</span>
             </span>
           </a>
-          <a href="../pages/courses/kobo.html" class="nav-course-grid-item">
+          <a href="courses/kobo.html" class="nav-course-grid-item">
             <span class="nav-course-grid-icon"><img src="../images/kobo-logo.png" alt="" /></span>
             <span class="nav-course-grid-text">
               <strong>KoBoToolbox</strong>
@@ -139,8 +248,8 @@
       <li><a href="contact.html" class="nav-cta">Contact Us</a></li>
       <li class="nav-mobile-auth">
         <div class="nav-mobile-auth-loggedout">
-          <a href="../pages/login.html">Log In</a>
-          <a href="../pages/signup.html" class="nav-mobile-signup">Sign Up</a>
+          <a href="login.html">Log In</a>
+          <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
           <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
@@ -148,200 +257,52 @@
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
       </li>
-
     </ul>
-    
+
     <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
       <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
       <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
     </button>
     <div class="nav-auth" id="navAuth">
-      <!-- Logged out state -->
       <div class="auth-logged-out" id="authLoggedOut">
-          <a href="../pages/login.html" class="auth-btn-login">Log In</a>
-          <a href="../pages/signup.html" class="auth-btn-signup">Sign Up</a>
+        <a href="login.html" class="auth-btn-login">Log In</a>
+        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
       </div>
-      <!-- Logged in state -->
       <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
-          <button type="button" class="account-trigger" id="accountTrigger">
-              <span id="authWelcome">Logged in as User</span>
-              <span class="dropdown-arrow">›</span>
-          </button>
-          <div class="nav-dropdown" id="accountMenu">
-              <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
-              <a href="profile.html"><span>👤</span> Profile</a>
-              <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
-          </div>
+        <button type="button" class="account-trigger" id="accountTrigger">
+          <span id="authWelcome">Logged in as User</span>
+          <span class="dropdown-arrow">›</span>
+        </button>
+        <div class="nav-dropdown" id="accountMenu">
+          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
+          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
+        </div>
       </div>
     </div>
-    
   </nav>
-
 
   <!-- HERO -->
   <section class="service-hero">
     <div class="service-hero-content">
-      <a href="../index.html#services" class="back-link">← Back to Services</a>
-      <div class="service-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M8.5 2h7"/><path d="M6.5 14h11"/></svg></div>
-      <h1>Research Project Design</h1>
-      <p>Build a solid foundation for your research — from defining
-      your objectives and choosing the right methodology to designing
-      your sampling strategy and data collection plan.</p>
-
-      <div class="hero-cta-row">
-        <a href="contact.html" class="btn-primary">Get in Touch →</a>
-        <a href="#how-it-works" class="btn-outline">See How It Works</a>
-      </div>
-
-      <div class="hero-badges">
-        <span class="hero-badge">🎯 Objectives to Full Proposal</span>
-        <span class="hero-badge">⚙️ Qualitative · Quantitative · Mixed Methods</span>
-        <span class="hero-badge">👥 Sampling Strategy Included</span>
-        <span class="hero-badge">📄 Submission-Ready Proposal</span>
-      </div>
+      <a href="../index.html" class="back-link">← Back to Home</a>
+      <div class="service-hero-icon">🔎</div>
+      <h1>Verify a Certificate</h1>
+      <p>Enter the certificate ID printed at the bottom of a ResearchBridge
+      Consulting course-completion certificate to confirm it's genuine.</p>
     </div>
   </section>
 
-  <!-- OVERVIEW -->
-  <section class="service-section">
-    <div class="service-section-inner">
-      <p class="section-label">Overview</p>
-      <h2>What Is This Service?</h2>
-      <p>A well-designed research project is the difference between
-      findings that are credible and findings that fall apart under
-      scrutiny. Our Research Project Design service helps students,
-      researchers, NGOs, and institutions build rigorous, well-structured
-      research frameworks from the ground up.</p>
-      <p>We work with you to clarify your research problem, define
-      your objectives, select the most appropriate methodology, and
-      design every component of your study before data collection begins
-      — saving you time, cost, and frustration down the line.</p>
-    </div>
-  </section>
-
-  <!-- WHAT'S INCLUDED -->
-  <section class="service-section alt-bg">
-    <div class="service-section-inner">
-      <p class="section-label">Deliverables</p>
-      <h2>What's Included</h2>
-      <div class="included-grid">
-
-        <div class="included-card">
-          <div class="included-icon">🎯</div>
-          <h3>Problem &amp; Objectives</h3>
-          <p>Clarification of your research problem, research
-          questions, and measurable objectives aligned to
-          your study goals.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">🗺️</div>
-          <h3>Conceptual Framework</h3>
-          <p>Development of a conceptual or theoretical framework
-          that grounds your study in existing knowledge.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">⚙️</div>
-          <h3>Methodology Selection</h3>
-          <p>Guidance on choosing between qualitative,
-          quantitative, or mixed methods approaches for
-          your specific context.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">👥</div>
-          <h3>Sampling Strategy</h3>
-          <p>Design of your sampling approach — population
-          definition, sample size calculation, and sampling
-          technique selection.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">📋</div>
-          <h3>Data Collection Plan</h3>
-          <p>A structured plan detailing what data you need,
-          how you will collect it, and what tools you
-          will use.</p>
-        </div>
-
-        <div class="included-card">
-          <div class="included-icon">📄</div>
-          <h3>Research Proposal</h3>
-          <p>A complete written research proposal ready for
-          submission to your institution, supervisor, or
-          funding body.</p>
-        </div>
-
+  <!-- VERIFY -->
+  <section id="verify">
+    <div class="verify-box">
+      <label for="certIdInput">Certificate ID</label>
+      <div class="verify-input-row">
+        <input type="text" id="certIdInput" placeholder="e.g. 3f2a1b9c-4d5e-4f6a-8b7c-9d0e1f2a3b4c" autocomplete="off" spellcheck="false" />
+        <button type="button" id="verifyBtn" class="btn-primary">Verify</button>
       </div>
+      <div id="verifyResult"></div>
     </div>
-  </section>
-
-  <!-- WHO IT'S FOR + HOW IT WORKS -->
-  <section class="service-section">
-    <div class="service-section-inner two-col">
-
-      <div>
-        <p class="section-label">Target Clients</p>
-        <h2>Who Is This For?</h2>
-        <p>Anyone starting a research project who wants to
-        get the design right from the beginning.</p>
-        <ul class="for-list">
-          <li>Students developing thesis or dissertation proposals</li>
-          <li>NGOs designing programme evaluations</li>
-          <li>Government institutions planning policy research</li>
-          <li>Researchers applying for grants or funding</li>
-          <li>Organisations conducting internal research studies</li>
-        </ul>
-      </div>
-
-      <div class="how-it-works" id="how-it-works">
-        <p class="section-label">Process</p>
-        <h2>How It Works</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-text">
-              <strong>Initial Consultation</strong>
-              <p>We discuss your research topic, context,
-              and goals to understand what you need.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-text">
-              <strong>Framework Development</strong>
-              <p>We develop your conceptual framework,
-              objectives, and methodology together.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-text">
-              <strong>Design &amp; Documentation</strong>
-              <p>We document the full research design
-              into a structured proposal or plan.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-text">
-              <strong>Review &amp; Finalise</strong>
-              <p>We review the design with you and
-              refine until you are fully confident.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="service-cta">
-    <h2>Ready to Design Your Research?</h2>
-    <p>Let's build a solid foundation for your study together.</p>
-    <a href="contact.html" class="btn-primary">Get in Touch →</a>
   </section>
 
   <!-- FOOTER -->
@@ -393,6 +354,77 @@
     </div>
   </footer>
 
+  <!-- WHATSAPP BUTTON -->
+  <a href="https://wa.me/250781878576?text=Hello%20ResearchBridge%2C%20I%20have%20a%20question." class="whatsapp-btn" target="_blank" rel="noopener" title="Chat with us on WhatsApp"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
+
   <script src="../js/main.js"></script>
+  <script>
+    // ── CERTIFICATE VERIFICATION ──
+    const certIdInput = document.getElementById('certIdInput');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const verifyResult = document.getElementById('verifyResult');
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    async function verifyCertificate(id) {
+      verifyResult.innerHTML = '<p class="verify-loading">Checking…</p>';
+
+      let data;
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/certificates/verify/${encodeURIComponent(id)}`);
+        data = await res.json();
+      } catch (err) {
+        verifyResult.innerHTML = `
+          <div class="verify-result verify-result-invalid">
+            <div class="verify-result-icon">⚠️</div>
+            <h3>Something went wrong</h3>
+            <p>Please check your connection and try again.</p>
+          </div>`;
+        return;
+      }
+
+      if (data.valid) {
+        const dateLabel = new Date(data.completedAt).toLocaleDateString(undefined, {
+          year: 'numeric', month: 'long', day: 'numeric',
+        });
+        verifyResult.innerHTML = `
+          <div class="verify-result verify-result-valid">
+            <div class="verify-result-icon">✅</div>
+            <h3>Certificate Verified</h3>
+            <div class="verify-result-detail"><span>Issued to</span><strong>${escapeHtml(data.studentName)}</strong></div>
+            <div class="verify-result-detail"><span>Course</span><strong>${escapeHtml(data.courseName)}</strong></div>
+            <div class="verify-result-detail"><span>Completed</span><strong>${dateLabel}</strong></div>
+          </div>`;
+      } else {
+        verifyResult.innerHTML = `
+          <div class="verify-result verify-result-invalid">
+            <div class="verify-result-icon">❌</div>
+            <h3>Not Found</h3>
+            <p>We couldn't verify a certificate with that ID. Double-check it matches exactly what's printed on the certificate.</p>
+          </div>`;
+      }
+    }
+
+    verifyBtn.addEventListener('click', () => {
+      const id = certIdInput.value.trim();
+      if (!id) return;
+      verifyCertificate(id);
+    });
+
+    certIdInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyBtn.click();
+    });
+
+    const idFromUrl = new URLSearchParams(window.location.search).get('id');
+    if (idFromUrl) {
+      certIdInput.value = idFromUrl;
+      verifyCertificate(idFromUrl);
+    }
+  </script>
+
 </body>
 </html>

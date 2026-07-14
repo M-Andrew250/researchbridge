@@ -1786,10 +1786,15 @@ a.service-card {
   margin-top: 2.5rem;
   margin-bottom: 2.5rem;
   /* Hover panels below expand past their own grid cell — this keeps
-     a hovered card's panel drawn above the *next* row rather than
-     getting clipped or clipping into it. */
+     a hovered card's panel drawn above the *next* row, and above the
+     delivery badges sitting right after the grid, rather than getting
+     clipped or clipped into by them. z-index must be >0: at 0 this
+     stacking context still loses to later, later-in-DOM positioned
+     siblings (e.g. the badges below, which are position:relative for
+     their own hover-fill effect), regardless of the panel's own
+     z-index inside it. */
   position: relative;
-  z-index: 0;
+  z-index: 2;
 }
 
 .course-card {

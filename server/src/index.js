@@ -11,6 +11,7 @@ import { learningRouter } from './routes/learning.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { authRouter } from './routes/auth.js';
 import { adminRouter } from './routes/admin.js';
+import { certificatesRouter } from './routes/certificates.js';
 import { generalLimiter } from './middleware/rateLimiters.js';
 
 // Fail loudly rather than silently falling back to a wildcard ('*')
@@ -42,6 +43,7 @@ app.use('/api/workshops', workshopsRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/certificates', certificatesRouter);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
