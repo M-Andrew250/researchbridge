@@ -1015,46 +1015,52 @@
     const dashboardLocked = document.getElementById('dashboardLocked');
     const dashboardContent = document.getElementById('dashboardContent');
 
-    // Every course's stated level span (pages/courses/*.html hero
-    // "Level" stat) is the same across all 8 courses — printed on the
-    // certificate alongside the real completion date, rather than a
-    // fixed duration figure, since these are self-paced (no single
-    // "N weeks" honestly applies to every learner's own pace).
-    const COURSE_LEVEL_SPAN = 'Beginner to Advanced';
-
-    // Draws a certificate onto the given canvas — used both for the
-    // on-screen preview and as the source for the downloaded PNG
-    // (same canvas, so what you see is exactly what you download).
-    // Loaded once and reused for every certificate drawn on the page.
-    let cbCertLogoPromise = null;
-    function loadCertificateLogo() {
-      if (!cbCertLogoPromise) {
-        cbCertLogoPromise = new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = '../images/logo.png';
-        });
+    // Signer name/title/company, logo, signature, and standard wording
+    // are admin-editable (pages/admin.html's Certificate tab) rather
+    // than hardcoded — a signer or logo can change without a code
+    // deploy. Fetched once and reused for every certificate drawn on
+    // this page load; falls back to today's real values if the
+    // settings endpoint is ever unreachable, so certificates still
+    // generate correctly either way.
+    let cbCertSettingsPromise = null;
+    function loadCertificateSettings() {
+      if (!cbCertSettingsPromise) {
+        cbCertSettingsPromise = fetch(`${window.rbcApiBaseUrl}/api/certificates/settings`)
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null)
+          .then((data) => ({
+            signerName: data?.signer_name || 'Andrew MUSHOKAMBERE',
+            signerTitle: data?.signer_title || 'Chief Executive Officer',
+            signerCompany: data?.signer_company || 'ResearchBridge Consulting Ltd',
+            logoUrl: data?.logo_url || '../images/logo.png',
+            signatureUrl: data?.signature_url || '../images/ceo-signature.png',
+            credentialWording: data?.credential_wording || 'has successfully completed the requirements of the self-paced online course',
+            levelSpan: data?.level_span || 'Beginner to Advanced',
+          }));
       }
-      return cbCertLogoPromise;
+      return cbCertSettingsPromise;
     }
 
-    let cbCertSignaturePromise = null;
-    function loadCertificateSignature() {
-      if (!cbCertSignaturePromise) {
-        cbCertSignaturePromise = new Promise((resolve) => {
+    // Cached by URL rather than a fixed path, since the logo/signature
+    // may now point at an admin-uploaded Supabase Storage URL instead
+    // of the bundled default image. crossOrigin is set defensively for
+    // that cross-origin case — without it, drawing a cross-origin
+    // image onto the canvas would "taint" it and toDataURL()/toBlob()
+    // (used for the PDF and the share image) would throw.
+    const cbImageCache = new Map();
+    function loadCertificateImage(url) {
+      if (!url) return Promise.resolve(null);
+      if (!cbImageCache.has(url)) {
+        cbImageCache.set(url, new Promise((resolve) => {
           const img = new Image();
+          img.crossOrigin = 'anonymous';
           img.onload = () => resolve(img);
           img.onerror = () => resolve(null);
-          img.src = '../images/ceo-signature.png';
-        });
+          img.src = url;
+        }));
       }
-      return cbCertSignaturePromise;
+      return cbImageCache.get(url);
     }
-
-    const CEO_NAME = 'Andrew MUSHOKAMBERE';
-    const CEO_TITLE = 'Chief Executive Officer';
-    const CEO_COMPANY = 'ResearchBridge Consulting Ltd';
 
     async function drawCertificate(canvas, { studentName, courseName, dateStr, certId }) {
       // The decorative frame is a fixed 780px-tall box (unrelated to
@@ -1075,8 +1081,9 @@
         await document.fonts.ready;
       } catch (err) {}
 
-      const logo = await loadCertificateLogo();
-      const signature = await loadCertificateSignature();
+      const settings = await loadCertificateSettings();
+      const logo = await loadCertificateImage(settings.logoUrl);
+      const signature = await loadCertificateImage(settings.signatureUrl);
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
@@ -1121,7 +1128,7 @@
 
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 18px Inter, sans-serif';
-      ctx.fillText('has successfully completed the requirements of the self-paced online course', width / 2, 435);
+      ctx.fillText(settings.credentialWording, width / 2, 435);
 
       ctx.fillStyle = '#1E5EBC';
       ctx.font = '700 32px "Playfair Display", serif';
@@ -1133,7 +1140,7 @@
       // printed separately below.
       ctx.fillStyle = '#5A6A85';
       ctx.font = '600 15px Inter, sans-serif';
-      ctx.fillText(`Self-Paced Online Course  ·  ${COURSE_LEVEL_SPAN} Level`, width / 2, 522);
+      ctx.fillText(`Self-Paced Online Course  ·  ${settings.levelSpan} Level`, width / 2, 522);
 
       // Seal
       ctx.beginPath();
@@ -1177,11 +1184,11 @@
       ctx.fillText('Authorized Signature', width - 120, 695);
       ctx.fillStyle = '#0A1F44';
       ctx.font = 'italic 600 20px "Playfair Display", serif';
-      ctx.fillText(CEO_NAME, width - 120, 719);
+      ctx.fillText(settings.signerName, width - 120, 719);
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 13px Inter, sans-serif';
-      ctx.fillText(CEO_TITLE, width - 120, 739);
-      ctx.fillText(CEO_COMPANY, width - 120, 757);
+      ctx.fillText(settings.signerTitle, width - 120, 739);
+      ctx.fillText(settings.signerCompany, width - 120, 757);
 
       // Verification footer — drawn in its own strip below the frame
       // (outer border bottom edge is at y=800) so it's never squeezed
@@ -1206,7 +1213,8 @@
     // PDF — centered on an A4 landscape page rather than a page sized to
     // the canvas's raw pixel dimensions, which produced an oversized,
     // awkward-to-print ~14x10in page.
-    function buildCertificatePdf(canvas, data) {
+    async function buildCertificatePdf(canvas, data) {
+      const settings = await loadCertificateSettings();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -1257,13 +1265,13 @@
         doc.text(data.studentName, mapX(w / 2), mapY(370), { ...invisible, align: 'center' });
 
         doc.setFontSize(toPt(18));
-        doc.text('has successfully completed the requirements of the self-paced online course', mapX(w / 2), mapY(435), { ...invisible, align: 'center' });
+        doc.text(settings.credentialWording, mapX(w / 2), mapY(435), { ...invisible, align: 'center' });
 
         doc.setFontSize(toPt(32));
         doc.text(data.courseName, mapX(w / 2), mapY(485), { ...invisible, align: 'center' });
 
         doc.setFontSize(toPt(15));
-        doc.text(`Self-Paced Online Course - ${COURSE_LEVEL_SPAN} Level`, mapX(w / 2), mapY(522), { ...invisible, align: 'center' });
+        doc.text(`Self-Paced Online Course - ${settings.levelSpan} Level`, mapX(w / 2), mapY(522), { ...invisible, align: 'center' });
 
         doc.setFontSize(toPt(14));
         doc.text('Date of Completion', mapX(120), mapY(695), { ...invisible, align: 'left' });
@@ -1273,10 +1281,10 @@
         doc.setFontSize(toPt(14));
         doc.text('Authorized Signature', mapX(w - 120), mapY(695), { ...invisible, align: 'right' });
         doc.setFontSize(toPt(20));
-        doc.text(CEO_NAME, mapX(w - 120), mapY(719), { ...invisible, align: 'right' });
+        doc.text(settings.signerName, mapX(w - 120), mapY(719), { ...invisible, align: 'right' });
         doc.setFontSize(toPt(13));
-        doc.text(CEO_TITLE, mapX(w - 120), mapY(739), { ...invisible, align: 'right' });
-        doc.text(CEO_COMPANY, mapX(w - 120), mapY(757), { ...invisible, align: 'right' });
+        doc.text(settings.signerTitle, mapX(w - 120), mapY(739), { ...invisible, align: 'right' });
+        doc.text(settings.signerCompany, mapX(w - 120), mapY(757), { ...invisible, align: 'right' });
 
         doc.setFontSize(toPt(11));
         doc.text('CERTIFICATE ID', mapX(w / 2), mapY(828), { ...invisible, align: 'center' });
@@ -1455,13 +1463,14 @@
           });
 
           const downloadBtn = card.querySelector('.cert-download-btn');
-          downloadBtn.addEventListener('click', () => {
-            buildCertificatePdf(canvas, {
+          downloadBtn.addEventListener('click', async () => {
+            const doc = await buildCertificatePdf(canvas, {
               studentName: userName,
               courseName: courseLabel(e.course_slug),
               dateStr,
               certId: e.id,
-            }).save(`ResearchBridge-Certificate-${e.course_slug}.pdf`);
+            });
+            doc.save(`ResearchBridge-Certificate-${e.course_slug}.pdf`);
           });
 
           const shareRow = card.querySelector('.cert-share-row');

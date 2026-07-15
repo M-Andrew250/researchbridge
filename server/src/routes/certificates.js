@@ -5,6 +5,25 @@ import { sendServerError } from '../lib/errors.js';
 
 export const certificatesRouter = Router();
 
+// GET /api/certificates/settings — the current signer name/title/
+// company, logo, signature, and standard wording used to render
+// every generated certificate (pages/dashboard.html). Public, no
+// auth — any visitor with a certificate needs this to draw it.
+// Admin-editable via pages/admin.html's Certificate tab.
+certificatesRouter.get('/settings', async (req, res) => {
+  const { data, error } = await supabase
+    .from('certificate_settings')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'certificates.settings');
+  }
+
+  res.json(data);
+});
+
 // The certificate ID printed on a certificate is just its enrolment's
 // own uuid — no separate certificates table needed. Reject obviously
 // malformed input before it reaches the database.

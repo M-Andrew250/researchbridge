@@ -230,6 +230,123 @@ adminRouter.patch('/thesis-pricing', async (req, res) => {
   res.json(data);
 });
 
+// GET /api/admin/certificate-settings — the current signer/logo/
+// wording, for the admin dashboard's Certificate tab to pre-fill.
+adminRouter.get('/certificate-settings', async (req, res) => {
+  const { data, error } = await supabase
+    .from('certificate_settings')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.certificateSettings.get');
+  }
+
+  res.json(data);
+});
+
+const CERTIFICATE_SETTINGS_TEXT_FIELDS = [
+  'signer_name', 'signer_title', 'signer_company', 'credential_wording', 'level_span',
+];
+
+// PATCH /api/admin/certificate-settings — update any subset of the
+// text fields (logo_url/signature_url are set only by the upload
+// endpoint below, not editable as raw text).
+adminRouter.patch('/certificate-settings', async (req, res) => {
+  const update = {};
+
+  for (const field of CERTIFICATE_SETTINGS_TEXT_FIELDS) {
+    if (req.body[field] === undefined) continue;
+    const value = String(req.body[field]).trim();
+    if (!value) {
+      return res.status(400).json({ error: `${field} cannot be empty.` });
+    }
+    update[field] = value;
+  }
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ error: 'Nothing to update.' });
+  }
+
+  const { data, error } = await supabase
+    .from('certificate_settings')
+    .update(update)
+    .eq('id', 1)
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.certificateSettings.update');
+  }
+
+  res.json(data);
+});
+
+// ── CERTIFICATE ASSET UPLOADS (logo, signature) ──
+// Public bucket (unlike course-materials) since the certificate is
+// drawn client-side in every visitor's browser and needs to load
+// these images directly, with no per-user access control needed.
+
+const CERT_ASSET_BUCKET = 'site-assets';
+const certAssetUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB — these are small logo/signature images
+  fileFilter: (req, file, cb) => {
+    cb(null, ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(file.mimetype));
+  },
+});
+
+// POST /api/admin/uploads/certificate-asset — multipart form:
+// { file, kind } where kind is "logo" or "signature". Uploads to the
+// public site-assets bucket and immediately saves the resulting
+// public URL onto certificate_settings, so it takes effect right away.
+adminRouter.post('/uploads/certificate-asset', (req, res, next) => {
+  certAssetUpload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: err.code === 'LIMIT_FILE_SIZE' ? 'File is too large (max 5MB).' : 'Could not process the upload.',
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  const { kind } = req.body;
+  if (!req.file) {
+    return res.status(400).json({ error: 'Missing file, or its type/size is not allowed (PNG/JPEG/WebP/SVG, up to 5MB).' });
+  }
+  if (!['logo', 'signature'].includes(kind)) {
+    return res.status(400).json({ error: 'kind must be "logo" or "signature".' });
+  }
+
+  const ext = (req.file.originalname.split('.').pop() || 'png').replace(/[^a-zA-Z0-9]/g, '') || 'png';
+  const path = `certificate/${kind}-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(CERT_ASSET_BUCKET)
+    .upload(path, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+
+  if (uploadError) {
+    return sendServerError(res, uploadError, 'admin.uploads.certificateAsset');
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from(CERT_ASSET_BUCKET).getPublicUrl(path);
+  const column = kind === 'logo' ? 'logo_url' : 'signature_url';
+
+  const { data, error } = await supabase
+    .from('certificate_settings')
+    .update({ [column]: publicUrl })
+    .eq('id', 1)
+    .select()
+    .single();
+
+  if (error) {
+    return sendServerError(res, error, 'admin.uploads.certificateAsset.save');
+  }
+
+  res.status(201).json(data);
+});
+
 const WORKSHOP_STATUSES = ['upcoming', 'closed'];
 const WORKSHOP_REQUIRED_FIELDS = ['course_slug', 'venue', 'start_date', 'trainer_name', 'fee'];
 

@@ -626,6 +626,7 @@
         <button type="button" class="admin-tab" id="tabContent">Course Content</button>
         <button type="button" class="admin-tab" id="tabThesis">Thesis Requests</button>
         <button type="button" class="admin-tab" id="tabThesisPricing">Thesis Pricing</button>
+        <button type="button" class="admin-tab" id="tabCertificate">Certificate</button>
       </div>
 
       <div id="enrolmentsSection">
@@ -1025,6 +1026,66 @@
           </div>
         </form>
       </div>
+
+      <div id="certificateSection" style="display:none;">
+        <form class="admin-form visible" id="certificateAssetsForm" onsubmit="return false;">
+          <h3>Certificate Logo &amp; Signature</h3>
+          <p class="admin-form-note">Shown on every generated course-completion certificate (pages/dashboard.html). Uploading replaces the current image immediately.</p>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label>Logo</label>
+              <img id="certLogoPreview" src="" alt="" style="display:block; width:80px; height:80px; object-fit:contain; margin-bottom:0.6rem; border:1.5px solid var(--border); border-radius:8px; background:#fff;" />
+              <input type="file" id="certLogoInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <button type="button" class="btn-outline" id="certLogoUploadBtn" style="margin-top:0.6rem;">Upload Logo</button>
+              <p id="certLogoStatus" style="font-size:0.82rem; color:var(--muted); margin-top:0.4rem;"></p>
+            </div>
+            <div class="admin-form-field">
+              <label>Signature</label>
+              <img id="certSignaturePreview" src="" alt="" style="display:block; width:150px; height:79px; object-fit:contain; margin-bottom:0.6rem; border:1.5px solid var(--border); border-radius:8px; background:#fff;" />
+              <input type="file" id="certSignatureInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <button type="button" class="btn-outline" id="certSignatureUploadBtn" style="margin-top:0.6rem;">Upload Signature</button>
+              <p id="certSignatureStatus" style="font-size:0.82rem; color:var(--muted); margin-top:0.4rem;"></p>
+            </div>
+          </div>
+        </form>
+
+        <form class="admin-form visible" id="certificateTextForm" style="margin-top:1.5rem;">
+          <h3>Signer &amp; Wording</h3>
+          <p class="admin-form-note">The signer can change over time (a new CEO, a title change) without needing a code deploy.</p>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-field">
+              <label for="certSignerName">Signer Name</label>
+              <input type="text" id="certSignerName" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="certSignerTitle">Signer Title</label>
+              <input type="text" id="certSignerTitle" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="certSignerCompany">Signer Company</label>
+              <input type="text" id="certSignerCompany" required />
+            </div>
+            <div class="admin-form-field">
+              <label for="certLevelSpan">Level Span</label>
+              <input type="text" id="certLevelSpan" required />
+            </div>
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-field" style="grid-column: 1 / -1;">
+              <label for="certCredentialWording">Credential Wording</label>
+              <textarea id="certCredentialWording" rows="2" required></textarea>
+            </div>
+          </div>
+
+          <div class="admin-form-actions">
+            <button type="submit" class="btn-primary" id="certificateSaveBtn">Save</button>
+            <span id="certificateStatus" style="align-self:center; font-size:0.85rem;"></span>
+          </div>
+        </form>
+      </div>
     </section>
 
   </div>
@@ -1059,11 +1120,13 @@
     const tabWorkshops = document.getElementById('tabWorkshops');
     const tabThesis = document.getElementById('tabThesis');
     const tabThesisPricing = document.getElementById('tabThesisPricing');
+    const tabCertificate = document.getElementById('tabCertificate');
     const enrolmentsSection = document.getElementById('enrolmentsSection');
     const messagesSection = document.getElementById('messagesSection');
     const workshopsSection = document.getElementById('workshopsSection');
     const thesisSection = document.getElementById('thesisSection');
     const thesisPricingSection = document.getElementById('thesisPricingSection');
+    const certificateSection = document.getElementById('certificateSection');
     const messagesTableBody = document.getElementById('messagesTableBody');
     const messagesEmptyState = document.getElementById('messagesEmptyState');
     const messagesResultCount = document.getElementById('messagesResultCount');
@@ -1172,6 +1235,7 @@
     let workshopsLoaded = false;
     let thesisLoaded = false;
     let thesisPricingLoaded = false;
+    let certificateSettingsLoaded = false;
 
     Object.entries(courseNames).forEach(([slug, name]) => {
       filterWorkshopCourse.insertAdjacentHTML('beforeend', `<option value="${slug}">${escapeHtml(name)}</option>`);
@@ -1621,6 +1685,136 @@
         thesisPricingStatus.style.color = '#b91c1c';
       }
       thesisPricingSaveBtn.disabled = false;
+    });
+
+    // ── CERTIFICATE SETTINGS ──
+    const certLogoPreview = document.getElementById('certLogoPreview');
+    const certLogoInput = document.getElementById('certLogoInput');
+    const certLogoUploadBtn = document.getElementById('certLogoUploadBtn');
+    const certLogoStatus = document.getElementById('certLogoStatus');
+    const certSignaturePreview = document.getElementById('certSignaturePreview');
+    const certSignatureInput = document.getElementById('certSignatureInput');
+    const certSignatureUploadBtn = document.getElementById('certSignatureUploadBtn');
+    const certSignatureStatus = document.getElementById('certSignatureStatus');
+    const certificateTextForm = document.getElementById('certificateTextForm');
+    const certificateSaveBtn = document.getElementById('certificateSaveBtn');
+    const certificateStatus = document.getElementById('certificateStatus');
+    const certSignerName = document.getElementById('certSignerName');
+    const certSignerTitle = document.getElementById('certSignerTitle');
+    const certSignerCompany = document.getElementById('certSignerCompany');
+    const certLevelSpan = document.getElementById('certLevelSpan');
+    const certCredentialWording = document.getElementById('certCredentialWording');
+
+    function applyCertificateSettings(data) {
+      certSignerName.value = data.signer_name;
+      certSignerTitle.value = data.signer_title;
+      certSignerCompany.value = data.signer_company;
+      certLevelSpan.value = data.level_span;
+      certCredentialWording.value = data.credential_wording;
+      certLogoPreview.src = data.logo_url || '../images/logo.png';
+      certSignaturePreview.src = data.signature_url || '../images/ceo-signature.png';
+    }
+
+    async function loadCertificateSettings() {
+      certificateStatus.textContent = 'Loading…';
+      certificateStatus.style.color = 'var(--muted)';
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/certificate-settings`, { headers: authHeader });
+        if (!res.ok) {
+          certificateStatus.textContent = 'Could not load current settings.';
+          certificateStatus.style.color = '#b91c1c';
+          return;
+        }
+        applyCertificateSettings(await res.json());
+        certificateStatus.textContent = '';
+      } catch (err) {
+        certificateStatus.textContent = 'Could not reach the server.';
+        certificateStatus.style.color = '#b91c1c';
+      }
+    }
+
+    certificateTextForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      certificateSaveBtn.disabled = true;
+      certificateStatus.textContent = 'Saving…';
+      certificateStatus.style.color = 'var(--muted)';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/certificate-settings`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({
+            signer_name: certSignerName.value,
+            signer_title: certSignerTitle.value,
+            signer_company: certSignerCompany.value,
+            level_span: certLevelSpan.value,
+            credential_wording: certCredentialWording.value,
+          }),
+        });
+
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({}));
+          certificateStatus.textContent = error || 'Could not save.';
+          certificateStatus.style.color = '#b91c1c';
+          certificateSaveBtn.disabled = false;
+          return;
+        }
+
+        certificateStatus.textContent = 'Saved ✓';
+        certificateStatus.style.color = '#1a7a4c';
+      } catch (err) {
+        certificateStatus.textContent = 'Could not reach the server.';
+        certificateStatus.style.color = '#b91c1c';
+      }
+      certificateSaveBtn.disabled = false;
+    });
+
+    async function uploadCertificateAsset(kind, file, statusEl, previewEl, button) {
+      if (!file) {
+        statusEl.textContent = 'Choose a file first.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('kind', kind);
+
+      button.disabled = true;
+      statusEl.textContent = 'Uploading…';
+      statusEl.style.color = 'var(--muted)';
+
+      try {
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/admin/uploads/certificate-asset`, {
+          method: 'POST',
+          headers: authHeader,
+          body: formData,
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          statusEl.textContent = data.error || 'Upload failed. Please try again.';
+          statusEl.style.color = '#b91c1c';
+          return;
+        }
+
+        previewEl.src = kind === 'logo' ? data.logo_url : data.signature_url;
+        statusEl.textContent = `Uploaded: ${file.name}`;
+        statusEl.style.color = '#1a7a4c';
+      } catch (err) {
+        statusEl.textContent = 'Could not reach the server.';
+        statusEl.style.color = '#b91c1c';
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    certLogoUploadBtn.addEventListener('click', () => {
+      uploadCertificateAsset('logo', certLogoInput.files[0], certLogoStatus, certLogoPreview, certLogoUploadBtn);
+    });
+
+    certSignatureUploadBtn.addEventListener('click', () => {
+      uploadCertificateAsset('signature', certSignatureInput.files[0], certSignatureStatus, certSignaturePreview, certSignatureUploadBtn);
     });
 
     function renderWorkshopRows(workshops) {
@@ -2665,6 +2859,7 @@
       { tab: tabContent, section: contentSection, onShow: null },
       { tab: tabThesis, section: thesisSection, onShow: () => { if (!thesisLoaded) { thesisLoaded = true; loadThesisRequests(); } } },
       { tab: tabThesisPricing, section: thesisPricingSection, onShow: () => { if (!thesisPricingLoaded) { thesisPricingLoaded = true; loadThesisPricing(); } } },
+      { tab: tabCertificate, section: certificateSection, onShow: () => { if (!certificateSettingsLoaded) { certificateSettingsLoaded = true; loadCertificateSettings(); } } },
     ];
 
     tabs.forEach(({ tab, section, onShow }) => {
