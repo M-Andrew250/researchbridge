@@ -520,6 +520,34 @@
       transform: translateY(-2px);
     }
 
+    .cert-linkedin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      color: #0A66C2;
+      border: 1.5px solid #0A66C2;
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .cert-linkedin-btn:hover {
+      background: #0A66C2;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .cert-linkedin-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .cert-share-label {
       text-align: center;
       font-size: 0.8rem;
@@ -1009,6 +1037,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script src="../js/main.js"></script>
   <script>
     // ── DASHBOARD LOGIC ──
@@ -1060,6 +1089,27 @@
         }));
       }
       return cbImageCache.get(url);
+    }
+
+    // jsPDF's addImage() embeds the source image at its own native
+    // resolution — the logo/signature assets are typically much larger
+    // than the few dozen millimetres they're actually printed at (the
+    // bundled logo alone is a 1254x1254px, ~1.5MB PNG), so embedding
+    // them as-is was most of a certificate's file size. Downscaling to
+    // a size that still looks sharp at this print size first (a canvas
+    // draw + re-encode) keeps the PDF a few hundred KB instead of a few
+    // MB, with no visible quality loss at the size it's actually shown.
+    function shrinkImageForPdf(img, maxDim) {
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      const scale = Math.min(1, maxDim / Math.max(w, h));
+      const outW = Math.max(1, Math.round(w * scale));
+      const outH = Math.max(1, Math.round(h * scale));
+      const c = document.createElement('canvas');
+      c.width = outW;
+      c.height = outH;
+      c.getContext('2d').drawImage(img, 0, 0, outW, outH);
+      return c.toDataURL('image/png');
     }
 
     async function drawCertificate(canvas, { studentName, courseName, dateStr, certId }) {
@@ -1209,90 +1259,184 @@
       ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', width / 2, 872);
     }
 
-    // Wraps a drawn certificate canvas into a printable, letter/A4-scale
-    // PDF — centered on an A4 landscape page rather than a page sized to
-    // the canvas's raw pixel dimensions, which produced an oversized,
-    // awkward-to-print ~14x10in page.
-    async function buildCertificatePdf(canvas, data) {
+    // Builds the certificate as a native, fully vector PDF — real text,
+    // real shapes, no embedded raster snapshot — rather than embedding
+    // a canvas image with an invisible OCR-style text layer glued on
+    // top. That trick worked (the old approach's text was genuinely
+    // selectable/copyable) but produced ~3.5MB files that blur when
+    // printed large; a native PDF is a few hundred KB and stays crisp
+    // at any zoom or print size, and doesn't need the invisible-layer
+    // hack at all since the visible text already is real text. Trade a
+    // custom webfont (Playfair Display/Inter, only ever used for the
+    // on-screen canvas preview) for jsPDF's built-in Times/Helvetica,
+    // which need no embedding and render identically everywhere.
+    async function buildCertificatePdf(data) {
       const settings = await loadCertificateSettings();
+      const logo = await loadCertificateImage(settings.logoUrl);
+      const signature = await loadCertificateImage(settings.signatureUrl);
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 12;
-      const availWidth = pageWidth - margin * 2;
-      const availHeight = pageHeight - margin * 2;
+      const cx = pageWidth / 2;
 
-      const imageRatio = canvas.width / canvas.height;
-      let drawWidth = availWidth;
-      let drawHeight = drawWidth / imageRatio;
-      if (drawHeight > availHeight) {
-        drawHeight = availHeight;
-        drawWidth = drawHeight * imageRatio;
+      const NAVY = [10, 31, 68];
+      const ROYAL = [30, 94, 188];
+      const SKY = [59, 158, 232];
+      const MUTED = [90, 106, 133];
+      const ORANGE = [245, 166, 35];
+
+      // Frame
+      const frameTop = 8, frameBottom = 180, frameLeft = 8, frameRight = pageWidth - 8;
+      doc.setDrawColor(...NAVY);
+      doc.setLineWidth(1.3);
+      doc.rect(frameLeft, frameTop, frameRight - frameLeft, frameBottom - frameTop);
+      doc.setDrawColor(...SKY);
+      doc.setLineWidth(0.5);
+      doc.rect(frameLeft + 4, frameTop + 4, frameRight - frameLeft - 8, frameBottom - frameTop - 8);
+
+      if (logo) {
+        const logoSize = 16;
+        doc.addImage(shrinkImageForPdf(logo, 220), 'PNG', cx - logoSize / 2, 17, logoSize, logoSize);
       }
 
-      const x = (pageWidth - drawWidth) / 2;
-      const y = (pageHeight - drawHeight) / 2;
-      doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, drawWidth, drawHeight);
+      doc.setTextColor(...ROYAL);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(15);
+      doc.text('ResearchBridge Consulting', cx, 41, { align: 'center' });
 
-      // The visible certificate text is baked into that image (so the
-      // custom fonts/border/seal render exactly as designed) — a raster
-      // image alone has no real text in the PDF, so nothing can be
-      // selected, copied, or searched. This overlays the same words as
-      // actual invisible PDF text objects at matching positions, the
-      // same trick used for the hidden text layer under a scanned
-      // document, purely so the certificate's text behaves like text.
-      if (data) {
-        const scale = drawHeight / canvas.height;
-        const toPt = (px) => px * scale * (72 / 25.4);
-        const mapX = (px) => x + px * scale;
-        const mapY = (px) => y + px * scale;
-        const invisible = { renderingMode: 'invisible' };
-        const w = canvas.width;
+      doc.setTextColor(...NAVY);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(29);
+      doc.text('Certificate of Completion', cx, 55, { align: 'center' });
 
-        doc.setFont('times', 'normal');
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text('This certifies that', cx, 67, { align: 'center' });
 
-        doc.setFontSize(toPt(22));
-        doc.text('ResearchBridge Consulting', mapX(w / 2), mapY(155), { ...invisible, align: 'center' });
+      doc.setTextColor(...NAVY);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(23);
+      doc.text(data.studentName, cx, 81, { align: 'center' });
 
-        doc.setFontSize(toPt(46));
-        doc.text('Certificate of Completion', mapX(w / 2), mapY(230), { ...invisible, align: 'center' });
+      const nameWidth = doc.getTextWidth(data.studentName);
+      doc.setDrawColor(...SKY);
+      doc.setLineWidth(0.4);
+      doc.line(cx - nameWidth / 2 - 6, 85, cx + nameWidth / 2 + 6, 85);
 
-        doc.setFontSize(toPt(18));
-        doc.text('This certifies that', mapX(w / 2), mapY(305), { ...invisible, align: 'center' });
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(settings.credentialWording, cx, 95, { align: 'center' });
 
-        doc.setFontSize(toPt(42));
-        doc.text(data.studentName, mapX(w / 2), mapY(370), { ...invisible, align: 'center' });
+      doc.setTextColor(...ROYAL);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(18);
+      doc.text(data.courseName, cx, 108, { align: 'center' });
 
-        doc.setFontSize(toPt(18));
-        doc.text(settings.credentialWording, mapX(w / 2), mapY(435), { ...invisible, align: 'center' });
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(`Self-Paced Online Course - ${settings.levelSpan} Level`, cx, 116, { align: 'center' });
 
-        doc.setFontSize(toPt(32));
-        doc.text(data.courseName, mapX(w / 2), mapY(485), { ...invisible, align: 'center' });
+      // Seal — a plain checkmark rather than an emoji glyph, since
+      // font glyph coverage for emoji isn't reliable across PDF viewers.
+      const sealY = 136, sealR = 9;
+      doc.setFillColor(...ORANGE);
+      doc.circle(cx, sealY, sealR, 'F');
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(1.1);
+      doc.line(cx - 3.5, sealY + 0.5, cx - 0.8, sealY + 3.2);
+      doc.line(cx - 0.8, sealY + 3.2, cx + 4, sealY - 3.5);
 
-        doc.setFontSize(toPt(15));
-        doc.text(`Self-Paced Online Course - ${settings.levelSpan} Level`, mapX(w / 2), mapY(522), { ...invisible, align: 'center' });
+      // Date (left) and signature (right)
+      const lineY = 155;
+      doc.setDrawColor(200, 217, 239);
+      doc.setLineWidth(0.3);
+      doc.line(28, lineY, 78, lineY);
+      doc.line(pageWidth - 78, lineY, pageWidth - 28, lineY);
 
-        doc.setFontSize(toPt(14));
-        doc.text('Date of Completion', mapX(120), mapY(695), { ...invisible, align: 'left' });
-        doc.setFontSize(toPt(17));
-        doc.text(data.dateStr, mapX(120), mapY(717), { ...invisible, align: 'left' });
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('Date of Completion', 28, lineY + 5, { align: 'left' });
+      doc.setTextColor(...NAVY);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(data.dateStr, 28, lineY + 11, { align: 'left' });
 
-        doc.setFontSize(toPt(14));
-        doc.text('Authorized Signature', mapX(w - 120), mapY(695), { ...invisible, align: 'right' });
-        doc.setFontSize(toPt(20));
-        doc.text(settings.signerName, mapX(w - 120), mapY(719), { ...invisible, align: 'right' });
-        doc.setFontSize(toPt(13));
-        doc.text(settings.signerTitle, mapX(w - 120), mapY(739), { ...invisible, align: 'right' });
-        doc.text(settings.signerCompany, mapX(w - 120), mapY(757), { ...invisible, align: 'right' });
-
-        doc.setFontSize(toPt(11));
-        doc.text('CERTIFICATE ID', mapX(w / 2), mapY(828), { ...invisible, align: 'center' });
-        doc.setFontSize(toPt(17));
-        doc.text(data.certId, mapX(w / 2), mapY(850), { ...invisible, align: 'center' });
-        doc.setFontSize(toPt(13));
-        doc.text('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', mapX(w / 2), mapY(872), { ...invisible, align: 'center' });
+      if (signature) {
+        const sigWidth = 32, sigHeight = sigWidth * (358 / 679);
+        doc.addImage(shrinkImageForPdf(signature, 420), 'PNG', pageWidth - 28 - sigWidth, lineY - sigHeight - 3, sigWidth, sigHeight);
       }
+
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('Authorized Signature', pageWidth - 28, lineY + 5, { align: 'right' });
+      doc.setTextColor(...NAVY);
+      doc.setFont('times', 'bolditalic');
+      doc.setFontSize(12);
+      doc.text(settings.signerName, pageWidth - 28, lineY + 11, { align: 'right' });
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(settings.signerTitle, pageWidth - 28, lineY + 15, { align: 'right' });
+      doc.text(settings.signerCompany, pageWidth - 28, lineY + 19, { align: 'right' });
+
+      // Verification footer, below the frame — same as before, the
+      // certificate ID is just this enrolment's own uuid, looked up
+      // as-is by pages/verify-certificate.html.
+      const verifyUrl = `https://researchbridgeconsulting.com/pages/verify-certificate.html?id=${data.certId}`;
+
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.text('CERTIFICATE ID', cx, 188, { align: 'center' });
+
+      doc.setTextColor(...NAVY);
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(10);
+      doc.text(data.certId, cx, 193, { align: 'center' });
+
+      doc.setTextColor(...ROYAL);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', cx, 198, { align: 'center' });
+
+      // QR code — a real link is often faster to trust (and use) than
+      // typing a URL by hand, and it's what most modern certificates
+      // print alongside the plain-text verify link, not instead of it.
+      try {
+        let qrDataUrl = null;
+        if (window.qrcode) {
+          const qr = window.qrcode(0, 'M');
+          qr.addData(verifyUrl);
+          qr.make();
+          qrDataUrl = qr.createDataURL(8, 2);
+        }
+
+        if (qrDataUrl) {
+          const qrSize = 20;
+          doc.addImage(qrDataUrl, 'PNG', frameLeft + 6, frameBottom + 4, qrSize, qrSize);
+          doc.setTextColor(...MUTED);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(6);
+          doc.text('Scan to verify', frameLeft + 6 + qrSize / 2, frameBottom + 4 + qrSize + 3, { align: 'center' });
+        }
+      } catch (err) {}
+
+      // Real PDF document metadata — makes the file itself look like a
+      // properly authored document (visible in any PDF viewer's
+      // Properties panel), not just an unlabeled attachment.
+      doc.setProperties({
+        title: `Certificate of Completion - ${data.courseName} - ${data.studentName}`,
+        subject: `ResearchBridge Consulting certificate of completion for ${data.courseName}`,
+        author: 'ResearchBridge Consulting',
+        keywords: `certificate, ${data.courseName}, ResearchBridge Consulting`,
+        creator: 'ResearchBridge Consulting',
+      });
 
       return doc;
     }
@@ -1427,6 +1571,10 @@
               </div>
               <div class="cert-actions">
                 <button type="button" class="cert-download-btn" data-course="${courseLabel(e.course_slug)}">⬇ Download Certificate</button>
+                <a href="#" target="_blank" rel="noopener" class="cert-linkedin-btn" data-enrolment-id="${e.id}">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  Add to LinkedIn Profile
+                </a>
               </div>
               <p class="cert-share-label">Share your achievement</p>
               <div class="cert-share-row" data-course-slug="${e.course_slug}" data-course-name="${courseLabel(e.course_slug)}"></div>
@@ -1464,7 +1612,7 @@
 
           const downloadBtn = card.querySelector('.cert-download-btn');
           downloadBtn.addEventListener('click', async () => {
-            const doc = await buildCertificatePdf(canvas, {
+            const doc = await buildCertificatePdf({
               studentName: userName,
               courseName: courseLabel(e.course_slug),
               dateStr,
@@ -1472,6 +1620,22 @@
             });
             doc.save(`ResearchBridge-Certificate-${e.course_slug}.pdf`);
           });
+
+          // LinkedIn's documented "Add to Profile" pre-fill URL —
+          // organizationName (rather than organizationId) since that
+          // needs a numeric LinkedIn company-page ID we don't have.
+          const linkedinBtn = card.querySelector('.cert-linkedin-btn');
+          const completedDate = new Date(e.completed_at || e.created_at);
+          const linkedinParams = new URLSearchParams({
+            startTask: 'CERTIFICATION_NAME',
+            name: courseLabel(e.course_slug),
+            organizationName: 'ResearchBridge Consulting',
+            issueYear: String(completedDate.getFullYear()),
+            issueMonth: String(completedDate.getMonth() + 1),
+            certUrl: `${window.location.origin}/pages/verify-certificate.html?id=${e.id}`,
+            certId: e.id,
+          });
+          linkedinBtn.href = `https://www.linkedin.com/profile/add?${linkedinParams.toString()}`;
 
           const shareRow = card.querySelector('.cert-share-row');
           const courseUrl = `${window.location.origin}/pages/courses/${e.course_slug}.html`;
