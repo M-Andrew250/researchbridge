@@ -64,7 +64,7 @@ export async function sendWelcomeEmail({ to, fullName }) {
       <p>You've successfully logged in to your ResearchBridge account. We're glad to have you here.</p>
       <p>From your dashboard you can enrol in courses, track your learning progress, and manage your training applications — all in one place.</p>
       <p style="margin-top:24px;">
-        <a href="${SITE_URL}/pages/dashboard.html" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
+        <a href="${SITE_URL}/pages/dashboard" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">
           Go to My Dashboard
         </a>
       </p>
@@ -88,7 +88,7 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
       <p style="margin:0 0 16px; color:#5A6A85; font-size:14px;">
         ${new Date(nextWorkshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} · ${nextWorkshop.venue}
       </p>
-      <a href="${SITE_URL}/pages/enrol.html?course=${nextWorkshop.courseSlug}&mode=In-Person&workshop=${nextWorkshop.id}" style="background:#3B9EE8; color:#ffffff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+      <a href="${SITE_URL}/pages/enrol?course=${nextWorkshop.courseSlug}&mode=In-Person&workshop=${nextWorkshop.id}" style="background:#3B9EE8; color:#ffffff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
         Reserve Your Seat →
       </a>
     </div>
@@ -109,7 +109,7 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
       </table>
       <p>Our team will review your enrolment and confirm it shortly. You'll be able to see its status any time from your dashboard.</p>
       <p style="margin-top:24px;">
-        <a href="${SITE_URL}/index.html#courses" style="background:#ffffff; color:#1E5EBC; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; border:1.5px solid #3B9EE8; display:inline-block;">
+        <a href="${SITE_URL}/#courses" style="background:#ffffff; color:#1E5EBC; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; border:1.5px solid #3B9EE8; display:inline-block;">
           Explore Other Courses
         </a>
       </p>
@@ -145,7 +145,7 @@ export async function sendMotivationalEmail({ to, firstName, courseName, progres
       <p>Hi ${firstName}, you're currently <strong>${progressPercent}%</strong> of the way through <strong>${courseName}</strong>.</p>
       <p>Every lesson you complete brings you closer to finishing the course. Why not pick up where you left off today?</p>
       <p style="margin-top:24px;">
-        <a href="${SITE_URL}/pages/learn.html?enrolment=${enrolmentId}" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+        <a href="${SITE_URL}/pages/learn?enrolment=${enrolmentId}" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
           Continue Learning
         </a>
       </p>

@@ -296,7 +296,7 @@
 
   <!-- NAVBAR -->
   <nav id="navbar">
-    <a href="../index.html" class="logo">
+    <a href="../" class="logo">
       <img src="../images/logo.png"
            alt="ResearchBridge Consulting"
            class="logo-img" />
@@ -308,8 +308,8 @@
     </button>
     <div class="nav-auth">
       <div class="auth-logged-out" id="authLoggedOut">
-        <a href="login.html" class="auth-btn-login">Log In</a>
-        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+        <a href="login" class="auth-btn-login">Log In</a>
+        <a href="signup" class="auth-btn-signup">Sign Up</a>
       </div>
       <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
         <button type="button" class="account-trigger" id="accountTrigger">
@@ -317,8 +317,8 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
-          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="dashboard"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
+          <a href="profile"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>
       </div>
@@ -329,7 +329,7 @@
   <div class="auth-page">
     <div class="auth-card">
 
-      <a href="../index.html" class="auth-logo">
+      <a href="../" class="auth-logo">
         <img src="../images/logo.png" alt="ResearchBridge" />
         <span class="auth-logo-text">
           Research<span>Bridge</span>
@@ -399,7 +399,7 @@
 
           <div class="auth-checkbox-row">
             <input type="checkbox" id="signupConsent" />
-            <label for="signupConsent">I agree to ResearchBridge's <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
+            <label for="signupConsent">I agree to ResearchBridge's <a href="terms" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
           </div>
 
           <div class="auth-checkbox-row">
@@ -415,7 +415,7 @@
 
           <p class="auth-switch">
             Already have an account?
-            <a href="login.html" id="loginCrossLink">Log In</a>
+            <a href="login" id="loginCrossLink">Log In</a>
           </p>
 
         </div>
@@ -429,7 +429,7 @@
         <strong id="signupSuccessName"></strong>!
         We've sent a confirmation link to your email address.
         Click it to activate your account, then log in below.</p>
-        <a href="login.html" class="auth-submit" id="signupSuccessLoginLink"
+        <a href="login" class="auth-submit" id="signupSuccessLoginLink"
            style="display:block; text-align:center;
                   text-decoration:none; padding:0.9rem;">
           Go to Log In →
@@ -492,8 +492,8 @@
     const redirectTo = new URLSearchParams(window.location.search).get('redirect');
     if (redirectTo) {
       const suffix = `?redirect=${encodeURIComponent(redirectTo)}`;
-      document.getElementById('loginCrossLink').href = `login.html${suffix}`;
-      document.getElementById('signupSuccessLoginLink').href = `login.html${suffix}`;
+      document.getElementById('loginCrossLink').href = `login${suffix}`;
+      document.getElementById('signupSuccessLoginLink').href = `login${suffix}`;
     }
 
     signupSubmit.addEventListener('click', async () => {
@@ -599,7 +599,7 @@
           // session from this URL, so the visitor is already logged
           // in the moment they land here (see main.js's SIGNED_IN
           // handler for what happens next).
-          emailRedirectTo: `${window.location.origin}/index.html`,
+          emailRedirectTo: `${window.location.origin}/`,
         }
       });
 

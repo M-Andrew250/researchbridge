@@ -1,0 +1,44 @@
+# Clean URLs — every page is linked to internally without its .html
+# extension (see pages/*.html), so these rules make that actually work
+# on Netlify: old .html URLs (old bookmarks, search results, anyone
+# who types the extension) 301 to the clean URL so the address bar
+# updates, and the clean URL is then served the real .html file
+# underneath via a 200 rewrite (invisible to the visitor).
+#
+# Order matters — Netlify uses the first matching rule, so the literal
+# "old URL" redirects must come before the catch-all rewrite below,
+# otherwise the rewrite would fire first and double up the extension.
+
+/index.html                          /                                     301
+/pages/about.html                    /pages/about                          301
+/pages/admin.html                    /pages/admin                          301
+/pages/capacity-building.html        /pages/capacity-building              301
+/pages/contact.html                  /pages/contact                        301
+/pages/dashboard.html                /pages/dashboard                      301
+/pages/data-analysis.html            /pages/data-analysis                  301
+/pages/enrol.html                    /pages/enrol                          301
+/pages/enrolment-detail.html         /pages/enrolment-detail               301
+/pages/forgot-password.html          /pages/forgot-password                301
+/pages/learn.html                    /pages/learn                          301
+/pages/login.html                    /pages/login                          301
+/pages/profile.html                  /pages/profile                        301
+/pages/research-design.html          /pages/research-design                301
+/pages/reset-password.html           /pages/reset-password                 301
+/pages/signup.html                   /pages/signup                         301
+/pages/terms.html                    /pages/terms                          301
+/pages/thesis-editing.html           /pages/thesis-editing                 301
+/pages/thesis-request.html           /pages/thesis-request                 301
+/pages/verify-certificate.html       /pages/verify-certificate             301
+/pages/courses/excel.html            /pages/courses/excel                  301
+/pages/courses/kobo.html             /pages/courses/kobo                   301
+/pages/courses/nvivo.html            /pages/courses/nvivo                  301
+/pages/courses/powerbi.html          /pages/courses/powerbi                301
+/pages/courses/python.html           /pages/courses/python                 301
+/pages/courses/r.html                /pages/courses/r                      301
+/pages/courses/spss.html             /pages/courses/spss                   301
+/pages/courses/stata.html            /pages/courses/stata                  301
+
+# Serve the real .html file for every clean URL under /pages/,
+# including nested /pages/courses/* — :splat carries the whole
+# remaining path, so this one rule covers both.
+/pages/*                             /pages/:splat.html                    200

@@ -235,7 +235,7 @@
 
   <!-- NAVBAR -->
   <nav id="navbar">
-    <a href="../index.html" class="logo">
+    <a href="../" class="logo">
       <img src="../images/logo.png"
            alt="ResearchBridge Consulting"
            class="logo-img" />
@@ -247,8 +247,8 @@
     </button>
     <div class="nav-auth">
       <div class="auth-logged-out" id="authLoggedOut">
-        <a href="login.html" class="auth-btn-login">Log In</a>
-        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+        <a href="login" class="auth-btn-login">Log In</a>
+        <a href="signup" class="auth-btn-signup">Sign Up</a>
       </div>
       <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
         <button type="button" class="account-trigger" id="accountTrigger">
@@ -256,8 +256,8 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
-          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="dashboard"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
+          <a href="profile"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>
       </div>
@@ -268,7 +268,7 @@
   <div class="auth-page">
     <div class="auth-card">
 
-      <a href="../index.html" class="auth-logo">
+      <a href="../" class="auth-logo">
         <img src="../images/logo.png" alt="ResearchBridge" />
         <span class="auth-logo-text">
           Research<span>Bridge</span>
@@ -300,7 +300,7 @@
                 Remember me
               </label>
               <div class="forgot-link">
-                <a href="forgot-password.html">Forgot password?</a>
+                <a href="forgot-password">Forgot password?</a>
               </div>
             </div>
           </div>
@@ -313,7 +313,7 @@
 
           <p class="auth-switch">
             Don't have an account?
-            <a href="signup.html" id="signupCrossLink">Sign Up</a>
+            <a href="signup" id="signupCrossLink">Sign Up</a>
           </p>
 
         </div>
@@ -392,7 +392,7 @@
       loginSuccess.classList.add('visible');
 
       setTimeout(() => {
-        window.location.href = redirectTo || '../index.html';
+        window.location.href = redirectTo || '../';
       }, 1500);
     });
   </script>

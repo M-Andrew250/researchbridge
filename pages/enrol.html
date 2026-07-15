@@ -252,7 +252,7 @@
 
   <!-- NAVBAR -->
   <nav id="navbar">
-    <a href="../index.html" class="logo">
+    <a href="../" class="logo">
       <img src="../images/logo.png"
            alt="ResearchBridge Consulting"
            class="logo-img" />
@@ -262,18 +262,18 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
-      <li><a href="about.html">About</a></li>
-      <li><a href="../index.html#services">Services</a></li>
-      <li><a href="../index.html#courses">Courses</a></li>
-      <li><a href="contact.html" class="nav-cta">Contact Us</a></li>
+      <li><a href="about">About</a></li>
+      <li><a href="../#services">Services</a></li>
+      <li><a href="../#courses">Courses</a></li>
+      <li><a href="contact" class="nav-cta">Contact Us</a></li>
       <li class="nav-mobile-auth">
         <div class="nav-mobile-auth-loggedout">
-          <a href="login.html">Log In</a>
-          <a href="signup.html" class="nav-mobile-signup">Sign Up</a>
+          <a href="login">Log In</a>
+          <a href="signup" class="nav-mobile-signup">Sign Up</a>
         </div>
         <div class="nav-mobile-auth-loggedin" style="display:none;">
-          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
-          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="dashboard"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
+          <a href="profile"><span>👤</span> Profile</a>
           <a href="#" class="nav-mobile-logout"><span>🚪</span> Log Out</a>
         </div>
       </li>
@@ -285,8 +285,8 @@
     </button>
     <div class="nav-auth" id="navAuth">
       <div class="auth-logged-out" id="authLoggedOut">
-        <a href="login.html" class="auth-btn-login">Log In</a>
-        <a href="signup.html" class="auth-btn-signup">Sign Up</a>
+        <a href="login" class="auth-btn-login">Log In</a>
+        <a href="signup" class="auth-btn-signup">Sign Up</a>
       </div>
       <div class="auth-logged-in account-dropdown" id="authLoggedIn" style="display:none;">
         <button type="button" class="account-trigger" id="accountTrigger">
@@ -294,8 +294,8 @@
           <span class="dropdown-arrow">›</span>
         </button>
         <div class="nav-dropdown" id="accountMenu">
-          <a href="dashboard.html"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
-          <a href="profile.html"><span>👤</span> Profile</a>
+          <a href="dashboard"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Dashboard</a>
+          <a href="profile"><span>👤</span> Profile</a>
           <a href="#" id="authLogout"><span>🚪</span> Log Out</a>
         </div>
       </div>
@@ -305,7 +305,7 @@
   <!-- HERO -->
   <section class="enrol-hero">
     <div class="breadcrumb" style="justify-content:center; margin-bottom:1.5rem;">
-      <a href="../index.html" style="color:rgba(255,255,255,0.6)">Home</a>
+      <a href="../" style="color:rgba(255,255,255,0.6)">Home</a>
       <span style="color:rgba(255,255,255,0.3)">›</span>
       <span style="color:var(--sky); font-weight:600;">Enrolment</span>
     </div>
@@ -396,7 +396,7 @@
                 Online courses need an account so we can track your
                 learning progress. Please log in or create one to continue.
               </p>
-              <a href="login.html" id="onlineLoginLink" class="btn-primary" style="display:inline-block; padding:0.6rem 1.2rem; font-size:0.85rem;">
+              <a href="login" id="onlineLoginLink" class="btn-primary" style="display:inline-block; padding:0.6rem 1.2rem; font-size:0.85rem;">
                 Log In to Continue →
               </a>
             </div>
@@ -431,7 +431,7 @@
 
           <div class="auth-checkbox-row">
             <input type="checkbox" id="enrolConsent" />
-            <label for="enrolConsent">I agree to ResearchBridge's <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
+            <label for="enrolConsent">I agree to ResearchBridge's <a href="terms" target="_blank" rel="noopener">Terms &amp; Privacy</a> policy. *</label>
           </div>
 
           <div class="auth-checkbox-row">
@@ -463,11 +463,11 @@
         <p id="successRedirectNote" style="display:none; color:var(--muted); font-size:0.85rem;">
           Taking you to your dashboard…
         </p>
-        <a href="login.html?redirect=dashboard.html" id="successLoginLink"
+        <a href="login?redirect=dashboard" id="successLoginLink"
            class="btn-primary" style="display:none; margin-bottom:0.8rem;">
           Log In to Track Your Training Preparations →
         </a>
-        <a href="../index.html#courses" class="btn-primary">
+        <a href="../#courses" class="btn-primary">
           Explore More Courses
         </a>
       </div>
@@ -479,7 +479,7 @@
   <footer>
     <div class="footer-top">
       <div class="footer-brand">
-        <a href="../index.html" class="logo">
+        <a href="../" class="logo">
           <img src="../images/logo.png"
                alt="ResearchBridge Consulting"
                class="logo-img" />
@@ -505,10 +505,10 @@
       <div class="footer-links">
         <p class="footer-heading">Quick Links</p>
         <ul>
-          <li><a href="about.html">About</a></li>
-          <li><a href="../index.html#services">Services</a></li>
-          <li><a href="../index.html#courses">Courses</a></li>
-          <li><a href="contact.html">Contact</a></li>
+          <li><a href="about">About</a></li>
+          <li><a href="../#services">Services</a></li>
+          <li><a href="../#courses">Courses</a></li>
+          <li><a href="contact">Contact</a></li>
         </ul>
       </div>
       <div class="footer-links">
@@ -698,7 +698,7 @@
     // as every other login-gated link on the site — so if the visitor
     // was mid-way through applying for a specific course, logging in
     // brings them right back to it instead of a blank enrolment form.
-    onlineLoginLink.href = `login.html?redirect=${encodeURIComponent(window.location.pathname.split('/').pop() + window.location.search)}`;
+    onlineLoginLink.href = `login?redirect=${encodeURIComponent(window.location.pathname.split('/').pop() + window.location.search)}`;
 
     // ── ENROLMENT FORM LOGIC ──
     const enrolFormWrap = document.getElementById('enrolFormWrap');
@@ -796,7 +796,7 @@
       if (!response.ok) {
         const { error, existingEnrolmentId } = await response.json().catch(() => ({}));
         if (existingEnrolmentId) {
-          enrolError.innerHTML = `${error} <a href="enrolment-detail.html?id=${existingEnrolmentId}" style="color:inherit; text-decoration:underline; font-weight:600;">Click here to go to your course dashboard.</a>`;
+          enrolError.innerHTML = `${error} <a href="enrolment-detail?id=${existingEnrolmentId}" style="color:inherit; text-decoration:underline; font-weight:600;">Click here to go to your course dashboard.</a>`;
         } else {
           enrolError.textContent = error || 'Something went wrong. Please try again.';
         }
@@ -825,7 +825,7 @@
       if (session) {
         document.getElementById('successRedirectNote').style.display = 'block';
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          window.location.href = 'dashboard';
         }, 1800);
       } else {
         document.getElementById('successLoginLink').style.display = 'inline-block';

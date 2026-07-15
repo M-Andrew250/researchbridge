@@ -203,16 +203,13 @@ async function drawCertificate(canvas, { studentName, courseName, dateStr, certI
   ctx.moveTo(width - 320, lineY);
   ctx.lineTo(width - 120, lineY);
   ctx.stroke();
-  ctx.fillStyle = '#5A6A85';
-  ctx.font = '400 14px Inter, sans-serif';
-  ctx.fillText('Authorized Signature', width - 120, lineY + 20);
   ctx.fillStyle = '#0A1F44';
   ctx.font = 'italic 600 20px "Playfair Display", serif';
-  ctx.fillText(settings.signerName, width - 120, lineY + 44);
+  ctx.fillText(settings.signerName, width - 120, lineY + 24);
   ctx.fillStyle = '#5A6A85';
   ctx.font = '400 13px Inter, sans-serif';
-  ctx.fillText(settings.signerTitle, width - 120, lineY + 64);
-  ctx.fillText(settings.signerCompany, width - 120, lineY + 82);
+  ctx.fillText(settings.signerTitle, width - 120, lineY + 44);
+  ctx.fillText(settings.signerCompany, width - 120, lineY + 62);
 
   // Verification footer — drawn in its own strip below the frame,
   // positioned off the frame's own (possibly wrapped-taller) bottom
@@ -220,18 +217,18 @@ async function drawCertificate(canvas, { studentName, courseName, dateStr, certI
   // enrolment's own uuid, looked up as-is by
   // pages/verify-certificate.html via GET /api/certificates/verify/:id.
   const footerLabelY = frameHeight + 48;
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'right';
   ctx.fillStyle = '#5A6A85';
   ctx.font = '600 11px Inter, sans-serif';
-  ctx.fillText('CERTIFICATE ID', width / 2, footerLabelY);
+  ctx.fillText('CERTIFICATE ID', width - 40, footerLabelY);
 
   ctx.fillStyle = '#0A1F44';
   ctx.font = '600 17px "Courier New", monospace';
-  ctx.fillText(certId, width / 2, footerLabelY + 22);
+  ctx.fillText(certId, width - 40, footerLabelY + 22);
 
   ctx.fillStyle = '#1E5EBC';
   ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', width / 2, footerLabelY + 44);
+  ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate', width - 40, footerLabelY + 44);
 }
 
 window.RBCCertificate = { drawCertificate, loadCertificateSettings, loadCertificateImage };

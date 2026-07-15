@@ -1,12 +1,20 @@
 User-agent: *
 Allow: /
+Disallow: /pages/login
 Disallow: /pages/login.html
+Disallow: /pages/signup
 Disallow: /pages/signup.html
+Disallow: /pages/forgot-password
 Disallow: /pages/forgot-password.html
+Disallow: /pages/reset-password
 Disallow: /pages/reset-password.html
+Disallow: /pages/dashboard
 Disallow: /pages/dashboard.html
+Disallow: /pages/enrol
 Disallow: /pages/enrol.html
+Disallow: /pages/enrolment-detail
 Disallow: /pages/enrolment-detail.html
+Disallow: /pages/learn
 Disallow: /pages/learn.html
 
 # Update this to the real domain once deployed (see docs/ARCHITECTURE.md §10).
