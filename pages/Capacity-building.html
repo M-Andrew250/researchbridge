@@ -32,6 +32,300 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/service-page.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
+
+  <style>
+    /* ── SPLIT HERO ──
+       Left: the usual navy hero copy, left-aligned instead of
+       centered. Right: a white half with a blurred illustrated
+       backdrop (no real photo — see conversation) and a "scattered"
+       cloud of course chips that float gently and, on hover/tap,
+       expand to show that course's next in-person training plus a
+       CTA to take it online instead. */
+    .cb-hero {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      align-items: stretch;
+      background:
+        radial-gradient(ellipse at top, rgba(59, 158, 232, 0.18), transparent 60%),
+        linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+    }
+
+    .cb-hero-text {
+      padding: 90px 6% 70px 5%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .cb-hero-text .service-hero-icon {
+      margin: 0 0 1.2rem 0;
+    }
+
+    .cb-hero-text h1 {
+      color: var(--on-dark);
+      text-align: left;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+
+    .cb-hero-text p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.05rem;
+      text-align: left;
+      max-width: 560px;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .cb-hero-text .hero-cta-row,
+    .cb-hero-text .hero-badges {
+      justify-content: flex-start;
+    }
+
+    .cb-hero-visual {
+      position: relative;
+      background: var(--surface);
+      overflow: hidden;
+      min-height: 460px;
+    }
+
+    .cb-hero-illustration {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sky);
+      opacity: 0.28;
+      filter: blur(7px);
+    }
+
+    .cb-hero-illustration svg {
+      width: 62%;
+      height: 62%;
+    }
+
+    .cb-cloud-caption {
+      position: absolute;
+      top: 14px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      z-index: 1;
+    }
+
+    .cb-course-cloud {
+      position: absolute;
+      inset: 0;
+    }
+
+    .cb-course-chip {
+      position: absolute;
+      top: var(--y);
+      left: var(--x);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      box-shadow: 0 8px 22px rgba(10, 31, 68, 0.12);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--heading);
+      white-space: nowrap;
+      cursor: pointer;
+      z-index: 2;
+      animation: cbFloat var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .cb-course-chip img {
+      width: 1.15em;
+      height: 1.15em;
+      object-fit: contain;
+    }
+
+    .cb-course-chip:hover,
+    .cb-course-chip.active {
+      animation-play-state: paused;
+      border-color: var(--royal);
+      box-shadow: 0 14px 34px rgba(10, 31, 68, 0.24);
+      z-index: 20;
+    }
+
+    @keyframes cbFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cb-course-chip {
+        animation: none;
+      }
+    }
+
+    .cb-chip-panel {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, 6px) scale(0.95);
+      transform-origin: top center;
+      margin-top: 0.6rem;
+      background: var(--surface);
+      border: 1.5px solid var(--royal);
+      border-top: 3px solid var(--royal);
+      border-radius: 12px;
+      padding: 1rem;
+      min-width: 230px;
+      box-shadow: 0 16px 40px rgba(10, 31, 68, 0.28);
+      opacity: 0;
+      pointer-events: none;
+      white-space: normal;
+      text-align: left;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .cb-course-chip:hover .cb-chip-panel,
+    .cb-course-chip.active .cb-chip-panel {
+      opacity: 1;
+      pointer-events: all;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    /* Chips scattered near an edge would otherwise open a panel that
+       gets clipped by .cb-hero-visual's overflow:hidden — anchor the
+       panel to whichever side/edge of the chip has room instead. */
+    .cb-course-chip.edge-left .cb-chip-panel {
+      left: 0;
+      transform: scale(0.95);
+      transform-origin: top left;
+    }
+
+    .cb-course-chip.edge-left:hover .cb-chip-panel,
+    .cb-course-chip.edge-left.active .cb-chip-panel {
+      transform: scale(1);
+    }
+
+    .cb-course-chip.edge-right .cb-chip-panel {
+      left: auto;
+      right: 0;
+      transform: scale(0.95);
+      transform-origin: top right;
+    }
+
+    .cb-course-chip.edge-right:hover .cb-chip-panel,
+    .cb-course-chip.edge-right.active .cb-chip-panel {
+      transform: scale(1);
+    }
+
+    .cb-course-chip.edge-bottom .cb-chip-panel {
+      top: auto;
+      bottom: 100%;
+      margin-top: 0;
+      margin-bottom: 0.6rem;
+      transform-origin: bottom center;
+    }
+
+    .cb-course-chip.edge-bottom:hover .cb-chip-panel,
+    .cb-course-chip.edge-bottom.active .cb-chip-panel {
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .cb-course-chip.edge-bottom.edge-left .cb-chip-panel {
+      transform-origin: bottom left;
+    }
+
+    .cb-course-chip.edge-bottom.edge-left:hover .cb-chip-panel,
+    .cb-course-chip.edge-bottom.edge-left.active .cb-chip-panel {
+      transform: scale(1);
+    }
+
+    .cb-chip-loading,
+    .cb-chip-empty {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 0.6rem;
+    }
+
+    .cb-chip-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--royal);
+      margin: 0 0 0.2rem;
+    }
+
+    .cb-chip-date {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--heading);
+      margin: 0 0 0.8rem;
+    }
+
+    .cb-chip-online-btn {
+      display: block;
+      text-align: center;
+      background: var(--royal);
+      color: var(--on-dark);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.55rem 0.8rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .cb-chip-online-btn:hover {
+      background: var(--navy);
+    }
+
+    @media (max-width: 900px) {
+      .cb-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .cb-hero-visual {
+        min-height: 360px;
+      }
+
+      .cb-course-cloud {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        padding: 3rem 1.2rem 1.5rem;
+      }
+
+      .cb-course-chip {
+        position: static;
+        animation: none;
+      }
+
+      .cb-chip-panel {
+        position: fixed;
+        top: auto;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        transform: translateY(12px) scale(0.98);
+        margin-top: 0;
+        width: auto;
+      }
+
+      .cb-course-chip:hover .cb-chip-panel,
+      .cb-course-chip.active .cb-chip-panel {
+        transform: translateY(0) scale(1);
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -181,8 +475,8 @@
 
 
   <!-- HERO -->
-  <section class="service-hero">
-    <div class="service-hero-content">
+  <section class="cb-hero">
+    <div class="cb-hero-text">
       <a href="../index.html#services" class="back-link">← Back to Services</a>
       <div class="service-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></div>
       <h1>Capacity Building &amp; Training</h1>
@@ -200,6 +494,73 @@
         <span class="hero-badge">📁 Training Materials Included</span>
         <span class="hero-badge">🏅 Certificate of Completion</span>
         <span class="hero-badge">🌍 Online or In-Person Delivery</span>
+      </div>
+    </div>
+
+    <div class="cb-hero-visual">
+      <div class="cb-hero-illustration" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3Z"/><path d="M5 13.18v4.34c0 .3.15.58.4.75C6.5 19.14 8.9 20.5 12 20.5s5.5-1.36 6.6-2.23c.25-.17.4-.45.4-.75v-4.34l-7 3.82-7-3.82Z"/></svg>
+      </div>
+
+      <p class="cb-cloud-caption">Tap or hover a tool to see its next in-person training</p>
+
+      <div class="cb-course-cloud" id="cbCourseCloud">
+        <div class="cb-course-chip edge-left" data-slug="excel" style="--x:6%; --y:8%; --delay:0s; --dur:6.5s;">
+          <img src="../images/excel.png" alt="" /><span>Excel</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip" data-slug="python" style="--x:38%; --y:4%; --delay:0.6s; --dur:7.2s;">
+          <img src="../images/python-logo.svg" alt="" /><span>Python</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip edge-right" data-slug="stata" style="--x:72%; --y:12%; --delay:1.1s; --dur:5.8s;">
+          <img src="../images/stata-logo.png" alt="" /><span>Stata</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip edge-left" data-slug="spss" style="--x:16%; --y:42%; --delay:1.6s; --dur:6.8s;">
+          <img src="../images/spss-logo.png" alt="" /><span>SPSS</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip" data-slug="r" style="--x:50%; --y:46%; --delay:0.3s; --dur:6.2s;">
+          <img src="../images/r-logo.svg" alt="" /><span>R</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip edge-right" data-slug="nvivo" style="--x:82%; --y:40%; --delay:0.9s; --dur:7.5s;">
+          <img src="../images/nvivo-logo.jpg" alt="" /><span>NVivo</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip edge-left edge-bottom" data-slug="powerbi" style="--x:8%; --y:74%; --delay:1.4s; --dur:6.6s;">
+          <img src="../images/powerbi-logo.svg" alt="" /><span>Power BI</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
+        <div class="cb-course-chip edge-bottom" data-slug="kobo" style="--x:46%; --y:76%; --delay:0.2s; --dur:5.6s;">
+          <img src="../images/kobo-logo.png" alt="" /><span>KoBoToolbox</span>
+          <div class="cb-chip-panel">
+            <div class="cb-chip-training" data-training><p class="cb-chip-loading">Loading…</p></div>
+            <a href="#" class="cb-chip-online-btn" data-online-cta>Take This Course Online →</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -398,5 +759,72 @@
   </footer>
 
   <script src="../js/main.js"></script>
+  <script>
+    // ── HERO COURSE CLOUD ──
+    // Each floating chip shows that course's next in-person training
+    // (same /api/workshops?course= lookup the homepage course cards
+    // use) plus a CTA straight into the online enrolment flow.
+    (async () => {
+      const supabase = await window.rbcSupabaseReady;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      function goTo(directPath, loginRedirectPath) {
+        if (session) {
+          window.location.href = directPath;
+        } else {
+          window.location.href = `login.html?redirect=${encodeURIComponent(loginRedirectPath)}`;
+        }
+      }
+
+      const chips = document.querySelectorAll('.cb-course-chip');
+      chips.forEach(async (chip) => {
+        const slug = chip.dataset.slug;
+        const trainingEl = chip.querySelector('[data-training]');
+        const onlineCta = chip.querySelector('[data-online-cta]');
+
+        onlineCta.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const enrolQuery = `course=${slug}&mode=Online`;
+          goTo(`enrol.html?${enrolQuery}`, `enrol.html?${enrolQuery}`);
+        });
+
+        // Tap-to-toggle for touch devices, which have no :hover —
+        // also closes any other open chip first.
+        chip.addEventListener('click', (e) => {
+          if (e.target.closest('[data-online-cta]')) return;
+          const wasActive = chip.classList.contains('active');
+          chips.forEach((c) => c.classList.remove('active'));
+          if (!wasActive) chip.classList.add('active');
+        });
+
+        try {
+          const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${slug}`);
+          const workshops = res.ok ? await res.json() : [];
+          const next = workshops[0];
+
+          if (!next) {
+            trainingEl.innerHTML = '<p class="cb-chip-empty">No in-person training scheduled yet.</p>';
+          } else {
+            const dateLabel = new Date(next.start_date).toLocaleDateString(undefined, {
+              year: 'numeric', month: 'short', day: 'numeric',
+            });
+            trainingEl.innerHTML = `
+              <p class="cb-chip-label">Next In-Person</p>
+              <p class="cb-chip-date">${dateLabel} · ${next.venue}</p>
+            `;
+          }
+        } catch (err) {
+          trainingEl.innerHTML = '<p class="cb-chip-empty">Could not load training dates.</p>';
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.cb-course-chip')) {
+          chips.forEach((c) => c.classList.remove('active'));
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
