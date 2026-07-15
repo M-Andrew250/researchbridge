@@ -32,6 +32,35 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/service-page.css" />
   <link rel="icon" type="image/png" href="../images/logo.png" />
+
+  <style>
+    /* This page's hero only — .service-hero itself is shared by
+       several other pages and stays navy there. */
+    .contact-hero {
+      background: var(--light-bg);
+    }
+
+    .contact-hero .back-link {
+      color: var(--muted);
+    }
+
+    .contact-hero .back-link:hover {
+      color: var(--royal);
+    }
+
+    .contact-hero .service-hero-icon {
+      background: rgba(30, 94, 188, 0.08);
+      border-color: rgba(30, 94, 188, 0.18);
+    }
+
+    .contact-hero h1 {
+      color: var(--heading);
+    }
+
+    .contact-hero p {
+      color: var(--muted);
+    }
+  </style>
 </head>
 <body>
 
@@ -174,7 +203,7 @@
   </nav>
 
   <!-- HERO -->
-  <section class="service-hero">
+  <section class="service-hero contact-hero">
     <div class="service-hero-content">
       <a href="../index.html" class="back-link">← Back to Home</a>
       <div class="service-hero-icon">✉️</div>

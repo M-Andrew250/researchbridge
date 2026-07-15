@@ -1015,15 +1015,53 @@
     const dashboardLocked = document.getElementById('dashboardLocked');
     const dashboardContent = document.getElementById('dashboardContent');
 
+    // Every course's stated level span (pages/courses/*.html hero
+    // "Level" stat) is the same across all 8 courses — printed on the
+    // certificate alongside the real completion date, rather than a
+    // fixed duration figure, since these are self-paced (no single
+    // "N weeks" honestly applies to every learner's own pace).
+    const COURSE_LEVEL_SPAN = 'Beginner to Advanced';
+
     // Draws a certificate onto the given canvas — used both for the
     // on-screen preview and as the source for the downloaded PNG
     // (same canvas, so what you see is exactly what you download).
+    // Loaded once and reused for every certificate drawn on the page.
+    let cbCertLogoPromise = null;
+    function loadCertificateLogo() {
+      if (!cbCertLogoPromise) {
+        cbCertLogoPromise = new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = '../images/logo.png';
+        });
+      }
+      return cbCertLogoPromise;
+    }
+
+    let cbCertSignaturePromise = null;
+    function loadCertificateSignature() {
+      if (!cbCertSignaturePromise) {
+        cbCertSignaturePromise = new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = '../images/ceo-signature.png';
+        });
+      }
+      return cbCertSignaturePromise;
+    }
+
+    const CEO_NAME = 'Andrew MUSHOKAMBERE';
+    const CEO_TITLE = 'Chief Executive Officer';
+    const CEO_COMPANY = 'ResearchBridge Consulting Ltd';
+
     async function drawCertificate(canvas, { studentName, courseName, dateStr, certId }) {
-      // The decorative frame is a fixed 660px-tall box (unrelated to
+      // The decorative frame is a fixed 780px-tall box (unrelated to
       // the canvas's own height) so the verification footer below can
       // get its own dedicated strip of space instead of being squeezed
       // onto/past the frame's own border lines.
-      const width = 1000, height = 760, frameHeight = 660;
+      const width = 1000, height = 900, frameHeight = 780;
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
@@ -1036,6 +1074,9 @@
         ]);
         await document.fonts.ready;
       } catch (err) {}
+
+      const logo = await loadCertificateLogo();
+      const signature = await loadCertificateSignature();
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
@@ -1050,98 +1091,122 @@
 
       ctx.textAlign = 'center';
 
+      if (logo) {
+        ctx.drawImage(logo, width / 2 - 35, 50, 70, 70);
+      }
+
       ctx.fillStyle = '#1E5EBC';
       ctx.font = '700 22px "Playfair Display", serif';
-      ctx.fillText('ResearchBridge Consulting', width / 2, 100);
+      ctx.fillText('ResearchBridge Consulting', width / 2, 155);
 
       ctx.fillStyle = '#0A1F44';
       ctx.font = '700 46px "Playfair Display", serif';
-      ctx.fillText('Certificate of Completion', width / 2, 175);
+      ctx.fillText('Certificate of Completion', width / 2, 230);
 
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 18px Inter, sans-serif';
-      ctx.fillText('This certifies that', width / 2, 250);
+      ctx.fillText('This certifies that', width / 2, 305);
 
       ctx.fillStyle = '#0A1F44';
       ctx.font = '700 42px "Playfair Display", serif';
-      ctx.fillText(studentName, width / 2, 315);
+      ctx.fillText(studentName, width / 2, 370);
 
       const nameWidth = ctx.measureText(studentName).width;
       ctx.strokeStyle = '#3B9EE8';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(width / 2 - nameWidth / 2 - 20, 335);
-      ctx.lineTo(width / 2 + nameWidth / 2 + 20, 335);
+      ctx.moveTo(width / 2 - nameWidth / 2 - 20, 390);
+      ctx.lineTo(width / 2 + nameWidth / 2 + 20, 390);
       ctx.stroke();
 
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 18px Inter, sans-serif';
-      ctx.fillText('has successfully completed the online course', width / 2, 380);
+      ctx.fillText('has successfully completed the requirements of the self-paced online course', width / 2, 435);
 
       ctx.fillStyle = '#1E5EBC';
       ctx.font = '700 32px "Playfair Display", serif';
-      ctx.fillText(courseName, width / 2, 430);
+      ctx.fillText(courseName, width / 2, 485);
+
+      // Standardised credential attributes — format and level are the
+      // same honest statement for every course; the exact completion
+      // date (not a fixed duration, since this is self-paced) is
+      // printed separately below.
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '600 15px Inter, sans-serif';
+      ctx.fillText(`Self-Paced Online Course  ·  ${COURSE_LEVEL_SPAN} Level`, width / 2, 522);
 
       // Seal
       ctx.beginPath();
-      ctx.arc(width / 2, 495, 38, 0, Math.PI * 2);
+      ctx.arc(width / 2, 595, 38, 0, Math.PI * 2);
       ctx.fillStyle = '#F5A623';
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = '30px sans-serif';
-      ctx.fillText('🎓', width / 2, 507);
+      ctx.fillText('🎓', width / 2, 607);
 
       // Date (left) and signature (right)
       ctx.textAlign = 'left';
       ctx.strokeStyle = '#C8D9EF';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(120, 580);
-      ctx.lineTo(320, 580);
+      ctx.moveTo(120, 675);
+      ctx.lineTo(320, 675);
       ctx.stroke();
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 14px Inter, sans-serif';
-      ctx.fillText('Date of Completion', 120, 600);
+      ctx.fillText('Date of Completion', 120, 695);
       ctx.fillStyle = '#0A1F44';
       ctx.font = '600 17px Inter, sans-serif';
-      ctx.fillText(dateStr, 120, 622);
+      ctx.fillText(dateStr, 120, 717);
 
       ctx.textAlign = 'right';
+
+      // CEO's real signature, drawn just above the rule — sized to
+      // its own aspect ratio (679x358) rather than stretched.
+      if (signature) {
+        const sigWidth = 150, sigHeight = sigWidth * (358 / 679);
+        ctx.drawImage(signature, width - 120 - sigWidth, 675 - sigHeight - 10, sigWidth, sigHeight);
+      }
+
       ctx.beginPath();
-      ctx.moveTo(width - 320, 580);
-      ctx.lineTo(width - 120, 580);
+      ctx.moveTo(width - 320, 675);
+      ctx.lineTo(width - 120, 675);
       ctx.stroke();
       ctx.fillStyle = '#5A6A85';
       ctx.font = '400 14px Inter, sans-serif';
-      ctx.fillText('Authorized Signature', width - 120, 600);
+      ctx.fillText('Authorized Signature', width - 120, 695);
       ctx.fillStyle = '#0A1F44';
       ctx.font = 'italic 600 20px "Playfair Display", serif';
-      ctx.fillText('ResearchBridge Consulting', width - 120, 624);
+      ctx.fillText(CEO_NAME, width - 120, 719);
+      ctx.fillStyle = '#5A6A85';
+      ctx.font = '400 13px Inter, sans-serif';
+      ctx.fillText(CEO_TITLE, width - 120, 739);
+      ctx.fillText(CEO_COMPANY, width - 120, 757);
 
       // Verification footer — drawn in its own strip below the frame
-      // (outer border bottom edge is at y=680) so it's never squeezed
+      // (outer border bottom edge is at y=800) so it's never squeezed
       // against or crossing the border lines. The certificate ID is
       // just this enrolment's own uuid, looked up as-is by
       // pages/verify-certificate.html via GET /api/certificates/verify/:id.
       ctx.textAlign = 'center';
       ctx.fillStyle = '#5A6A85';
       ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillText('CERTIFICATE ID', width / 2, 708);
+      ctx.fillText('CERTIFICATE ID', width / 2, 828);
 
       ctx.fillStyle = '#0A1F44';
       ctx.font = '600 17px "Courier New", monospace';
-      ctx.fillText(certId, width / 2, 730);
+      ctx.fillText(certId, width / 2, 850);
 
       ctx.fillStyle = '#1E5EBC';
       ctx.font = '600 13px Inter, sans-serif';
-      ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', width / 2, 752);
+      ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', width / 2, 872);
     }
 
     // Wraps a drawn certificate canvas into a printable, letter/A4-scale
     // PDF — centered on an A4 landscape page rather than a page sized to
     // the canvas's raw pixel dimensions, which produced an oversized,
     // awkward-to-print ~14x10in page.
-    function buildCertificatePdf(canvas) {
+    function buildCertificatePdf(canvas, data) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -1161,6 +1226,66 @@
       const x = (pageWidth - drawWidth) / 2;
       const y = (pageHeight - drawHeight) / 2;
       doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, drawWidth, drawHeight);
+
+      // The visible certificate text is baked into that image (so the
+      // custom fonts/border/seal render exactly as designed) — a raster
+      // image alone has no real text in the PDF, so nothing can be
+      // selected, copied, or searched. This overlays the same words as
+      // actual invisible PDF text objects at matching positions, the
+      // same trick used for the hidden text layer under a scanned
+      // document, purely so the certificate's text behaves like text.
+      if (data) {
+        const scale = drawHeight / canvas.height;
+        const toPt = (px) => px * scale * (72 / 25.4);
+        const mapX = (px) => x + px * scale;
+        const mapY = (px) => y + px * scale;
+        const invisible = { renderingMode: 'invisible' };
+        const w = canvas.width;
+
+        doc.setFont('times', 'normal');
+
+        doc.setFontSize(toPt(22));
+        doc.text('ResearchBridge Consulting', mapX(w / 2), mapY(155), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(46));
+        doc.text('Certificate of Completion', mapX(w / 2), mapY(230), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(18));
+        doc.text('This certifies that', mapX(w / 2), mapY(305), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(42));
+        doc.text(data.studentName, mapX(w / 2), mapY(370), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(18));
+        doc.text('has successfully completed the requirements of the self-paced online course', mapX(w / 2), mapY(435), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(32));
+        doc.text(data.courseName, mapX(w / 2), mapY(485), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(15));
+        doc.text(`Self-Paced Online Course - ${COURSE_LEVEL_SPAN} Level`, mapX(w / 2), mapY(522), { ...invisible, align: 'center' });
+
+        doc.setFontSize(toPt(14));
+        doc.text('Date of Completion', mapX(120), mapY(695), { ...invisible, align: 'left' });
+        doc.setFontSize(toPt(17));
+        doc.text(data.dateStr, mapX(120), mapY(717), { ...invisible, align: 'left' });
+
+        doc.setFontSize(toPt(14));
+        doc.text('Authorized Signature', mapX(w - 120), mapY(695), { ...invisible, align: 'right' });
+        doc.setFontSize(toPt(20));
+        doc.text(CEO_NAME, mapX(w - 120), mapY(719), { ...invisible, align: 'right' });
+        doc.setFontSize(toPt(13));
+        doc.text(CEO_TITLE, mapX(w - 120), mapY(739), { ...invisible, align: 'right' });
+        doc.text(CEO_COMPANY, mapX(w - 120), mapY(757), { ...invisible, align: 'right' });
+
+        doc.setFontSize(toPt(11));
+        doc.text('CERTIFICATE ID', mapX(w / 2), mapY(828), { ...invisible, align: 'center' });
+        doc.setFontSize(toPt(17));
+        doc.text(data.certId, mapX(w / 2), mapY(850), { ...invisible, align: 'center' });
+        doc.setFontSize(toPt(13));
+        doc.text('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', mapX(w / 2), mapY(872), { ...invisible, align: 'center' });
+      }
+
       return doc;
     }
 
@@ -1331,7 +1456,12 @@
 
           const downloadBtn = card.querySelector('.cert-download-btn');
           downloadBtn.addEventListener('click', () => {
-            buildCertificatePdf(canvas).save(`ResearchBridge-Certificate-${e.course_slug}.pdf`);
+            buildCertificatePdf(canvas, {
+              studentName: userName,
+              courseName: courseLabel(e.course_slug),
+              dateStr,
+              certId: e.id,
+            }).save(`ResearchBridge-Certificate-${e.course_slug}.pdf`);
           });
 
           const shareRow = card.querySelector('.cert-share-row');

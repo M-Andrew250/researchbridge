@@ -52,6 +52,25 @@
       background-position: center 30%;
     }
 
+    /* The same drifting-nodes network graph used behind the homepage
+       hero, layered directly on top of the photo — the gradient
+       overlay above it does double duty, fading both the photo and
+       these dots from solid navy on the left to clear on the right. */
+    .cb-hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    @media (max-width: 768px) {
+      /* Skip the animation on small screens to save battery/CPU. */
+      .cb-hero-canvas {
+        display: none;
+      }
+    }
+
     /* Full-bleed photo behind the hero, dark and solid on the left
        (where the text needs contrast) fading to clear on the right
        (where the photo and the course chips floating over it should
@@ -491,6 +510,7 @@
 
   <!-- HERO -->
   <section class="cb-hero">
+    <canvas class="cb-hero-canvas" id="cbHeroCanvas" aria-hidden="true"></canvas>
     <div class="cb-hero-overlay" aria-hidden="true"></div>
     <div class="cb-hero-text">
       <a href="../index.html#services" class="back-link">← Back to Services</a>
@@ -771,6 +791,98 @@
   </footer>
 
   <script src="../js/main.js"></script>
+  <script>
+    // ── HERO NETWORK GRAPH ──
+    // Same drifting-nodes canvas as the homepage hero (see index.html)
+    // — duplicated here since each page is a standalone static file —
+    // layered behind the gradient overlay and photo so it fades from
+    // solid navy on the left to visible on the right along with them.
+    (function () {
+      const canvas = document.getElementById('cbHeroCanvas');
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const LINK_DIST = 190;
+      let width = 0, height = 0, dpr = 1;
+      let nodes = [];
+      let rafId = null;
+
+      function seedNodes() {
+        const count = Math.max(24, Math.min(60, Math.round((width * height) / 22000)));
+        nodes = Array.from({ length: count }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.18,
+          vy: (Math.random() - 0.5) * 0.18,
+          r: 1.4 + Math.random() * 1.8,
+        }));
+      }
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        seedNodes();
+      }
+
+      function step() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (const n of nodes) {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > width) n.vx *= -1;
+          if (n.y < 0 || n.y > height) n.vy *= -1;
+        }
+
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > LINK_DIST) continue;
+            ctx.strokeStyle = `rgba(130, 195, 250, ${0.55 * (1 - dist / LINK_DIST)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+
+        for (const n of nodes) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(200, 230, 255, 0.85)';
+          ctx.fill();
+        }
+
+        if (!reduceMotion) rafId = requestAnimationFrame(step);
+      }
+
+      resize();
+      step();
+
+      window.addEventListener('resize', () => {
+        cancelAnimationFrame(rafId);
+        resize();
+        step();
+      }, { passive: true });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(rafId);
+        } else if (!reduceMotion) {
+          step();
+        }
+      });
+    })();
+  </script>
   <script>
     // ── HERO COURSE CLOUD ──
     // Each floating chip shows that course's next in-person training

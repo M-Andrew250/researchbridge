@@ -21,16 +21,17 @@ window.rbcApiBaseUrl = ['localhost', '127.0.0.1'].includes(window.location.hostn
 
 // ── AUTH SESSION STORAGE ("Remember Me") ──
 // Supabase persists the session (access + refresh token) in whatever
-// storage we hand it. To support a "Remember me" checkbox on the login
-// page, this adapter picks the backend at read/write time based on a
-// flag: unchecked -> sessionStorage (wiped when the browser closes),
-// checked (or not set yet, e.g. an already-logged-in visitor before this
-// feature existed) -> localStorage (survives closing the browser).
+// storage we hand it. Default is session-only (sessionStorage, wiped
+// when the browser/tab closes) so closing the tab logs you out — the
+// "Remember me" checkbox on the login page is the one explicit way to
+// opt into a session that survives closing the browser (localStorage).
+// Any flow that never calls rbcSetRememberMe (signup, etc.) falls back
+// to the safer session-only default rather than silently persisting.
 const RBC_REMEMBER_KEY = 'rbc-remember-me';
 const RBC_AUTH_TOKEN_KEY = 'sb-ztrokpqlinqezmnicrpi-auth-token';
 
 function rbcPreferredStorage() {
-  return localStorage.getItem(RBC_REMEMBER_KEY) === 'false' ? window.sessionStorage : window.localStorage;
+  return localStorage.getItem(RBC_REMEMBER_KEY) === 'true' ? window.localStorage : window.sessionStorage;
 }
 
 // Called by the login page right before signing in, based on the
