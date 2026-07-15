@@ -42,15 +42,34 @@
        expand to show that course's next in-person training plus a
        CTA to take it online instead. */
     .cb-hero {
+      position: relative;
       display: grid;
       grid-template-columns: 1.05fr 1fr;
       align-items: stretch;
-      background:
-        radial-gradient(ellipse at top, rgba(59, 158, 232, 0.18), transparent 60%),
-        linear-gradient(135deg, var(--navy) 0%, #0d2d5e 60%, #163a75 100%);
+      overflow: hidden;
+      background-image: url('../images/capacity-building-hero.jpg');
+      background-size: cover;
+      background-position: center 30%;
+    }
+
+    /* Full-bleed photo behind the hero, dark and solid on the left
+       (where the text needs contrast) fading to clear on the right
+       (where the photo and the course chips floating over it should
+       actually be visible). */
+    .cb-hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(to right,
+        rgba(10, 31, 68, 0.96) 0%,
+        rgba(10, 31, 68, 0.92) 30%,
+        rgba(10, 31, 68, 0.55) 60%,
+        rgba(10, 31, 68, 0.2) 100%);
     }
 
     .cb-hero-text {
+      position: relative;
+      z-index: 1;
       padding: 90px 6% 70px 5%;
       display: flex;
       flex-direction: column;
@@ -85,25 +104,9 @@
 
     .cb-hero-visual {
       position: relative;
-      background: var(--surface);
+      z-index: 1;
       overflow: hidden;
       min-height: 460px;
-    }
-
-    .cb-hero-illustration {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--sky);
-      opacity: 0.28;
-      filter: blur(7px);
-    }
-
-    .cb-hero-illustration svg {
-      width: 62%;
-      height: 62%;
     }
 
     .cb-cloud-caption {
@@ -114,7 +117,8 @@
       text-align: center;
       font-size: 0.76rem;
       font-weight: 600;
-      color: var(--muted);
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 1px 6px rgba(10, 31, 68, 0.6);
       letter-spacing: 0.02em;
       z-index: 1;
     }
@@ -290,6 +294,17 @@
     @media (max-width: 900px) {
       .cb-hero {
         grid-template-columns: 1fr;
+      }
+
+      /* Stacked on mobile, so the fade needs to run top-to-bottom
+         (solid behind the text up top, clearer behind the chips
+         below) instead of left-to-right. */
+      .cb-hero-overlay {
+        background: linear-gradient(to bottom,
+          rgba(10, 31, 68, 0.96) 0%,
+          rgba(10, 31, 68, 0.92) 35%,
+          rgba(10, 31, 68, 0.55) 65%,
+          rgba(10, 31, 68, 0.25) 100%);
       }
 
       .cb-hero-visual {
@@ -476,6 +491,7 @@
 
   <!-- HERO -->
   <section class="cb-hero">
+    <div class="cb-hero-overlay" aria-hidden="true"></div>
     <div class="cb-hero-text">
       <a href="../index.html#services" class="back-link">← Back to Services</a>
       <div class="service-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg></div>
@@ -498,10 +514,6 @@
     </div>
 
     <div class="cb-hero-visual">
-      <div class="cb-hero-illustration" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3Z"/><path d="M5 13.18v4.34c0 .3.15.58.4.75C6.5 19.14 8.9 20.5 12 20.5s5.5-1.36 6.6-2.23c.25-.17.4-.45.4-.75v-4.34l-7 3.82-7-3.82Z"/></svg>
-      </div>
-
       <p class="cb-cloud-caption">Tap or hover a tool to see its next in-person training</p>
 
       <div class="cb-course-cloud" id="cbCourseCloud">
