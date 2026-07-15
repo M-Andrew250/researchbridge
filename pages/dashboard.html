@@ -1039,57 +1039,16 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script src="../js/main.js"></script>
+  <script src="../js/certificate-render.js"></script>
   <script>
     // ── DASHBOARD LOGIC ──
     const dashboardLocked = document.getElementById('dashboardLocked');
     const dashboardContent = document.getElementById('dashboardContent');
 
-    // Signer name/title/company, logo, signature, and standard wording
-    // are admin-editable (pages/admin.html's Certificate tab) rather
-    // than hardcoded — a signer or logo can change without a code
-    // deploy. Fetched once and reused for every certificate drawn on
-    // this page load; falls back to today's real values if the
-    // settings endpoint is ever unreachable, so certificates still
-    // generate correctly either way.
-    let cbCertSettingsPromise = null;
-    function loadCertificateSettings() {
-      if (!cbCertSettingsPromise) {
-        cbCertSettingsPromise = fetch(`${window.rbcApiBaseUrl}/api/certificates/settings`)
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null)
-          .then((data) => ({
-            signerName: data?.signer_name || 'Andrew MUSHOKAMBERE',
-            signerTitle: data?.signer_title || 'Chief Executive Officer',
-            signerCompany: data?.signer_company || 'ResearchBridge Consulting Ltd',
-            logoUrl: data?.logo_url || '../images/logo.png',
-            signatureUrl: data?.signature_url || '../images/ceo-signature.png',
-            credentialWording: data?.credential_wording || 'has successfully completed the requirements of the self-paced online course',
-            levelSpan: data?.level_span || 'Beginner to Advanced',
-          }));
-      }
-      return cbCertSettingsPromise;
-    }
-
-    // Cached by URL rather than a fixed path, since the logo/signature
-    // may now point at an admin-uploaded Supabase Storage URL instead
-    // of the bundled default image. crossOrigin is set defensively for
-    // that cross-origin case — without it, drawing a cross-origin
-    // image onto the canvas would "taint" it and toDataURL()/toBlob()
-    // (used for the PDF and the share image) would throw.
-    const cbImageCache = new Map();
-    function loadCertificateImage(url) {
-      if (!url) return Promise.resolve(null);
-      if (!cbImageCache.has(url)) {
-        cbImageCache.set(url, new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = url;
-        }));
-      }
-      return cbImageCache.get(url);
-    }
+    // Settings/image loading and the on-screen canvas preview itself
+    // live in js/certificate-render.js, shared with
+    // pages/verify-certificate.html so both draw an identical certificate.
+    const { drawCertificate, loadCertificateSettings, loadCertificateImage } = window.RBCCertificate;
 
     // jsPDF's addImage() embeds the source image at its own native
     // resolution — the logo/signature assets are typically much larger
@@ -1110,153 +1069,6 @@
       c.height = outH;
       c.getContext('2d').drawImage(img, 0, 0, outW, outH);
       return c.toDataURL('image/png');
-    }
-
-    async function drawCertificate(canvas, { studentName, courseName, dateStr, certId }) {
-      // The decorative frame is a fixed 780px-tall box (unrelated to
-      // the canvas's own height) so the verification footer below can
-      // get its own dedicated strip of space instead of being squeezed
-      // onto/past the frame's own border lines.
-      const width = 1000, height = 900, frameHeight = 780;
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-
-      try {
-        await Promise.all([
-          document.fonts.load('700 46px "Playfair Display"'),
-          document.fonts.load('700 22px "Playfair Display"'),
-          document.fonts.load('italic 600 20px "Playfair Display"'),
-        ]);
-        await document.fonts.ready;
-      } catch (err) {}
-
-      const settings = await loadCertificateSettings();
-      const logo = await loadCertificateImage(settings.logoUrl);
-      const signature = await loadCertificateImage(settings.signatureUrl);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.strokeStyle = '#0A1F44';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(20, 20, width - 40, frameHeight);
-
-      ctx.strokeStyle = '#3B9EE8';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(34, 34, width - 68, frameHeight - 28);
-
-      ctx.textAlign = 'center';
-
-      if (logo) {
-        ctx.drawImage(logo, width / 2 - 35, 50, 70, 70);
-      }
-
-      ctx.fillStyle = '#1E5EBC';
-      ctx.font = '700 22px "Playfair Display", serif';
-      ctx.fillText('ResearchBridge Consulting', width / 2, 155);
-
-      ctx.fillStyle = '#0A1F44';
-      ctx.font = '700 46px "Playfair Display", serif';
-      ctx.fillText('Certificate of Completion', width / 2, 230);
-
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '400 18px Inter, sans-serif';
-      ctx.fillText('This certifies that', width / 2, 305);
-
-      ctx.fillStyle = '#0A1F44';
-      ctx.font = '700 42px "Playfair Display", serif';
-      ctx.fillText(studentName, width / 2, 370);
-
-      const nameWidth = ctx.measureText(studentName).width;
-      ctx.strokeStyle = '#3B9EE8';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(width / 2 - nameWidth / 2 - 20, 390);
-      ctx.lineTo(width / 2 + nameWidth / 2 + 20, 390);
-      ctx.stroke();
-
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '400 18px Inter, sans-serif';
-      ctx.fillText(settings.credentialWording, width / 2, 435);
-
-      ctx.fillStyle = '#1E5EBC';
-      ctx.font = '700 32px "Playfair Display", serif';
-      ctx.fillText(courseName, width / 2, 485);
-
-      // Standardised credential attributes — format and level are the
-      // same honest statement for every course; the exact completion
-      // date (not a fixed duration, since this is self-paced) is
-      // printed separately below.
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '600 15px Inter, sans-serif';
-      ctx.fillText(`Self-Paced Online Course  ·  ${settings.levelSpan} Level`, width / 2, 522);
-
-      // Seal
-      ctx.beginPath();
-      ctx.arc(width / 2, 595, 38, 0, Math.PI * 2);
-      ctx.fillStyle = '#F5A623';
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '30px sans-serif';
-      ctx.fillText('🎓', width / 2, 607);
-
-      // Date (left) and signature (right)
-      ctx.textAlign = 'left';
-      ctx.strokeStyle = '#C8D9EF';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(120, 675);
-      ctx.lineTo(320, 675);
-      ctx.stroke();
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '400 14px Inter, sans-serif';
-      ctx.fillText('Date of Completion', 120, 695);
-      ctx.fillStyle = '#0A1F44';
-      ctx.font = '600 17px Inter, sans-serif';
-      ctx.fillText(dateStr, 120, 717);
-
-      ctx.textAlign = 'right';
-
-      // CEO's real signature, drawn just above the rule — sized to
-      // its own aspect ratio (679x358) rather than stretched.
-      if (signature) {
-        const sigWidth = 150, sigHeight = sigWidth * (358 / 679);
-        ctx.drawImage(signature, width - 120 - sigWidth, 675 - sigHeight - 10, sigWidth, sigHeight);
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(width - 320, 675);
-      ctx.lineTo(width - 120, 675);
-      ctx.stroke();
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '400 14px Inter, sans-serif';
-      ctx.fillText('Authorized Signature', width - 120, 695);
-      ctx.fillStyle = '#0A1F44';
-      ctx.font = 'italic 600 20px "Playfair Display", serif';
-      ctx.fillText(settings.signerName, width - 120, 719);
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '400 13px Inter, sans-serif';
-      ctx.fillText(settings.signerTitle, width - 120, 739);
-      ctx.fillText(settings.signerCompany, width - 120, 757);
-
-      // Verification footer — drawn in its own strip below the frame
-      // (outer border bottom edge is at y=800) so it's never squeezed
-      // against or crossing the border lines. The certificate ID is
-      // just this enrolment's own uuid, looked up as-is by
-      // pages/verify-certificate.html via GET /api/certificates/verify/:id.
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#5A6A85';
-      ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillText('CERTIFICATE ID', width / 2, 828);
-
-      ctx.fillStyle = '#0A1F44';
-      ctx.font = '600 17px "Courier New", monospace';
-      ctx.fillText(certId, width / 2, 850);
-
-      ctx.fillStyle = '#1E5EBC';
-      ctx.font = '600 13px Inter, sans-serif';
-      ctx.fillText('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', width / 2, 872);
     }
 
     // Builds the certificate as a native, fully vector PDF — real text,
@@ -1284,10 +1096,23 @@
       const ROYAL = [30, 94, 188];
       const SKY = [59, 158, 232];
       const MUTED = [90, 106, 133];
-      const ORANGE = [245, 166, 35];
+
+      // Measured up front (not drawn yet) so the frame and every
+      // element below the wording can be sized to fit it — the wording
+      // is admin-editable free text (pages/admin.html's Certificate
+      // tab), and a long sentence needs more than one line. Wrapped
+      // wide (80% of the page) so an ordinary sentence rarely needs
+      // more than one line; the shift this causes below is capped
+      // since the page itself (A4, 210mm tall) can't grow to fit an
+      // arbitrarily long paragraph.
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const wordingLines = doc.splitTextToSize(settings.credentialWording, pageWidth * 0.8);
+      const wordingLineHeight = 5.5;
+      const extra = Math.min((wordingLines.length - 1) * wordingLineHeight, 8);
 
       // Frame
-      const frameTop = 8, frameBottom = 180, frameLeft = 8, frameRight = pageWidth - 8;
+      const frameTop = 8, frameBottom = 180 + extra, frameLeft = 8, frameRight = pageWidth - 8;
       doc.setDrawColor(...NAVY);
       doc.setLineWidth(1.3);
       doc.rect(frameLeft, frameTop, frameRight - frameLeft, frameBottom - frameTop);
@@ -1325,33 +1150,32 @@
       doc.setLineWidth(0.4);
       doc.line(cx - nameWidth / 2 - 6, 85, cx + nameWidth / 2 + 6, 85);
 
+      // Word-wrapped rather than a single doc.text() call — the
+      // wording is admin-editable free text (pages/admin.html's
+      // Certificate tab), and a long sentence would otherwise print as
+      // one unbroken line running off the edge of the page. Line count
+      // (and the resulting `extra` offset) was already measured above.
       doc.setTextColor(...MUTED);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
-      doc.text(settings.credentialWording, cx, 95, { align: 'center' });
+      wordingLines.forEach((line, i) => {
+        doc.text(line, cx, 95 + i * wordingLineHeight, { align: 'center' });
+      });
 
       doc.setTextColor(...ROYAL);
       doc.setFont('times', 'bold');
       doc.setFontSize(18);
-      doc.text(data.courseName, cx, 108, { align: 'center' });
+      const courseNameY = 108 + extra;
+      doc.text(data.courseName, cx, courseNameY, { align: 'center' });
 
       doc.setTextColor(...MUTED);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.text(`Self-Paced Online Course - ${settings.levelSpan} Level`, cx, 116, { align: 'center' });
-
-      // Seal — a plain checkmark rather than an emoji glyph, since
-      // font glyph coverage for emoji isn't reliable across PDF viewers.
-      const sealY = 136, sealR = 9;
-      doc.setFillColor(...ORANGE);
-      doc.circle(cx, sealY, sealR, 'F');
-      doc.setDrawColor(255, 255, 255);
-      doc.setLineWidth(1.1);
-      doc.line(cx - 3.5, sealY + 0.5, cx - 0.8, sealY + 3.2);
-      doc.line(cx - 0.8, sealY + 3.2, cx + 4, sealY - 3.5);
+      const attrY = 116 + extra;
+      doc.text(`Self-Paced Online Course - ${settings.levelSpan} Level`, cx, attrY, { align: 'center' });
 
       // Date (left) and signature (right)
-      const lineY = 155;
+      const lineY = attrY + 39;
       doc.setDrawColor(200, 217, 239);
       doc.setLineWidth(0.3);
       doc.line(28, lineY, 78, lineY);
@@ -1393,17 +1217,17 @@
       doc.setTextColor(...MUTED);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
-      doc.text('CERTIFICATE ID', cx, 188, { align: 'center' });
+      doc.text('CERTIFICATE ID', cx, frameBottom + 6, { align: 'center' });
 
       doc.setTextColor(...NAVY);
       doc.setFont('courier', 'bold');
       doc.setFontSize(10);
-      doc.text(data.certId, cx, 193, { align: 'center' });
+      doc.text(data.certId, cx, frameBottom + 10, { align: 'center' });
 
       doc.setTextColor(...ROYAL);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
-      doc.text('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', cx, 198, { align: 'center' });
+      doc.text('Verify at researchbridgeconsulting.com/pages/verify-certificate.html', cx, frameBottom + 14, { align: 'center' });
 
       // QR code — a real link is often faster to trust (and use) than
       // typing a URL by hand, and it's what most modern certificates
@@ -1418,12 +1242,12 @@
         }
 
         if (qrDataUrl) {
-          const qrSize = 20;
-          doc.addImage(qrDataUrl, 'PNG', frameLeft + 6, frameBottom + 4, qrSize, qrSize);
+          const qrSize = 15;
+          doc.addImage(qrDataUrl, 'PNG', frameLeft + 6, frameBottom + 3, qrSize, qrSize);
           doc.setTextColor(...MUTED);
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(6);
-          doc.text('Scan to verify', frameLeft + 6 + qrSize / 2, frameBottom + 4 + qrSize + 3, { align: 'center' });
+          doc.text('Scan to verify', frameLeft + 6 + qrSize / 2, frameBottom + 3 + qrSize + 3, { align: 'center' });
         }
       } catch (err) {}
 

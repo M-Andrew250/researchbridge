@@ -34,14 +34,101 @@
   <link rel="icon" type="image/png" href="../images/logo.png" />
 
   <style>
+    .verify-layout {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
     .verify-box {
       max-width: 560px;
-      margin: 0 auto;
+      flex: 1 1 480px;
       background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: 16px;
       padding: 2.2rem;
       box-shadow: 0 4px 32px rgba(10, 31, 68, 0.08);
+    }
+
+    .verify-cert-preview {
+      display: none;
+      flex: 1 1 420px;
+      max-width: 480px;
+      min-width: 280px;
+    }
+
+    .verify-cert-preview.visible {
+      display: block;
+    }
+
+    .verify-cert-preview-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
+
+    .verify-cert-preview-canvas-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(10, 31, 68, 0.15);
+    }
+
+    .verify-cert-preview-canvas-wrap canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .verify-cta {
+      max-width: 1080px;
+      margin: 2.5rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .verify-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .verify-cta-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .verify-cta-btn-primary {
+      background: var(--royal);
+      color: var(--on-dark);
+    }
+
+    .verify-cta-btn-primary:hover {
+      box-shadow: 0 8px 24px rgba(30, 94, 188, 0.35);
+    }
+
+    .verify-cta-btn-secondary {
+      background: transparent;
+      color: var(--royal);
+      border: 1.5px solid var(--royal);
+    }
+
+    .verify-cta-btn-secondary:hover {
+      box-shadow: 0 8px 24px rgba(30, 94, 188, 0.18);
     }
 
     .verify-box label {
@@ -295,13 +382,27 @@
 
   <!-- VERIFY -->
   <section id="verify">
-    <div class="verify-box">
-      <label for="certIdInput">Certificate ID</label>
-      <div class="verify-input-row">
-        <input type="text" id="certIdInput" placeholder="e.g. 3f2a1b9c-4d5e-4f6a-8b7c-9d0e1f2a3b4c" autocomplete="off" spellcheck="false" />
-        <button type="button" id="verifyBtn" class="btn-primary">Verify</button>
+    <div class="verify-layout">
+      <div class="verify-box">
+        <label for="certIdInput">Certificate ID</label>
+        <div class="verify-input-row">
+          <input type="text" id="certIdInput" placeholder="e.g. 3f2a1b9c-4d5e-4f6a-8b7c-9d0e1f2a3b4c" autocomplete="off" spellcheck="false" />
+          <button type="button" id="verifyBtn" class="btn-primary">Verify</button>
+        </div>
+        <div id="verifyResult"></div>
       </div>
-      <div id="verifyResult"></div>
+
+      <div class="verify-cert-preview" id="verifyCertPreview">
+        <p class="verify-cert-preview-label">Certificate Preview</p>
+        <div class="verify-cert-preview-canvas-wrap">
+          <canvas id="verifyCertCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="verify-cta">
+      <a href="capacity-building.html" class="verify-cta-btn verify-cta-btn-primary">Explore Courses →</a>
+      <a href="../index.html#services" class="verify-cta-btn verify-cta-btn-secondary">Explore Services →</a>
     </div>
   </section>
 
@@ -358,11 +459,14 @@
   <a href="https://wa.me/250781878576?text=Hello%20ResearchBridge%2C%20I%20have%20a%20question." class="whatsapp-btn" target="_blank" rel="noopener" title="Chat with us on WhatsApp"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
 
   <script src="../js/main.js"></script>
+  <script src="../js/certificate-render.js"></script>
   <script>
     // ── CERTIFICATE VERIFICATION ──
     const certIdInput = document.getElementById('certIdInput');
     const verifyBtn = document.getElementById('verifyBtn');
     const verifyResult = document.getElementById('verifyResult');
+    const verifyCertPreview = document.getElementById('verifyCertPreview');
+    const verifyCertCanvas = document.getElementById('verifyCertCanvas');
 
     function escapeHtml(str) {
       const div = document.createElement('div');
@@ -372,6 +476,7 @@
 
     async function verifyCertificate(id) {
       verifyResult.innerHTML = '<p class="verify-loading">Checking…</p>';
+      verifyCertPreview.classList.remove('visible');
 
       let data;
       try {
@@ -399,6 +504,14 @@
             <div class="verify-result-detail"><span>Course</span><strong>${escapeHtml(data.courseName)}</strong></div>
             <div class="verify-result-detail"><span>Completed</span><strong>${dateLabel}</strong></div>
           </div>`;
+
+        verifyCertPreview.classList.add('visible');
+        await window.RBCCertificate.drawCertificate(verifyCertCanvas, {
+          studentName: data.studentName,
+          courseName: data.courseName,
+          dateStr: dateLabel,
+          certId: id,
+        });
       } else {
         verifyResult.innerHTML = `
           <div class="verify-result verify-result-invalid">
