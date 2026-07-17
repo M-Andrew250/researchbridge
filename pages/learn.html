@@ -30,6 +30,24 @@
       flex-wrap: wrap;
     }
 
+    .learn-breadcrumb {
+      margin-bottom: 0.6rem;
+    }
+
+    .learn-breadcrumb a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .learn-breadcrumb a:hover {
+      color: var(--sky);
+    }
+
     .learn-hero-text h1 {
       color: var(--on-dark);
       font-size: 1.5rem;
@@ -526,6 +544,9 @@
 
     <div class="learn-hero">
       <div class="learn-hero-text">
+        <div class="learn-breadcrumb">
+          <a href="dashboard">← Back to Dashboard</a>
+        </div>
         <h1 id="learnCourseName">Loading…</h1>
         <p id="learnCourseMeta">—</p>
       </div>
