@@ -306,8 +306,13 @@ if (heroVideo) {
 
 
 
-// ── HIDE FIXED BUTTONS WHILE SCROLLING ON MOBILE ──
-if (window.innerWidth <= 768) {
+// ── HIDE FIXED BUTTONS WHILE SCROLLING ──
+// Runs at every width, not just mobile — the WhatsApp button (fixed
+// to the viewport) ends up sitting on top of whatever content
+// scrolls underneath its corner on any screen size, not just small
+// ones. .sticky-enrol only reacts to .scrolling inside a mobile media
+// query in course-page.css, so this is a no-op for it on desktop.
+{
   const fixedButtons = document.querySelectorAll(
     '.whatsapp-btn, .sticky-enrol'
   );

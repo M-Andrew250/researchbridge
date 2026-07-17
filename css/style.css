@@ -2320,6 +2320,18 @@ footer {
   transform: translateY(0);
 }
 
+/* Add "stagger-grid" to a card grid/row and "reveal" to each direct-
+   child card inside it — they fade up in a left-to-right cascade
+   instead of the whole row appearing in one flat step. Delay is
+   capped at the 6th card so a long grid doesn't leave later cards
+   waiting almost a full second before they start animating. */
+.stagger-grid > .reveal:nth-child(1) { transition-delay: 0s; }
+.stagger-grid > .reveal:nth-child(2) { transition-delay: 0.08s; }
+.stagger-grid > .reveal:nth-child(3) { transition-delay: 0.16s; }
+.stagger-grid > .reveal:nth-child(4) { transition-delay: 0.24s; }
+.stagger-grid > .reveal:nth-child(5) { transition-delay: 0.32s; }
+.stagger-grid > .reveal:nth-child(n+6) { transition-delay: 0.4s; }
+
 
 /* ───────────────────────────────────────────────────────────────────────
    13. FLOATING UI
@@ -2342,7 +2354,20 @@ footer {
   font-size: 1.6rem;
   box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
   z-index: 999;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.25s;
+}
+
+/* Being fixed to the viewport, this button ends up sitting on top of
+   whatever content happens to scroll underneath its corner (hero
+   stats, pull-quotes, form fields — all seen in practice). main.js
+   toggles .scrolling on it while a scroll gesture is in progress;
+   fading it out for that moment (and restoring it once scrolling
+   settles) keeps it from obscuring text without hiding it outright.
+   Course pages already had a mobile-only version of this in
+   course-page.css — this applies it everywhere, at any width. */
+.whatsapp-btn.scrolling {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .whatsapp-btn svg {
