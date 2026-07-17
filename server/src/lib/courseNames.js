@@ -2,7 +2,7 @@
 // pages (enrol.html, dashboard.html, etc.) — kept here too since the
 // backend needs course display names for email content.
 export const courseNames = {
-  excel: 'Excel for Data & Analysis',
+  excel: 'Excel for Professionals',
   python: 'Python for Data Science',
   stata: 'Stata for Econometrics',
   spss: 'SPSS for Statistical Analysis',

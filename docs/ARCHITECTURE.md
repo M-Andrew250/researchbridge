@@ -393,7 +393,7 @@ was signed up with. Verifying a domain requires actually owning one
 since the site will need a real domain for its URL at that point too.
 
 **Known duplication:** the course slug → display name map
-(`{ excel: 'Excel for Data & Analysis', ... }`) is defined in *five*
+(`{ excel: 'Excel for Professionals', ... }`) is defined in *five*
 places — `server/src/lib/courseNames.js`, and inline in each of
 `enrol.html`, `dashboard.html`, `learn.html`, and
 `enrolment-detail.html`. This is a consequence of having no frontend
