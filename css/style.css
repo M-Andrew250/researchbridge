@@ -2332,6 +2332,16 @@ footer {
 .stagger-grid > .reveal:nth-child(5) { transition-delay: 0.32s; }
 .stagger-grid > .reveal:nth-child(n+6) { transition-delay: 0.4s; }
 
+/* Cards that both reveal-on-scroll AND lift on hover: .reveal.visible's
+   resting translateY(0) and the card's own :hover translateY(-4px)
+   tie in specificity (two classes vs. one class + a pseudo-class), so
+   whichever happens to be declared later in the file would otherwise
+   win by default — not reliably the hover state. Pin it explicitly. */
+.promo-card.reveal:hover,
+.service-card.reveal:hover {
+  transform: translateY(-4px);
+}
+
 
 /* ───────────────────────────────────────────────────────────────────────
    13. FLOATING UI
