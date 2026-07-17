@@ -112,6 +112,35 @@
       text-transform: uppercase;
       color: var(--muted);
       padding: 0.8rem 0.6rem 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .learn-module-title:hover {
+      color: var(--royal);
+    }
+
+    .learn-module-toggle {
+      margin-left: auto;
+      font-size: 0.65rem;
+      color: var(--muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+
+    .learn-module-title.open .learn-module-toggle {
+      transform: rotate(180deg);
+    }
+
+    .learn-module-lessons {
+      display: none;
+    }
+
+    .learn-module-lessons.open {
+      display: block;
     }
 
     .learn-lesson-item {
@@ -785,6 +814,13 @@
       const sidebar = document.getElementById('learnSidebar');
       let currentLessonId = null;
 
+      // Modules default to expanded (matching the sidebar's previous
+      // always-visible behaviour) — collapsing is opt-in per module,
+      // not the default. Tracked outside renderSidebar so the state
+      // survives refreshCurriculumSidebarAndRing() re-rendering the
+      // whole sidebar after a lesson is completed.
+      const expandedModules = new Set(curriculum.modules.map((_, i) => i));
+
       function renderSidebar(curr) {
         if (curr.modules.length === 0) {
           sidebar.innerHTML = `<p style="text-align:center; color:var(--muted); font-size:0.85rem; padding:1rem;">
@@ -792,16 +828,38 @@
           return;
         }
 
-        sidebar.innerHTML = curr.modules.map(m => `
-          <div class="learn-module-title">${m.title}${!m.unlocked ? '<span class="learn-module-lock" title="Complete the previous module to unlock">🔒</span>' : ''}</div>
-          ${m.lessons.map(l => `
-            <div class="learn-lesson-item ${l.locked ? 'locked' : ''} ${l.id === currentLessonId ? 'active' : ''}" data-lesson-id="${l.id}" data-locked="${!!l.locked}">
-              <span class="learn-lesson-icon">${lessonTypeIcon[l.type] || '📄'}</span>
-              <span>${l.title}</span>
-              ${l.locked ? '<span class="learn-lesson-check">🔒</span>' : (l.completed ? '<span class="learn-lesson-check">✓</span>' : '')}
+        sidebar.innerHTML = curr.modules.map((m, i) => {
+          const isOpen = expandedModules.has(i);
+          return `
+            <div class="learn-module-title ${isOpen ? 'open' : ''}" data-module-index="${i}">
+              <span>${m.title}</span>
+              ${!m.unlocked ? '<span class="learn-module-lock" title="Complete the previous module to unlock">🔒</span>' : ''}
+              <span class="learn-module-toggle">▾</span>
             </div>
-          `).join('')}
-        `).join('');
+            <div class="learn-module-lessons ${isOpen ? 'open' : ''}">
+              ${m.lessons.map(l => `
+                <div class="learn-lesson-item ${l.locked ? 'locked' : ''} ${l.id === currentLessonId ? 'active' : ''}" data-lesson-id="${l.id}" data-locked="${!!l.locked}">
+                  <span class="learn-lesson-icon">${lessonTypeIcon[l.type] || '📄'}</span>
+                  <span>${l.title}</span>
+                  ${l.locked ? '<span class="learn-lesson-check">🔒</span>' : (l.completed ? '<span class="learn-lesson-check">✓</span>' : '')}
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }).join('');
+
+        sidebar.querySelectorAll('.learn-module-title').forEach(header => {
+          header.addEventListener('click', () => {
+            const idx = Number(header.dataset.moduleIndex);
+            if (expandedModules.has(idx)) {
+              expandedModules.delete(idx);
+            } else {
+              expandedModules.add(idx);
+            }
+            header.classList.toggle('open');
+            header.nextElementSibling.classList.toggle('open');
+          });
+        });
 
         sidebar.querySelectorAll('.learn-lesson-item').forEach(item => {
           item.addEventListener('click', () => {

@@ -845,8 +845,13 @@
               <div class="summary-progress-fill" style="width:${percent}%; background:${percent >= 100 ? '#22c55e' : 'var(--sky)'};"></div>
             </div>
           ` : '';
+          const linkLabel = percent >= 100
+            ? '🎉 Congratulations! →'
+            : percent > 0
+              ? 'Continue Learning →'
+              : 'Start the Course →';
           const link = e.status === 'confirmed'
-            ? `<a href="learn?enrolment=${e.id}" class="summary-link">Continue Learning →</a>`
+            ? `<a href="learn?enrolment=${e.id}" class="summary-link">${linkLabel}</a>`
             : `<p class="summary-next-steps">Your enrolment is awaiting admin confirmation. The learning platform unlocks once it's confirmed.</p>`;
 
           return `
