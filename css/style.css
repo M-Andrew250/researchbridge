@@ -126,15 +126,17 @@ h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
 h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); }
 h3 { font-size: 1.2rem; }
 
-/* Playfair Display's upright "&" is a large, ornate swash that reads
-   as mismatched next to the rest of a bold heading — the italic
-   ampersand is far more restrained. Used wherever a heading needs an
-   "&" (e.g. "Thesis Editing & Proofreading"). Small side margins
-   because the italic glyph's own shape leans into the next letter's
-   space — without them it visually collides with the following word
-   even though a real space sits between them in the markup. */
+/* Playfair Display's "&" — in both its roman and italic cuts — is a
+   large, ornate calligraphic swash that reads as a mismatched font
+   next to the rest of a bold heading. Georgia's is a plain, ordinary
+   ampersand with no flourish; swapping it in for just that one
+   character (still a serif face, so it doesn't clash) reads as
+   normal punctuation instead of a decoration. Used wherever a heading
+   needs an "&" (e.g. "Thesis Editing & Proofreading"). Small side
+   margins keep it from crowding the surrounding letters. */
 h1 .amp, h2 .amp, h3 .amp {
-  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: normal;
   margin: 0 0.1em;
 }
 
