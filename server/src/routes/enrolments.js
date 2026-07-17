@@ -4,7 +4,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import { optionalAuth } from '../middleware/optionalAuth.js';
 import { getEnrolmentProgress } from '../lib/enrolmentProgress.js';
 import { courseNames } from '../lib/courseNames.js';
-import { sendEnrolmentConfirmationEmail } from '../lib/email.js';
+import { sendEnrolmentConfirmationEmail, sendEnrolmentCancelledEmail } from '../lib/email.js';
 import { sendServerError } from '../lib/errors.js';
 import { strictLimiter } from '../middleware/rateLimiters.js';
 
@@ -287,6 +287,14 @@ enrolmentsRouter.post('/:id/cancel', requireAuth, async (req, res) => {
   if (error) {
     return sendServerError(res, error, 'enrolments.cancel');
   }
+
+  sendEnrolmentCancelledEmail({
+    to: data.email,
+    firstName: data.first_name,
+    courseName: courseNames[data.course_slug] || data.course_slug,
+    reason: data.cancellation_reason,
+    cancelledByAdmin: false,
+  }).catch((err) => console.error('[email] enrolment cancellation (user) failed:', err.message));
 
   res.json(data);
 });

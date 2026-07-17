@@ -4,6 +4,8 @@ import { supabase } from '../config/supabaseClient.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { sendServerError } from '../lib/errors.js';
+import { sendEnrolmentApprovedEmail, sendEnrolmentCancelledEmail } from '../lib/email.js';
+import { courseNames } from '../lib/courseNames.js';
 
 export const adminRouter = Router();
 
@@ -44,6 +46,15 @@ adminRouter.patch('/enrolments/:id/status', async (req, res) => {
     return res.status(400).json({ error: `Status must be one of: ${STATUSES.join(', ')}` });
   }
 
+  // Needed to tell a genuine transition apart from an admin re-saving
+  // a row that's already in that status, so the emails below only
+  // ever fire once per enrolment.
+  const { data: existing } = await supabase
+    .from('enrolments')
+    .select('status')
+    .eq('id', req.params.id)
+    .single();
+
   const { data, error } = await supabase
     .from('enrolments')
     .update({
@@ -57,6 +68,27 @@ adminRouter.patch('/enrolments/:id/status', async (req, res) => {
 
   if (error) {
     return res.status(404).json({ error: 'Enrolment not found.' });
+  }
+
+  if (status === 'confirmed' && existing?.status !== 'confirmed') {
+    sendEnrolmentApprovedEmail({
+      to: data.email,
+      firstName: data.first_name,
+      courseName: courseNames[data.course_slug] || data.course_slug,
+      mode: data.mode,
+      enrolmentId: data.id,
+      workshop: data.workshop,
+    }).catch((err) => console.error('[email] enrolment approved failed:', err.message));
+  }
+
+  if (status === 'cancelled' && existing?.status !== 'cancelled') {
+    sendEnrolmentCancelledEmail({
+      to: data.email,
+      firstName: data.first_name,
+      courseName: courseNames[data.course_slug] || data.course_slug,
+      reason: data.cancellation_reason,
+      cancelledByAdmin: true,
+    }).catch((err) => console.error('[email] enrolment cancellation (admin) failed:', err.message));
   }
 
   res.json(data);

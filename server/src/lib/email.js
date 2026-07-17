@@ -118,6 +118,82 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
   });
 }
 
+// Sent when an admin flips an enrolment's status to "confirmed" —
+// distinct from sendEnrolmentConfirmationEmail above, which fires
+// immediately on submission and just acknowledges receipt. This is
+// the "you're actually in" moment, so it's the one that should
+// congratulate and drive the learner into the course itself. Online
+// enrolments unlock the e-learning platform at this exact point (see
+// verifyOnlineEnrolment.js), so the CTA sends them straight there;
+// in-person enrolments have no e-learning content to open, so it
+// points at their enrolment details (venue/date/trainer) instead.
+export async function sendEnrolmentApprovedEmail({ to, firstName, courseName, mode, enrolmentId, workshop }) {
+  const isOnline = mode === 'Online';
+
+  const cta = isOnline ? `
+    <p style="margin-top:28px;">
+      <a href="${SITE_URL}/pages/learn?enrolment=${enrolmentId}" style="background:#3B9EE8; color:#ffffff; padding:14px 28px; border-radius:8px; text-decoration:none; font-weight:700; font-size:16px; display:inline-block;">
+        Start Learning →
+      </a>
+    </p>
+    <p style="margin-top:20px; color:#5A6A85; font-size:14px;">You can pick up right where you left off any time from your dashboard.</p>
+  ` : `
+    <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+      <tr><td style="padding:6px 0; color:#5A6A85;">Venue</td><td style="padding:6px 0; font-weight:600;">${workshop?.venue || 'To be confirmed'}</td></tr>
+      <tr><td style="padding:6px 0; color:#5A6A85;">Date</td><td style="padding:6px 0; font-weight:600;">${workshop?.start_date ? new Date(workshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'To be confirmed'}</td></tr>
+      <tr><td style="padding:6px 0; color:#5A6A85;">Trainer</td><td style="padding:6px 0; font-weight:600;">${workshop?.trainer_name || 'To be confirmed'}</td></tr>
+    </table>
+    <p style="margin-top:24px;">
+      <a href="${SITE_URL}/pages/enrolment-detail?id=${enrolmentId}" style="background:#3B9EE8; color:#ffffff; padding:14px 28px; border-radius:8px; text-decoration:none; font-weight:700; font-size:16px; display:inline-block;">
+        View Enrolment Details →
+      </a>
+    </p>
+  `;
+
+  await sendEmail({
+    to,
+    subject: isOnline
+      ? `🎉 You're confirmed — start learning ${courseName} now!`
+      : `🎉 You're confirmed for ${courseName}!`,
+    html: wrap(`
+      <h2 style="color:#0A1F44;">Congratulations, ${firstName}! 🎉</h2>
+      <p>Your enrolment for <strong>${courseName}</strong> has been confirmed${isOnline ? " — you're all set to start learning right now." : ', and we\'re looking forward to having you.'}</p>
+      ${cta}
+    `),
+  });
+}
+
+// Covers both cancellation paths — a user stopping their own
+// enrolment from the dashboard, and an admin cancelling one from the
+// admin panel — since the only real difference is who did it and
+// (for the admin path) an optional reason. cancelledByAdmin controls
+// the wording; both still land the same "come back any time" CTA.
+export async function sendEnrolmentCancelledEmail({ to, firstName, courseName, reason, cancelledByAdmin }) {
+  const reasonBlock = reason ? `
+    <div style="margin-top:16px; padding:16px; background:#F0F6FF; border-radius:10px; border:1px solid #C8D9EF;">
+      <p style="margin:0; color:#5A6A85; font-size:14px;"><strong style="color:#0A1F44;">Reason given:</strong> ${reason}</p>
+    </div>
+  ` : '';
+
+  await sendEmail({
+    to,
+    subject: `Your enrolment for ${courseName} has been cancelled`,
+    html: wrap(`
+      <h2 style="color:#0A1F44;">Hi ${firstName},</h2>
+      ${cancelledByAdmin
+        ? `<p>Your enrolment for <strong>${courseName}</strong> has been cancelled by our team.</p>`
+        : `<p>As requested, we've cancelled your enrolment for <strong>${courseName}</strong>.</p>`}
+      ${reasonBlock}
+      ${cancelledByAdmin ? `<p style="margin-top:16px; color:#5A6A85; font-size:14px;">If you think this was a mistake or have any questions, just reply to this email — we're happy to help.</p>` : ''}
+      <p style="margin-top:24px;">
+        <a href="${SITE_URL}/#courses" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+          Explore Courses
+        </a>
+      </p>
+    `),
+  });
+}
+
 export async function sendThesisRequestConfirmationEmail({ to, firstName, documentType, serviceType, deadline, fileCount }) {
   await sendEmail({
     to,
