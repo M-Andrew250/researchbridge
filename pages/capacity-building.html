@@ -200,12 +200,19 @@
       left: 50%;
       transform: translate(-50%, 6px) scale(0.95);
       transform-origin: top center;
-      margin-top: 0.6rem;
+      /* No margin-top here on purpose — a real gap between the chip
+         and the panel is dead space with no :hover on either element,
+         so moving the mouse from one to the other (even slightly off
+         a straight vertical line) drops the hover state and the panel
+         closes — with pointer-events already off — before a click on
+         its "Take Online Course" button can land. padding-top on the
+         panel itself gives the same visual breathing room without
+         that gap ever existing as unhoverable space. */
+      padding: 1.6rem 1rem 1rem;
       background: var(--surface);
       border: 1.5px solid var(--royal);
       border-top: 3px solid var(--royal);
       border-radius: 12px;
-      padding: 1rem;
       min-width: 230px;
       box-shadow: 0 16px 40px rgba(10, 31, 68, 0.28);
       opacity: 0;
@@ -251,8 +258,10 @@
     .cb-course-chip.edge-bottom .cb-chip-panel {
       top: auto;
       bottom: 100%;
-      margin-top: 0;
-      margin-bottom: 0.6rem;
+      /* Opens upward, so the breathing-room padding flips to the
+         bottom of the panel (nearest the chip) instead of the top —
+         same no-gap reasoning as the default (downward-opening) case. */
+      padding: 1rem 1rem 1.6rem;
       transform-origin: bottom center;
     }
 
