@@ -388,6 +388,30 @@
           </div>
 
           <div class="form-group">
+            <label>Course of Interest *</label>
+            <select id="courseOfInterest" required>
+              <option value="">Select a course…</option>
+              <option value="excel">Excel for Professionals</option>
+              <option value="python">Python for Data Science</option>
+              <option value="stata">Stata for Econometrics</option>
+              <option value="spss">SPSS for Statistical Analysis</option>
+              <option value="r">R for Statistical Computing</option>
+              <option value="nvivo">NVivo for Qualitative Research</option>
+              <option value="powerbi">Power BI for Data Visualization</option>
+              <option value="kobo">KoBoToolbox for Data Collection</option>
+              <option value="data-analysis-general">Any course related to Data Analysis</option>
+              <option value="other">Other — tell us what you're looking for</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="otherCourseGroup" style="display:none;">
+            <label>Tell us what you're interested in *</label>
+            <textarea id="otherCourseDescription"
+              placeholder="e.g. I need help analysing survey data for my thesis but I'm not sure which tool is right for it.">
+            </textarea>
+          </div>
+
+          <div class="form-group">
             <label>Preferred Mode *</label>
             <select id="mode" required>
               <option value="">Select mode</option>
@@ -556,20 +580,36 @@
       nvivo:   { emoji: '<img src="../images/nvivo-logo.jpg" alt="" class="icon-img" />', name: 'NVivo for Qualitative Research' },
       powerbi: { emoji: '<img src="../images/powerbi-logo.svg" alt="" class="icon-img" />', name: 'Power BI for Data Visualization' },
       kobo:    { emoji: '<img src="../images/kobo-logo.png" alt="" class="icon-img" />', name: 'KoBoToolbox for Data Collection' },
+      'data-analysis-general': { emoji: '📊', name: 'Any Course Related to Data Analysis' },
+      other:   { emoji: '💬', name: 'Other' },
     };
 
-    const courseSlug = new URLSearchParams(window.location.search).get('course');
-    const selectedCourse = courseCatalog[courseSlug] || null;
-    const courseName = selectedCourse ? selectedCourse.name : 'Our Courses';
-
-    document.getElementById('enrolCourseBadge').innerHTML = selectedCourse
-      ? `${selectedCourse.emoji} ${selectedCourse.name}`
-      : '📚 General Enrolment';
-    document.getElementById('successCourseName').textContent = courseName;
-
-    if (selectedCourse) {
-      document.title = `Enrol — ${selectedCourse.name} | ResearchBridge Consulting`;
+    // Course of Interest — pre-selected (but still changeable) when a
+    // link already named a specific course (e.g. a course page's
+    // "Enrol Now"); left blank and required otherwise, so a visitor
+    // arriving through the homepage's general "Enrol Now" button
+    // still tells us which course they actually want, rather than the
+    // enrolment just being logged as a vague "general" one.
+    const courseSelect = document.getElementById('courseOfInterest');
+    const initialCourseSlug = new URLSearchParams(window.location.search).get('course');
+    if (courseCatalog[initialCourseSlug]) {
+      courseSelect.value = initialCourseSlug;
     }
+
+    const otherCourseGroup = document.getElementById('otherCourseGroup');
+    const otherCourseDescription = document.getElementById('otherCourseDescription');
+
+    function updateCourseBadge() {
+      const course = courseCatalog[courseSelect.value] || null;
+      document.getElementById('enrolCourseBadge').innerHTML = course
+        ? `${course.emoji} ${course.name}`
+        : '📚 General Enrolment';
+      document.title = course
+        ? `Enrol — ${course.name} | ResearchBridge Consulting`
+        : 'Enrol | ResearchBridge Consulting';
+      otherCourseGroup.style.display = courseSelect.value === 'other' ? 'block' : 'none';
+    }
+    updateCourseBadge();
 
     // ── WORKSHOP DATE PICKER ──
     // Shown only when "In-Person" is selected; lists the real
@@ -652,7 +692,7 @@
       workshopHint.style.display = 'none';
 
       try {
-        const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${courseSlug || ''}`);
+        const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${courseSelect.value || ''}`);
         const workshops = res.ok ? await res.json() : [];
 
         if (workshops.length === 0) {
@@ -684,6 +724,16 @@
         return;
       }
       loadWorkshopsForCourse();
+    });
+
+    // Changing the course while "In-Person" is already selected needs
+    // a fresh workshop list too — the previous one was for the old
+    // course.
+    courseSelect.addEventListener('change', () => {
+      updateCourseBadge();
+      if (modeSelect.value === 'In-Person') {
+        loadWorkshopsForCourse();
+      }
     });
 
     // Pre-fill from URL params — lets a link (e.g. the homepage's
@@ -720,18 +770,34 @@
       const country = countrySelect.value;
       const phoneRaw = document.getElementById('phone').value.trim();
       const category = document.getElementById('category').value;
+      const courseSlug = courseSelect.value;
       const mode = document.getElementById('mode').value;
       const level = document.getElementById('level').value;
       const organisation = document.getElementById('organisation').value.trim();
-      const comments = document.getElementById('comments').value.trim();
+      const otherDescription = otherCourseDescription.value.trim();
+      // The "Other" course has no real name to show anywhere
+      // downstream (admin email, admin panel, confirmation email) —
+      // there's no dedicated column for a custom course description,
+      // so it's folded into the existing free-text comments field
+      // instead, clearly labelled.
+      const rawComments = document.getElementById('comments').value.trim();
+      const comments = courseSlug === 'other'
+        ? `Interested in: ${otherDescription}` + (rawComments ? `\n\n${rawComments}` : '')
+        : rawComments;
       const workshopId = mode === 'In-Person' ? workshopSelect.value : null;
       const consentAccepted = document.getElementById('enrolConsent').checked;
       const marketingOptIn = document.getElementById('enrolMarketing').checked;
 
       // Validate required fields
       if (!firstName || !lastName || !email || !country ||
-          !phoneRaw || !category || !mode || !level) {
+          !phoneRaw || !category || !courseSlug || !mode || !level) {
         enrolError.textContent = 'Please fill in all required fields.';
+        enrolError.style.display = 'block';
+        return;
+      }
+
+      if (courseSlug === 'other' && !otherDescription) {
+        enrolError.textContent = 'Please tell us what you\'re interested in.';
         enrolError.style.display = 'block';
         return;
       }
@@ -785,7 +851,7 @@
             ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
           },
           body: JSON.stringify({
-            courseSlug: courseSlug || 'general',
+            courseSlug,
             firstName, lastName, email, phone, country,
             organisation, category, mode, level, comments, workshopId,
             marketingOptIn, consentAccepted,
@@ -816,6 +882,8 @@
       document.getElementById('successName').textContent =
         firstName + ' ' + lastName;
       document.getElementById('successEmail').textContent = email;
+      document.getElementById('successCourseName').textContent =
+        (courseCatalog[courseSlug] || {}).name || courseSlug;
 
       enrolFormWrap.style.display = 'none';
       enrolSuccess.classList.add('visible');

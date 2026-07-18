@@ -4,7 +4,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import { optionalAuth } from '../middleware/optionalAuth.js';
 import { getEnrolmentProgress } from '../lib/enrolmentProgress.js';
 import { courseNames } from '../lib/courseNames.js';
-import { sendEnrolmentConfirmationEmail, sendEnrolmentCancelledEmail } from '../lib/email.js';
+import { sendEnrolmentConfirmationEmail, sendEnrolmentCancelledEmail, sendNewEnrolmentAdminNotification } from '../lib/email.js';
 import { sendServerError } from '../lib/errors.js';
 import { strictLimiter } from '../middleware/rateLimiters.js';
 
@@ -42,6 +42,9 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
     return res.status(400).json({ error: 'Please agree to the ResearchBridge Terms & Privacy policy to continue.' });
   }
 
+  if (!courseNames[courseSlug]) {
+    return res.status(400).json({ error: 'Invalid course.' });
+  }
   if (!CATEGORIES.includes(category)) {
     return res.status(400).json({ error: 'Invalid category.' });
   }
@@ -180,6 +183,20 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
       });
     })
     .catch((err) => console.error('[email] enrolment confirmation failed:', err.message));
+
+  sendNewEnrolmentAdminNotification({
+    firstName,
+    lastName,
+    email,
+    phone,
+    courseName: courseNames[courseSlug] || courseSlug,
+    mode,
+    category,
+    level,
+    organisation,
+    workshop: validatedWorkshop,
+    comments,
+  }).catch((err) => console.error('[email] new enrolment admin notification failed:', err.message));
 
   res.status(201).json(data);
 });

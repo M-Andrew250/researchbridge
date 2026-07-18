@@ -9,6 +9,11 @@ const FROM = process.env.EMAIL_FROM || 'ResearchBridge Consulting <onboarding@re
 // the relative paths used elsewhere on the site.
 const SITE_URL = (process.env.SITE_URL || 'https://researchbridgeconsulting.com').replace(/\/$/, '');
 
+// Where new-enrolment alerts go — separate from RESEND_API_KEY so a
+// site that sends student-facing email just fine can still choose not
+// to wire up team alerts.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || null;
+
 // Shared wrapper so every call site handles a missing/misconfigured
 // API key or a delivery failure the same way: log it, never throw.
 // Email is a nice-to-have on top of an already-successful action
@@ -114,6 +119,59 @@ export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName
         </a>
       </p>
       ${nextWorkshopBlock}
+    `),
+  });
+}
+
+// Internal alert to the team, fired alongside the student-facing
+// receipt above — so a new request doesn't just sit unnoticed in the
+// admin panel until someone happens to check it.
+export async function sendNewEnrolmentAdminNotification({
+  firstName, lastName, email, phone, courseName, mode, category, level, organisation, workshop, comments,
+}) {
+  if (!ADMIN_EMAIL) {
+    console.warn('[email] ADMIN_EMAIL not set — skipped new-enrolment admin notification.');
+    return;
+  }
+
+  const workshopBlock = workshop ? `
+    <tr><td style="padding:6px 0; color:#5A6A85;">Venue</td><td style="padding:6px 0; font-weight:600;">${workshop.venue}</td></tr>
+    <tr><td style="padding:6px 0; color:#5A6A85;">Date</td><td style="padding:6px 0; font-weight:600;">${new Date(workshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>
+  ` : '';
+
+  // Surfaced separately (not just in the table) since this is where a
+  // "Course of Interest: Other" submission's actual free-text
+  // description lives — the one case where this field isn't just a
+  // nice-to-have extra note but the whole reason the request needs a
+  // human to look at it.
+  const commentsBlock = comments ? `
+    <div style="margin-top:16px; padding:16px; background:#F0F6FF; border-radius:10px; border:1px solid #C8D9EF;">
+      <p style="margin:0; color:#5A6A85; font-size:14px;"><strong style="color:#0A1F44;">Comments:</strong> ${comments}</p>
+    </div>
+  ` : '';
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `New enrolment request — ${courseName} (${mode})`,
+    html: wrap(`
+      <h2 style="color:#0A1F44;">📥 New Enrolment Request</h2>
+      <p><strong>${firstName} ${lastName}</strong> just applied for <strong>${courseName}</strong>.</p>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+        <tr><td style="padding:6px 0; color:#5A6A85;">Course</td><td style="padding:6px 0; font-weight:600;">${courseName}</td></tr>
+        <tr><td style="padding:6px 0; color:#5A6A85;">Mode</td><td style="padding:6px 0; font-weight:600;">${mode}</td></tr>
+        <tr><td style="padding:6px 0; color:#5A6A85;">Category</td><td style="padding:6px 0; font-weight:600;">${category}</td></tr>
+        <tr><td style="padding:6px 0; color:#5A6A85;">Level</td><td style="padding:6px 0; font-weight:600;">${level}</td></tr>
+        ${workshopBlock}
+        <tr><td style="padding:6px 0; color:#5A6A85;">Email</td><td style="padding:6px 0; font-weight:600;">${email}</td></tr>
+        <tr><td style="padding:6px 0; color:#5A6A85;">Phone</td><td style="padding:6px 0; font-weight:600;">${phone}</td></tr>
+        ${organisation ? `<tr><td style="padding:6px 0; color:#5A6A85;">Organisation</td><td style="padding:6px 0; font-weight:600;">${organisation}</td></tr>` : ''}
+      </table>
+      ${commentsBlock}
+      <p style="margin-top:24px;">
+        <a href="${SITE_URL}/pages/admin" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+          Review in Admin Panel →
+        </a>
+      </p>
     `),
   });
 }
