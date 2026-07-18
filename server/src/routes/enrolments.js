@@ -21,8 +21,7 @@ const ENROLMENT_SELECT = '*, workshop:workshops(*)';
 
 // POST /api/enrolments — guests and logged-in users can both submit
 // (pages/enrol.html). If a valid session is present, the enrolment
-// is linked to that profile via user_id. In-person enrolments must
-// reference a real, upcoming workshop for that course.
+// is linked to that profile via user_id.
 enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
   const {
     courseSlug, firstName, lastName, email, phone, country,
@@ -107,22 +106,25 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
       }
     }
 
-    if (!workshopId) {
-      return res.status(400).json({ error: 'Please choose a workshop date.' });
-    }
-    const { data: workshop, error: workshopError } = await supabase
-      .from('workshops')
-      .select('*')
-      .eq('id', workshopId)
-      .eq('course_slug', courseSlug)
-      .eq('status', 'upcoming')
-      .single();
+    // The enrolment form no longer collects a specific workshop date —
+    // the team follows up with each in-person applicant directly to
+    // arrange one. workshopId is only still validated here in case it
+    // arrives from an older/external caller.
+    if (workshopId) {
+      const { data: workshop, error: workshopError } = await supabase
+        .from('workshops')
+        .select('*')
+        .eq('id', workshopId)
+        .eq('course_slug', courseSlug)
+        .eq('status', 'upcoming')
+        .single();
 
-    if (workshopError || !workshop) {
-      return res.status(400).json({ error: 'Selected workshop is no longer available. Please choose another date.' });
+      if (workshopError || !workshop) {
+        return res.status(400).json({ error: 'Selected workshop is no longer available. Please choose another date.' });
+      }
+      validatedWorkshopId = workshop.id;
+      validatedWorkshop = workshop;
     }
-    validatedWorkshopId = workshop.id;
-    validatedWorkshop = workshop;
   }
 
   const { data, error } = await supabase

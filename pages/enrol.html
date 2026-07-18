@@ -432,16 +432,6 @@
             </div>
           </div>
 
-          <div class="form-group" id="workshopGroup" style="display:none;">
-            <label>Workshop Date *</label>
-            <select id="workshop">
-              <option value="">Select a date</option>
-            </select>
-            <p id="workshopHint" style="font-size:0.8rem; color:var(--muted); display:none;">
-              No upcoming in-person workshops for this course yet — please check back soon or choose Online.
-            </p>
-          </div>
-
           <div class="form-group">
             <label>Your Current Level *</label>
             <select id="level" required>
@@ -611,13 +601,7 @@
     }
     updateCourseBadge();
 
-    // ── WORKSHOP DATE PICKER ──
-    // Shown only when "In-Person" is selected; lists the real
-    // upcoming workshops for this course from the workshops table.
     const modeSelect = document.getElementById('mode');
-    const workshopGroup = document.getElementById('workshopGroup');
-    const workshopSelect = document.getElementById('workshop');
-    const workshopHint = document.getElementById('workshopHint');
     const onlineLoginNotice = document.getElementById('onlineLoginNotice');
     const onlineLoginLink = document.getElementById('onlineLoginLink');
     const enrolSubmit = document.getElementById('enrolSubmit');
@@ -686,65 +670,16 @@
       enrolSubmit.style.opacity = blocked ? '0.5' : '1';
     }
 
-    async function loadWorkshopsForCourse(preselectWorkshopId) {
-      workshopGroup.style.display = 'block';
-      workshopSelect.innerHTML = '<option value="">Loading dates…</option>';
-      workshopHint.style.display = 'none';
+    modeSelect.addEventListener('change', updateOnlineGate);
 
-      try {
-        const res = await fetch(`${window.rbcApiBaseUrl}/api/workshops?course=${courseSelect.value || ''}`);
-        const workshops = res.ok ? await res.json() : [];
+    courseSelect.addEventListener('change', updateCourseBadge);
 
-        if (workshops.length === 0) {
-          workshopSelect.innerHTML = '<option value="">No dates available</option>';
-          workshopHint.style.display = 'block';
-          return;
-        }
-
-        workshopSelect.innerHTML = '<option value="">Select a date</option>' +
-          workshops.map(w => {
-            const dateLabel = new Date(w.start_date).toLocaleDateString(undefined, {
-              year: 'numeric', month: 'long', day: 'numeric',
-            });
-            return `<option value="${w.id}">${dateLabel} — ${w.venue}</option>`;
-          }).join('');
-
-        if (preselectWorkshopId && workshopSelect.querySelector(`option[value="${preselectWorkshopId}"]`)) {
-          workshopSelect.value = preselectWorkshopId;
-        }
-      } catch (err) {
-        workshopSelect.innerHTML = '<option value="">Could not load dates</option>';
-      }
-    }
-
-    modeSelect.addEventListener('change', () => {
-      updateOnlineGate();
-      if (modeSelect.value !== 'In-Person') {
-        workshopGroup.style.display = 'none';
-        return;
-      }
-      loadWorkshopsForCourse();
-    });
-
-    // Changing the course while "In-Person" is already selected needs
-    // a fresh workshop list too — the previous one was for the old
-    // course.
-    courseSelect.addEventListener('change', () => {
-      updateCourseBadge();
-      if (modeSelect.value === 'In-Person') {
-        loadWorkshopsForCourse();
-      }
-    });
-
-    // Pre-fill from URL params — lets a link (e.g. the homepage's
-    // "Apply for Training" CTA, or a course page's "Take Online
-    // Course" button) drop the visitor straight into a ready-to-go
-    // form for a specific mode/workshop.
+    // Pre-fill from URL params — lets a link (e.g. a course page's
+    // "Take Online Course" button) drop the visitor straight into a
+    // ready-to-go form for a specific mode.
     const presetMode = new URLSearchParams(window.location.search).get('mode');
-    const presetWorkshopId = new URLSearchParams(window.location.search).get('workshop');
     if (presetMode === 'In-Person') {
       modeSelect.value = 'In-Person';
-      loadWorkshopsForCourse(presetWorkshopId);
     } else if (presetMode === 'Online') {
       modeSelect.value = 'Online';
       updateOnlineGate();
@@ -784,7 +719,6 @@
       const comments = courseSlug === 'other'
         ? `Interested in: ${otherDescription}` + (rawComments ? `\n\n${rawComments}` : '')
         : rawComments;
-      const workshopId = mode === 'In-Person' ? workshopSelect.value : null;
       const consentAccepted = document.getElementById('enrolConsent').checked;
       const marketingOptIn = document.getElementById('enrolMarketing').checked;
 
@@ -804,12 +738,6 @@
 
       if (!consentAccepted) {
         enrolError.textContent = 'Please agree to the Terms & Privacy policy to continue.';
-        enrolError.style.display = 'block';
-        return;
-      }
-
-      if (mode === 'In-Person' && !workshopId) {
-        enrolError.textContent = 'Please select a workshop date.';
         enrolError.style.display = 'block';
         return;
       }
@@ -853,7 +781,7 @@
           body: JSON.stringify({
             courseSlug,
             firstName, lastName, email, phone, country,
-            organisation, category, mode, level, comments, workshopId,
+            organisation, category, mode, level, comments,
             marketingOptIn, consentAccepted,
           }),
         });
