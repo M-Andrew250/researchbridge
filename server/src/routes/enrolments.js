@@ -15,6 +15,13 @@ const CATEGORIES = ['Individual', 'Group (5–10 people)', 'Group (10+ people)']
 const MODES = ['Online', 'In-Person'];
 const LEVELS = ['Complete Beginner', 'Some Basic Knowledge', 'Intermediate'];
 
+// "Other" and the general data-analysis catch-all aren't real courses
+// with their own curriculum/progress — they're leads for the team to
+// follow up on directly (still visible via the admin panel and the
+// new-enrolment email), so they're kept out of a user's own
+// dashboard/profile course list.
+const NON_COURSE_SLUGS = ['data-analysis-general', 'other'];
+
 // Selects an enrolment row together with its linked workshop (null
 // for online enrolments), used by both /me and /:id below.
 const ENROLMENT_SELECT = '*, workshop:workshops(*)';
@@ -176,6 +183,7 @@ enrolmentsRouter.post('/', strictLimiter, optionalAuth, async (req, res) => {
       return sendEnrolmentConfirmationEmail({
         to: email,
         firstName,
+        courseSlug,
         courseName: courseNames[courseSlug] || courseSlug,
         mode,
         category,
@@ -239,7 +247,9 @@ enrolmentsRouter.get('/me', requireAuth, async (req, res) => {
     return sendServerError(res, error, 'enrolments.me');
   }
 
-  const withProgress = await Promise.all(data.map(async (e) => {
+  const visibleEnrolments = data.filter((e) => !NON_COURSE_SLUGS.includes(e.course_slug));
+
+  const withProgress = await Promise.all(visibleEnrolments.map(async (e) => {
     if (e.mode !== 'Online') return { ...e, progressPercent: null };
     // completedAt reflects any stamp getEnrolmentProgress just made
     // in this same call — e.completed_at above would still be the

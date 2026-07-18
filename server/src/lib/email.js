@@ -78,7 +78,44 @@ export async function sendWelcomeEmail({ to, fullName }) {
   });
 }
 
-export async function sendEnrolmentConfirmationEmail({ to, firstName, courseName, mode, category, level, workshop, nextWorkshop }) {
+export async function sendEnrolmentConfirmationEmail({ to, firstName, courseSlug, courseName, mode, category, level, workshop, nextWorkshop }) {
+  // These two aren't real courses — no curriculum/mode/level summary
+  // makes sense for them, so they get their own short, honest
+  // messaging instead of the usual "here's what you enrolled in" receipt.
+  if (courseSlug === 'data-analysis-general') {
+    await sendEmail({
+      to,
+      subject: 'Thanks for Your Interest in Data Analysis Training',
+      html: wrap(`
+        <h2 style="color:#0A1F44;">Thanks for your interest, ${firstName}! 🙌</h2>
+        <p>We've received your interest in data analysis training. You don't need to know exactly which tool you want yet — we'll notify you as soon as a course related to data analysis opens for enrolment.</p>
+        <p style="margin-top:24px;">
+          <a href="${SITE_URL}/#courses" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+            Browse Our Courses
+          </a>
+        </p>
+      `),
+    });
+    return;
+  }
+
+  if (courseSlug === 'other') {
+    await sendEmail({
+      to,
+      subject: "We've Received Your Request",
+      html: wrap(`
+        <h2 style="color:#0A1F44;">Thanks, ${firstName}! We've got your request. 📨</h2>
+        <p>Our team will carefully assess what you're looking for and come back to you as soon as possible.</p>
+        <p style="margin-top:24px;">
+          <a href="${SITE_URL}/#courses" style="background:#3B9EE8; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">
+            Browse Our Courses
+          </a>
+        </p>
+      `),
+    });
+    return;
+  }
+
   const workshopBlock = workshop ? `
     <tr><td style="padding:6px 0; color:#5A6A85;">Venue</td><td style="padding:6px 0; font-weight:600;">${workshop.venue}</td></tr>
     <tr><td style="padding:6px 0; color:#5A6A85;">Date</td><td style="padding:6px 0; font-weight:600;">${new Date(workshop.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>
